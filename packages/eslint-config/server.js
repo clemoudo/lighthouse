@@ -1,5 +1,7 @@
 module.exports = {
-  extends: ["eslint:recommended"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "turbo"],
+  plugins: ["@typescript-eslint", "only-warn"],
+  parser: "@typescript-eslint/parser",
   env: {
     node: true,
     es6: true,
@@ -7,6 +9,9 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+  },
+  rules: {
+    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
   },
   overrides: [
     {
@@ -16,4 +21,5 @@ module.exports = {
       },
     },
   ],
-};
+  ignorePatterns: ["node_modules/", "dist/"],
+}

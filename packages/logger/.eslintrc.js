@@ -7,4 +7,4 @@ module.exports = {
     project: true,
   },
   ignorePatterns: ["**/__tests__/"],
-};
+}
