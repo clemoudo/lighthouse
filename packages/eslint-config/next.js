@@ -39,7 +39,15 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
   },
   overrides: [
-    { files: ["*.js?(x)", "*.ts?(x)"] },
+    {
+      files: ["*.js?(x)", "*.ts?(x)"],
+    },
+    {
+      files: ["*.js"],
+      rules: {
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
     {
       files: ["*.ts", "*.tsx"],
       rules: {

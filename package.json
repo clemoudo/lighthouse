@@ -4,13 +4,13 @@
   "private": true,
   "prettier": "@repo/prettier-config",
   "scripts": {
-    "build": "turbo run build",
+    "build": "infisical run --env=prod -- turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "infisical run --env=dev -- turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\" . --list-different",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "lint": "infisical run --env=dev -- turbo run lint",
+    "test": "infisical run --env=dev -- turbo run test"
   },
   "dependencies": {},
   "devDependencies": {
