@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
+      args:
+        - TURBO_TEAM=${TURBO_TEAM}
+        - TURBO_TOKEN=${TURBO_TOKEN}
     restart: always
     ports:
       - 3030:3000
@@ -13,6 +16,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
+      args:
+        - TURBO_TEAM=${TURBO_TEAM}
+        - TURBO_TOKEN=${TURBO_TOKEN}
     restart: always
     ports:
       - 3031:3001

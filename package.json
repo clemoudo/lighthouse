@@ -7,6 +7,7 @@
     "build": "infisical run --env=prod -- turbo run build",
     "clean": "turbo run clean",
     "dev": "infisical run --env=dev -- turbo run dev",
+    "docker:build": "infisical run --env=prod -- docker compose build",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\" . --list-different",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "lint": "infisical run --env=dev -- turbo run lint",

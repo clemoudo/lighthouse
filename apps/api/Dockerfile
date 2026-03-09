@@ -22,12 +22,12 @@ RUN pnpm install --frozen-lockfile
 # Build the project and its dependencies
 COPY --from=prepare /app/out/full/ .
 
-# Uncomment and use build args to enable remote caching
-# ARG TURBO_TEAM
-# ENV TURBO_TEAM=$TURBO_TEAM
+# Enable remote caching for Turborepo
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
 
-# ARG TURBO_TOKEN
-# ENV TURBO_TOKEN=$TURBO_TOKEN
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
 
 RUN pnpm turbo build
 
