@@ -1,0 +1,41 @@
+# Node
+node_modules
+npm-debug.log
+pnpm-debug.log
+.pnpm-debug.log*
+
+# Next.js
+.next
+out
+
+# Turborepo
+.turbo
+
+# Build outputs
+dist
+build
+
+# Environment / Secrets (CRITICAL)
+.env
+.env.*
+.infisical.json
+sonar-project.properties
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Testing
+coverage
+.jest
