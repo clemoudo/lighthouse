@@ -17,7 +17,7 @@
   "devDependencies": {
     "@repo/prettier-config": "workspace:*",
     "prettier": "^3.2.5",
-    "turbo": "^2.8.13"
+    "turbo": "^2.8.15"
   },
   "engines": {
     "node": ">=14.0.0",
