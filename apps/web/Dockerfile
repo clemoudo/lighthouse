@@ -37,8 +37,8 @@ RUN pnpm turbo build
 FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 # Don't run production as root for security reasons
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs \
+&& adduser --system --uid 1001 nextjs
 USER nextjs
 
 # Automatically leverage output traces to reduce image size
@@ -47,4 +47,4 @@ COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/.next/standa
 COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/public ./apps/web/public
 
-CMD node apps/web/server.js
+CMD ["node", "apps/web/server.js"]

@@ -35,9 +35,9 @@ FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 
 # Don't run production as root
-RUN addgroup --system --gid 1001 expressjs
-RUN adduser --system --uid 1001 expressjs
+RUN addgroup --system --gid 1001 expressjs \
+&& adduser --system --uid 1001 expressjs
 USER expressjs
 COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app .
 
-CMD node apps/api/dist/index.js
+CMD ["node", "apps/api/dist/index.js"]
