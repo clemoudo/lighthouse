@@ -1,8 +1,42 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-# Secret Scanning
-infisical scan
+echo "\n┌─────────────────────────────────┐"
+echo "│      🚀 Pre-commit checks       │"
+echo "│ Secrets | Types | Lint | Format │"
+echo "└─────────────────────────────────┘\n"
 
-# Turbo Tasks (only on staged changes)
-pnpm turbo run tsc lint format:check --filter=[HEAD]
+# 1. Secret Scanning
+if infisical scan --silent > /dev/null 2>&1; then
+  echo "✅ No secrets found (Infisical) - OK"
+else
+  echo "❌ There is some secrets in your code (Infisical) - KO\n"
+  infisical scan -v
+  exit 1
+fi
+
+# 2. Type Checking (TSC)
+if pnpm turbo run tsc --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
+  echo "✅ Type-checking (TSC) - OK"
+else
+  echo "❌ Type-checking (TSC) - KO\n"
+  pnpm turbo run tsc --filter=[HEAD] --output-logs=errors-only
+  exit 1
+fi
+
+# 3. Linting (ESLint)
+if pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
+  echo "✅ Linting (ESLint) - OK"
+else
+  echo "❌ Linting (ESLint) - KO\n"
+  pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only
+  exit 1
+fi
+
+# 4. Formatage (Prettier)
+if pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
+  echo "✅ Formating (Prettier) - OK"
+else
+  echo "❌ Formating (Prettier) - KO\n"
+  pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only
+  exit 1
+fi

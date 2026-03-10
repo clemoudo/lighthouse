@@ -21,7 +21,7 @@ Le projet utilise une version simplifiée du GitHub Flow.
 Les messages de commit doivent respecter la convention **Conventional Commits**.
 Format : `type(scope): description`
 
-- **Types** : `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
+- **Types** : `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`, `style`.
 - **Scopes** : `web`, `api`, `ai`, `ui`, `db`, `infra`.
 - **Description** : En minuscule, pas de point final.
 
