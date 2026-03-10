@@ -10,6 +10,10 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v6
         with:
