@@ -19,7 +19,7 @@ FROM base AS builder
 WORKDIR /app
 # First install the dependencies (as they change less often)
 COPY --from=prepare /app/out/json/ .
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Build the project
 COPY --from=prepare /app/out/full/ .
