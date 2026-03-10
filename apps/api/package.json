@@ -10,6 +10,7 @@
     "start": "node -r esbuild-register ./src/index.ts",
     "tsc": "tsc --noEmit",
     "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --coverage",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   },
   "jest": {
