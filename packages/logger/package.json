@@ -12,7 +12,9 @@
     "clean": "rm -rf dist",
     "dev": "tsc -w",
     "lint": "eslint \"src/**/*.ts*\" --max-warnings 0",
-    "test": "jest"
+    "tsc": "tsc --noEmit",
+    "test": "jest",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"

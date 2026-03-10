@@ -6,7 +6,9 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint . --max-warnings 0",
-    "start": "next start"
+    "start": "next start",
+    "tsc": "tsc --noEmit",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   },
   "dependencies": {
     "next": "16.1.5",

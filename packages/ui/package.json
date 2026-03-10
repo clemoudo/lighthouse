@@ -5,7 +5,9 @@
     "./button": "./src/button.tsx"
   },
   "scripts": {
-    "lint": "eslint \"**/*.ts*\" --max-warnings 0"
+    "lint": "eslint \"**/*.ts*\" --max-warnings 0",
+    "tsc": "tsc --noEmit",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   },
   "devDependencies": {
     "@types/react": "^18.2.61",

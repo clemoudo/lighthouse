@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Secret Scanning
+infisical scan
+
+# Turbo Tasks (only on staged changes)
+pnpm turbo run tsc lint format:check --filter=[HEAD]

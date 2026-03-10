@@ -1,0 +1,12 @@
+# Dependencies
+node_modules
+dist
+build
+.next
+.turbo
+
+# Coverage
+coverage
+
+# Cache
+.cache
