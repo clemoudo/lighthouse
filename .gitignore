@@ -41,6 +41,9 @@ Thumbs.db
 coverage/
 .jest/
 
+# TypeScript build info
+*.tsbuildinfo
+
 # Documentation
 # (Garder si nécessaire)
 
