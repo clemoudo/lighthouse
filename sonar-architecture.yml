@@ -1,0 +1,20 @@
+version: "1.0"
+components:
+  - name: "API Gateway"
+    path: "apps/api/src"
+  - name: "Web Frontend"
+    path: "apps/web/src"
+  - name: "Shared UI"
+    path: "packages/ui/src"
+  - name: "Shared Logger"
+    path: "packages/logger/src"
+
+# Optional: Define allowed dependencies
+# (This allows Sonar to alert you if the UI tries to import the API, for example)
+dependencies:
+  - from: "apps/web/src"
+    to: "packages/ui/src"
+  - from: "apps/api/src"
+    to: "packages/logger/src"
+  - from: "apps/web/src"
+    to: "packages/logger/src"
