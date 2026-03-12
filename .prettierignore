@@ -10,3 +10,6 @@ coverage
 
 # Cache
 .cache
+
+# Nextjs
+next-env.d.ts
