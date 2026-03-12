@@ -1,4 +1,4 @@
-ARG NODE_VERSION=24.13.1
+ARG NODE_VERSION=24
 FROM node:${NODE_VERSION}-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -11,33 +11,39 @@ RUN npm install -g turbo
 COPY . .
 RUN turbo prune api --docker
 
-# Add lockfile and package.json's of isolated subworkspace
 FROM base AS builder
 WORKDIR /app
-
-# First install dependencies (as they change less often)
 COPY --from=prepare /app/out/json/ .
 RUN pnpm install --frozen-lockfile --ignore-scripts
-
-# Build the project and its dependencies
 COPY --from=prepare /app/out/full/ .
 
-# Enable remote caching for Turborepo
+# Build variables
 ARG TURBO_TEAM
 ENV TURBO_TEAM=$TURBO_TEAM
-
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 
 RUN pnpm turbo build
 
+# TODO use dhi.io/node:${NODE_VERSION}
 FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 
-# Don't run production as root
-RUN addgroup --system --gid 1001 expressjs \
-&& adduser --system --uid 1001 expressjs
-USER expressjs
-COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app .
+# Security and Compatibility
+RUN apk add --no-cache libc6-compat tini
+ENV NODE_ENV=production
 
+# Don't run production as root
+RUN addgroup --system --gid 1001 expressjs && \
+    adduser --system --uid 1001 expressjs
+USER expressjs
+
+# Selective Copy (Only build artifacts and runtime dependencies)
+COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/node_modules ./node_modules
+COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/package.json ./package.json
+
+# Use Tini as Init process
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "apps/api/dist/index.js"]
