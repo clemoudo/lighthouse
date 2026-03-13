@@ -1,58 +1,62 @@
-const { resolve } = require("node:path")
+const js = require("@eslint/js")
+const { FlatCompat } = require("@eslint/eslintrc")
+const globals = require("globals")
+const tseslint = require("typescript-eslint")
+const prettier = require("eslint-config-prettier")
+const nextPlugin = require("@next/eslint-plugin-next")
 
-const project = resolve(process.cwd(), "tsconfig.json")
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+})
 
-/** @type {import("eslint").Linter.Config} */
-module.exports = {
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    require.resolve("@vercel/style-guide/eslint/next"),
-    "turbo",
-    "prettier",
-  ],
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "only-warn"],
-  globals: {
-    React: true,
-    JSX: true,
+/** @type {import('eslint').Linter.Config[]} */
+module.exports = [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
+  ...compat.extends("eslint-config-turbo"),
+  {
+    plugins: {
+      "@next/next": nextPlugin,
+    },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+    },
   },
-  env: {
-    node: true,
-    browser: true,
-    es6: true,
-  },
-  settings: {
-    "import/resolver": {
-      typescript: {
-        project,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.es2021,
+        React: "writable",
+        JSX: "writable",
+      },
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
       },
     },
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
   },
-  ignorePatterns: [
-    // Ignore dotfiles
-    ".*.js",
-    "node_modules/",
-    "dist/",
-  ],
-  rules: {
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+  {
+    files: ["*.js"],
+    rules: {
+      "@typescript-eslint/no-var-requires": "off",
+      "@typescript-eslint/no-require-imports": "off",
+    },
   },
-  overrides: [
-    {
-      files: ["*.js?(x)", "*.ts?(x)"],
+  {
+    files: ["*.ts", "*.tsx"],
+    rules: {
+      "no-undef": "off",
     },
-    {
-      files: ["*.js"],
-      rules: {
-        "@typescript-eslint/no-var-requires": "off",
-      },
-    },
-    {
-      files: ["*.ts", "*.tsx"],
-      rules: {
-        "no-undef": "off",
-      },
-    },
-  ],
-}
+  },
+  {
+    ignores: [".*.js", "node_modules/", "dist/", "**/node_modules/", "**/dist/", ".next/"],
+  },
+]

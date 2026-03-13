@@ -1,25 +1,44 @@
-module.exports = {
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "turbo"],
-  plugins: ["@typescript-eslint", "only-warn"],
-  parser: "@typescript-eslint/parser",
-  env: {
-    node: true,
-    es6: true,
-  },
-  parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  },
-  rules: {
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-  },
-  overrides: [
-    {
-      files: ["**/__tests__/**/*"],
-      env: {
-        jest: true,
+const js = require("@eslint/js")
+const { FlatCompat } = require("@eslint/eslintrc")
+const globals = require("globals")
+const tseslint = require("typescript-eslint")
+const prettier = require("eslint-config-prettier")
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+})
+
+/** @type {import('eslint').Linter.Config[]} */
+module.exports = [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
+  ...compat.extends("eslint-config-turbo"),
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
       },
     },
-  ],
-  ignorePatterns: ["node_modules/", "dist/"],
-}
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    files: ["**/__tests__/**/*"],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+  },
+  {
+    ignores: ["node_modules/", "dist/", "**/node_modules/", "**/dist/"],
+  },
+]

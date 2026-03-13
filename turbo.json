@@ -1,12 +1,11 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": ["NODE_ENV", "API_PORT", "NEXT_PUBLIC_*"],
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "public/dist/**"],
-      "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_*", "API_PORT"]
+      "dependsOn": ["^build"]
     },
     "test": {
       "outputs": ["coverage/**"],
