@@ -21,6 +21,7 @@ L'architecture est basée sur des microservices orchestrés via Podman/Docker. L
 
 ## Notes de développement
 
+- All code comments MUST be written in English.
 - Veiller à l'ergonomie et l'accessibilité (tablettes, mobile, PC).
 - Garantir des temps de réponse rapides (< 2s pour la recherche sémantique).
 - Respecter les contraintes GDPR (hébergement local des données, anonymisation).
