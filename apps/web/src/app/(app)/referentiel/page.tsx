@@ -11,6 +11,7 @@ import {
   cn,
 } from "@repo/ui"
 import { domains, type Competence } from "@/lib/data"
+import { messages } from "@/messages/fr"
 
 function StatusIndicator({ status }: { status: Competence["status"] }) {
   return (
@@ -27,18 +28,22 @@ function StatusIndicator({ status }: { status: Competence["status"] }) {
 
 function StatusBadge({ status }: { status: Competence["status"] }) {
   if (status === "acquired") {
-    return <Badge className="bg-success text-success-foreground text-xs">Acquis</Badge>
+    return (
+      <Badge className="bg-success text-success-foreground text-xs">
+        {messages.common.acquired}
+      </Badge>
+    )
   }
   if (status === "seen") {
     return (
       <Badge variant="secondary" className="text-xs">
-        Vue
+        {messages.common.seen}
       </Badge>
     )
   }
   return (
     <Badge variant="outline" className="text-xs text-muted-foreground">
-      Non vue
+      {messages.common.notSeen}
     </Badge>
   )
 }
@@ -49,8 +54,10 @@ export default function ReferentielPage() {
       {/* Header */}
       <div className="border-b border-border bg-card px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">Référentiel</h1>
-          <p className="text-muted-foreground">Programme scolaire - Cycle 1 Maternelle</p>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">
+            {messages.referentiel.title}
+          </h1>
+          <p className="text-muted-foreground">{messages.referentiel.subtitle}</p>
         </div>
       </div>
 
@@ -59,18 +66,18 @@ export default function ReferentielPage() {
         <div className="mx-auto max-w-4xl">
           {/* Domain Legend */}
           <div className="mb-6 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-muted-foreground">Légende :</span>
+            <span className="text-sm text-muted-foreground">{messages.referentiel.legend}</span>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-success" />
-              <span className="text-sm">Acquis</span>
+              <span className="text-sm">{messages.common.acquired}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-amber-500" />
-              <span className="text-sm">Vue</span>
+              <span className="text-sm">{messages.common.seen}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-              <span className="text-sm">Non vue</span>
+              <span className="text-sm">{messages.common.notSeen}</span>
             </div>
           </div>
 
@@ -134,7 +141,9 @@ export default function ReferentielPage() {
                                       className="h-8 gap-1.5 text-primary text-xs"
                                     >
                                       <FileText className="h-3.5 w-3.5" />
-                                      <span className="hidden sm:inline">Page</span>{" "}
+                                      <span className="hidden sm:inline">
+                                        {messages.common.page}
+                                      </span>{" "}
                                       {competence.pdfPage}
                                     </Button>
                                   )}

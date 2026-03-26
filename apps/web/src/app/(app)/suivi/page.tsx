@@ -16,6 +16,7 @@ import {
   TabsTrigger,
 } from "@repo/ui"
 import { domains } from "@/lib/data"
+import { messages } from "@/messages/fr"
 
 type CompetenceState = {
   seen: boolean
@@ -93,8 +94,8 @@ export default function SuiviPage() {
       {/* Header */}
       <div className="border-b border-border bg-card px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">Mon Suivi</h1>
-          <p className="text-muted-foreground">Progression des compétences par domaine</p>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">{messages.suivi.title}</h1>
+          <p className="text-muted-foreground">{messages.suivi.subtitle}</p>
         </div>
       </div>
 
@@ -104,9 +105,9 @@ export default function SuiviPage() {
           {/* Overall Progress Card */}
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Progression globale</CardTitle>
+              <CardTitle className="text-lg">{messages.suivi.overallProgress.title}</CardTitle>
               <CardDescription>
-                {totalAcquired} compétences acquises sur {totalCompetences}
+                {messages.suivi.overallProgress.description(totalAcquired, totalCompetences)}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -117,13 +118,15 @@ export default function SuiviPage() {
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-sm bg-success" />
                       <span className="text-muted-foreground">
-                        Acquis: <span className="font-medium text-foreground">{totalAcquired}</span>
+                        {messages.suivi.overallProgress.legendAcquired}:{" "}
+                        <span className="font-medium text-foreground">{totalAcquired}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-sm bg-amber-500" />
                       <span className="text-muted-foreground">
-                        Vues: <span className="font-medium text-foreground">{totalSeen}</span>
+                        {messages.suivi.overallProgress.legendSeen}:{" "}
+                        <span className="font-medium text-foreground">{totalSeen}</span>
                       </span>
                     </div>
                   </div>
@@ -150,7 +153,7 @@ export default function SuiviPage() {
                     <Progress value={domain.progress} className="h-2" />
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>
-                        {domain.acquired}/{domain.total} acquis
+                        {messages.suivi.domainProgress.stats(domain.acquired, domain.total)}
                       </span>
                       <span className="font-medium text-foreground">{domain.progress}%</span>
                     </div>
@@ -163,8 +166,8 @@ export default function SuiviPage() {
           {/* Competence List by Domain */}
           <Card>
             <CardHeader>
-              <CardTitle>Suivi détaillé par domaine</CardTitle>
-              <CardDescription>Marquez les compétences comme vues ou acquises</CardDescription>
+              <CardTitle>{messages.suivi.detailed.title}</CardTitle>
+              <CardDescription>{messages.suivi.detailed.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <Tabs defaultValue={domains[0].id} className="w-full">
@@ -221,7 +224,9 @@ export default function SuiviPage() {
                                           handleSeenChange(competence.id, checked)
                                         }
                                       />
-                                      <span className="text-sm text-muted-foreground">Vue</span>
+                                      <span className="text-sm text-muted-foreground">
+                                        {messages.common.seen}
+                                      </span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                       <Switch
@@ -231,7 +236,9 @@ export default function SuiviPage() {
                                         }
                                         className="data-[state=checked]:bg-success"
                                       />
-                                      <span className="text-sm text-muted-foreground">Acquis</span>
+                                      <span className="text-sm text-muted-foreground">
+                                        {messages.common.acquired}
+                                      </span>
                                     </label>
                                   </div>
                                 </div>

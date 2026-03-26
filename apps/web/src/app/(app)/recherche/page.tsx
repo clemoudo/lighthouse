@@ -13,13 +13,14 @@ import {
   Input,
 } from "@repo/ui"
 import { searchCompetences, type Competence } from "@/lib/data"
+import { messages } from "@/messages/fr"
 
 function StatusBadge({ status }: { status: Competence["status"] }) {
   if (status === "acquired") {
-    return <Badge className="bg-success text-success-foreground">Acquis</Badge>
+    return <Badge className="bg-success text-success-foreground">{messages.common.acquired}</Badge>
   }
   if (status === "seen") {
-    return <Badge variant="secondary">Vue</Badge>
+    return <Badge variant="secondary">{messages.common.seen}</Badge>
   }
   return null
 }
@@ -47,12 +48,12 @@ export default function RecherchePage() {
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <Sparkles className="h-4 w-4" />
-            <span className="text-sm">Recherche sémantique</span>
+            <span className="text-sm">{messages.recherche.semanticSearch}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1">Rechercher une compétence</h1>
-          <p className="text-muted-foreground">
-            Trouvez rapidement les compétences du programme par sens ou mot-clé
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">
+            {messages.recherche.title}
+          </h1>
+          <p className="text-muted-foreground">{messages.recherche.description}</p>
         </div>
       </div>
 
@@ -63,10 +64,10 @@ export default function RecherchePage() {
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Rechercher une compétence par sens..."
+              placeholder={messages.recherche.placeholder}
               value={query}
               onChange={(e) => handleSearch(e.target.value)}
-              className="h-12 pl-11 pr-4 text-base bg-card rounded-lg"
+              className="h-12 pl-11 pr-4 text-base bg-card rounded-xl"
             />
           </div>
         </div>
@@ -81,14 +82,13 @@ export default function RecherchePage() {
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
               <h2 className="text-lg font-medium text-foreground mb-2">
-                Commencez votre recherche
+                {messages.recherche.startSearch.title}
               </h2>
               <p className="text-muted-foreground max-w-md">
-                Tapez un mot-clé ou une phrase pour trouver les compétences correspondantes dans le
-                programme scolaire.
+                {messages.recherche.startSearch.description}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-2">
-                {["oral", "compter", "formes", "couleurs", "chansons"].map((suggestion) => (
+                {messages.recherche.suggestions.map((suggestion) => (
                   <Button
                     key={suggestion}
                     variant="outline"
@@ -106,14 +106,15 @@ export default function RecherchePage() {
               <div className="mb-4 rounded-full bg-secondary p-4">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-lg font-medium text-foreground mb-2">Aucun résultat</h2>
-              <p className="text-muted-foreground">Essayez avec d'autres mots-clés</p>
+              <h2 className="text-lg font-medium text-foreground mb-2">
+                {messages.recherche.noResults.title}
+              </h2>
+              <p className="text-muted-foreground">{messages.recherche.noResults.description}</p>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {results.length} résultat{results.length > 1 ? "s" : ""} trouvé
-                {results.length > 1 ? "s" : ""}
+                {messages.recherche.results.found(results.length)}
               </p>
               {results.map((competence) => (
                 <Card key={competence.id} className="transition-shadow hover:shadow-md">
@@ -134,7 +135,7 @@ export default function RecherchePage() {
                         variant="secondary"
                         className="shrink-0 bg-primary/10 text-primary border-primary/20"
                       >
-                        {competence.score}% pertinent
+                        {messages.recherche.results.score(competence.score)}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -147,7 +148,7 @@ export default function RecherchePage() {
                       {competence.pdfPage && (
                         <Button variant="ghost" size="sm" className="gap-2 text-primary">
                           <FileText className="h-4 w-4" />
-                          Voir page {competence.pdfPage}
+                          {messages.recherche.results.viewPage(competence.pdfPage)}
                         </Button>
                       )}
                     </div>

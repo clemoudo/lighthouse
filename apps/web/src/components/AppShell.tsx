@@ -7,25 +7,26 @@ import { usePathname } from "next/navigation"
 import { Search, BookOpen, BarChart3, Menu } from "lucide-react"
 import { Button } from "@repo/ui/components/button"
 import { cn, Sheet, SheetContent, SheetTrigger } from "@repo/ui"
+import { messages } from "@/messages/fr"
 
 const navItems = [
   {
-    name: "Recherche",
+    name: messages.navigation.search.name,
     href: "/recherche",
     icon: Search,
-    description: "Recherche sémantique",
+    description: messages.navigation.search.description,
   },
   {
-    name: "Référentiel",
+    name: messages.navigation.repository.name,
     href: "/referentiel",
     icon: BookOpen,
-    description: "Programme scolaire",
+    description: messages.navigation.repository.description,
   },
   {
-    name: "Mon Suivi",
+    name: messages.navigation.followUp.name,
     href: "/suivi",
     icon: BarChart3,
-    description: "Progression",
+    description: messages.navigation.followUp.description,
   },
 ]
 
@@ -36,10 +37,18 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6">
-        <Image src="/lighthouse.png" alt="Lighthouse" width={48} height={48} className="shrink-0" />
+        <Image
+          src="/lighthouse.png"
+          alt={messages.common.appName}
+          width={48}
+          height={48}
+          className="shrink-0"
+        />
         <div>
-          <h1 className="text-lg font-semibold text-sidebar-foreground">Lighthouse</h1>
-          <p className="text-xs text-sidebar-foreground/70">Programme Scolaire</p>
+          <h1 className="text-lg font-semibold text-sidebar-foreground">
+            {messages.common.appName}
+          </h1>
+          <p className="text-xs text-sidebar-foreground/70">{messages.common.appSubtitle}</p>
         </div>
       </div>
 
@@ -71,7 +80,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Footer */}
       <div className="border-t border-sidebar-border px-4 py-4">
-        <p className="text-xs text-sidebar-foreground/60">Maternelle - Cycle 1</p>
+        <p className="text-xs text-sidebar-foreground/60">{messages.common.cycle}</p>
       </div>
     </div>
   )
@@ -95,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Menu</span>
+                <span className="sr-only">{messages.navigation.menu}</span>
               </Button>
             </SheetTrigger>
             <SheetContent
@@ -106,8 +115,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-            <Image src="/lighthouse.png" alt="Lighthouse" width={32} height={32} />
-            <span className="font-semibold text-foreground">Lighthouse</span>
+            <Image src="/lighthouse.png" alt={messages.common.appName} width={32} height={32} />
+            <span className="font-semibold text-foreground">{messages.common.appName}</span>
           </div>
         </header>
 
