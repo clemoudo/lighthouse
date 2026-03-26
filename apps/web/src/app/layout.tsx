@@ -1,10 +1,40 @@
-import "./globals.css"
+import type { Metadata, Viewport } from "next"
+import { Inter } from "next/font/google"
 import { Providers } from "@/contexts/Providers"
+import "./globals.css"
 
-export default function RootLayout({ children }: { children: Readonly<React.ReactNode> }) {
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+})
+
+export const metadata: Metadata = {
+  title: "Lighthouse - Assistant Programme Scolaire",
+  description:
+    "Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences",
+  icons: {
+    icon: [
+      { url: "/lighthouse-32.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/lighthouse.png", type: "image/png" },
+    ],
+    apple: "/lighthouse.png",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="fr">
-      <body>
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

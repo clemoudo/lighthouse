@@ -78,3 +78,6 @@ desktop.ini
 
 # Docker
 .docker/
+
+.gemini/
+gha-creds-*.json

@@ -11,8 +11,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@repo/ui/*": ["../../packages/ui/src/*"],
-      "@repo/ui": ["../../packages/ui/src/index.ts"],
-      "@repo/ui/root/*": ["../../packages/ui/*"]
+      "@repo/ui": ["../../packages/ui/src/index.ts"]
     }
   },
   "include": ["next-env.d.ts", "next.config.js", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
