@@ -20,7 +20,7 @@ function StatusDot({ status }: { status: Competence["status"] }) {
         "inline-block h-2 w-2 shrink-0 rounded-full",
         status === "acquired" && "bg-success-500",
         status === "seen" && "bg-warning-500",
-        status === "not-seen" && "bg-default-300"
+        status === "not-seen" && "bg-default-300",
       )}
     />
   )
@@ -54,12 +54,8 @@ export default function ReferentielPage() {
       {/* Header */}
       <div className="border-b border-default-200 bg-background px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            Référentiel
-          </h1>
-          <p className="text-default-500">
-            Programme scolaire - Cycle 1 Maternelle
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">Référentiel</h1>
+          <p className="text-default-500">Programme scolaire - Cycle 1 Maternelle</p>
         </div>
       </div>
 
@@ -93,7 +89,7 @@ export default function ReferentielPage() {
                       <div
                         className={cn(
                           "h-3 w-3 shrink-0 rounded-sm",
-                          domainColorMap[domain.color] ?? "bg-default-400"
+                          domainColorMap[domain.color] ?? "bg-default-400",
                         )}
                       />
                       <span className="font-medium text-left">{domain.name}</span>
@@ -145,15 +141,9 @@ export default function ReferentielPage() {
                                     <div className="flex items-center gap-2 shrink-0">
                                       <StatusChip status={competence.status} />
                                       {competence.pdfPage && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8"
-                                        >
+                                        <Button variant="ghost" size="sm" className="h-8">
                                           <FileText className="h-3.5 w-3.5 mr-1" />
-                                          <span className="hidden sm:inline">
-                                            Page{" "}
-                                          </span>
+                                          <span className="hidden sm:inline">Page </span>
                                           {competence.pdfPage}
                                         </Button>
                                       )}

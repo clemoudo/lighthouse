@@ -60,7 +60,9 @@ export default function SuiviPage() {
       const allCompetences = domain.subdomains.flatMap((s) => s.competences)
       const total = allCompetences.length
       const acquired = allCompetences.filter((c) => competenceStates[c.id]?.acquired).length
-      const seen = allCompetences.filter((c) => competenceStates[c.id]?.seen && !competenceStates[c.id]?.acquired).length
+      const seen = allCompetences.filter(
+        (c) => competenceStates[c.id]?.seen && !competenceStates[c.id]?.acquired,
+      ).length
 
       return {
         id: domain.id,
@@ -85,12 +87,8 @@ export default function SuiviPage() {
       {/* Header */}
       <div className="border-b border-default-200 bg-background px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            Mon Suivi
-          </h1>
-          <p className="text-default-500">
-            Progression des compétences par domaine
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">Mon Suivi</h1>
+          <p className="text-default-500">Progression des compétences par domaine</p>
         </div>
       </div>
 
@@ -100,7 +98,9 @@ export default function SuiviPage() {
           {/* Overall Progress Card */}
           <Card className="border border-primary/20 bg-primary/5">
             <Card.Header className="pb-2">
-              <Card.Title className="text-lg font-semibold text-foreground">Progression globale</Card.Title>
+              <Card.Title className="text-lg font-semibold text-foreground">
+                Progression globale
+              </Card.Title>
               <Card.Description className="text-sm text-default-500">
                 {totalAcquired} compétences acquises sur {totalCompetences}
               </Card.Description>
@@ -144,7 +144,12 @@ export default function SuiviPage() {
               <Card key={domain.id}>
                 <Card.Header className="pb-2">
                   <div className="flex items-center gap-2">
-                    <div className={cn("h-3 w-3 rounded-sm shrink-0", domainColorMap[domain.color] ?? "bg-default-400")} />
+                    <div
+                      className={cn(
+                        "h-3 w-3 rounded-sm shrink-0",
+                        domainColorMap[domain.color] ?? "bg-default-400",
+                      )}
+                    />
                     <Card.Title className="text-sm font-medium line-clamp-1">
                       {domain.name.split(" ").slice(0, 3).join(" ")}
                     </Card.Title>
@@ -156,14 +161,22 @@ export default function SuiviPage() {
                       value={domain.progress}
                       maxValue={100}
                       aria-label={`Progression ${domain.name}`}
-                      color={domain.progress >= 80 ? "success" : domain.progress >= 40 ? "warning" : "default"}
+                      color={
+                        domain.progress >= 80
+                          ? "success"
+                          : domain.progress >= 40
+                            ? "warning"
+                            : "default"
+                      }
                     >
                       <ProgressBar.Track>
                         <ProgressBar.Fill />
                       </ProgressBar.Track>
                     </ProgressBar>
                     <div className="flex items-center justify-between text-xs text-default-500">
-                      <span>{domain.acquired}/{domain.total} acquis</span>
+                      <span>
+                        {domain.acquired}/{domain.total} acquis
+                      </span>
                       <span className="font-medium text-foreground">{domain.progress}%</span>
                     </div>
                   </div>
@@ -175,29 +188,31 @@ export default function SuiviPage() {
           {/* Detailed tracking */}
           <Card>
             <Card.Header className="pb-0">
-              <Card.Title className="text-lg font-semibold text-foreground">Suivi détaillé par domaine</Card.Title>
+              <Card.Title className="text-lg font-semibold text-foreground">
+                Suivi détaillé par domaine
+              </Card.Title>
               <Card.Description className="text-sm text-default-500">
                 Marquez les compétences comme vues ou acquises
               </Card.Description>
             </Card.Header>
             <Card.Content className="p-0">
-              <Tabs
-                defaultSelectedKey={domains[0].id}
-                variant="secondary"
-                className="w-full"
-              >
+              <Tabs defaultSelectedKey={domains[0].id} variant="secondary" className="w-full">
                 <Tabs.ListContainer>
-                  <Tabs.List aria-label="Domaines" className="border-b border-default-200 px-4 gap-2 w-full">
+                  <Tabs.List
+                    aria-label="Domaines"
+                    className="border-b border-default-200 px-4 gap-2 w-full"
+                  >
                     {domains.map((domain) => (
                       <Tabs.Tab key={domain.id} id={domain.id}>
                         <div className="flex items-center gap-2">
-                          <div className={cn("h-2 w-2 rounded-sm shrink-0", domainColorMap[domain.color] ?? "bg-default-400")} />
-                          <span className="hidden sm:inline">
-                            {domain.name.split(" ")[0]}
-                          </span>
-                          <span className="sm:hidden">
-                            {domain.name.split(" ")[0].slice(0, 4)}
-                          </span>
+                          <div
+                            className={cn(
+                              "h-2 w-2 rounded-sm shrink-0",
+                              domainColorMap[domain.color] ?? "bg-default-400",
+                            )}
+                          />
+                          <span className="hidden sm:inline">{domain.name.split(" ")[0]}</span>
+                          <span className="sm:hidden">{domain.name.split(" ")[0].slice(0, 4)}</span>
                         </div>
                         <Tabs.Indicator />
                       </Tabs.Tab>
@@ -224,7 +239,7 @@ export default function SuiviPage() {
                                   className={cn(
                                     "flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4",
                                     state.acquired && "bg-success-50",
-                                    !state.seen && !state.acquired && "bg-danger-50/30"
+                                    !state.seen && !state.acquired && "bg-danger-50/30",
                                   )}
                                 >
                                   <div className="flex-1 min-w-0">

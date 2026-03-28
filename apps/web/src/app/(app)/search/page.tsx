@@ -48,9 +48,7 @@ export default function RecherchePage() {
             <Sparkles className="h-4 w-4" />
             <span className="text-sm">Recherche sémantique</span>
           </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
-            Rechercher une compétence
-          </h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-1">Rechercher une compétence</h1>
           <p className="text-default-500">
             Trouvez rapidement les compétences du programme par sens ou mot-clé
           </p>
@@ -83,8 +81,8 @@ export default function RecherchePage() {
                 Commencez votre recherche
               </h2>
               <p className="text-default-500 max-w-md">
-                Tapez un mot-clé ou une phrase pour trouver les compétences
-                correspondantes dans le programme scolaire.
+                Tapez un mot-clé ou une phrase pour trouver les compétences correspondantes dans le
+                programme scolaire.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-2">
                 {["oral", "compter", "formes", "couleurs", "chansons"].map((suggestion) => (
@@ -104,17 +102,14 @@ export default function RecherchePage() {
               <div className="mb-4 rounded-full bg-default-100 p-4">
                 <FileText className="h-8 w-8 text-default-400" />
               </div>
-              <h2 className="text-lg font-medium text-foreground mb-2">
-                Aucun résultat
-              </h2>
-              <p className="text-default-500">
-                {"Essayez avec d'autres mots-clés"}
-              </p>
+              <h2 className="text-lg font-medium text-foreground mb-2">Aucun résultat</h2>
+              <p className="text-default-500">{"Essayez avec d'autres mots-clés"}</p>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-default-500">
-                {results.length} résultat{results.length > 1 ? "s" : ""} trouvé{results.length > 1 ? "s" : ""}
+                {results.length} résultat{results.length > 1 ? "s" : ""} trouvé
+                {results.length > 1 ? "s" : ""}
               </p>
               {results.map((competence) => (
                 <Card key={competence.id} className="transition-shadow hover:shadow-md">
@@ -127,9 +122,7 @@ export default function RecherchePage() {
                         <Chip size="sm" variant="secondary">
                           {competence.domain}
                         </Chip>
-                        <span className="text-sm text-default-500">
-                          {competence.subdomain}
-                        </span>
+                        <span className="text-sm text-default-500">{competence.subdomain}</span>
                       </div>
                     </div>
                     <Chip size="sm" variant="soft" color="accent" className="shrink-0">
@@ -143,10 +136,7 @@ export default function RecherchePage() {
                     <div className="flex items-center justify-between gap-4">
                       <StatusChip status={competence.status} />
                       {competence.pdfPage && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                        >
+                        <Button variant="ghost" size="sm">
                           <FileText className="h-4 w-4 mr-1" />
                           Voir page {competence.pdfPage}
                         </Button>

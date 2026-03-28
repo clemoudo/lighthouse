@@ -11,19 +11,19 @@ import { cn } from "@/lib/utils"
 const navItems = [
   {
     name: "Recherche",
-    href: "/recherche",
+    href: "/search",
     icon: Search,
     description: "Recherche sémantique",
   },
   {
     name: "Référentiel",
-    href: "/referentiel",
+    href: "/curriculum",
     icon: BookOpen,
     description: "Programme scolaire",
   },
   {
     name: "Mon Suivi",
-    href: "/suivi",
+    href: "/tracking",
     icon: BarChart3,
     description: "Progression",
   },
@@ -36,20 +36,10 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6">
-        <Image
-          src="/lighthouse.png"
-          alt="Lighthouse"
-          width={48}
-          height={48}
-          className="shrink-0"
-        />
+        <Image src="/lighthouse.png" alt="Lighthouse" width={48} height={48} className="shrink-0" />
         <div>
-          <h1 className="text-lg font-semibold text-white">
-            Lighthouse
-          </h1>
-          <p className="text-xs text-white/70">
-            Programme Scolaire
-          </p>
+          <h1 className="text-lg font-semibold text-white">Lighthouse</h1>
+          <p className="text-xs text-white/70">Programme Scolaire</p>
         </div>
       </div>
 
@@ -66,15 +56,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
                 isActive
                   ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  : "text-white/80 hover:bg-white/10 hover:text-white",
               )}
             >
               <item.icon className="h-5 w-5 shrink-0" />
               <div className="flex flex-col">
                 <span>{item.name}</span>
-                <span className="text-xs font-normal opacity-70">
-                  {item.description}
-                </span>
+                <span className="text-xs font-normal opacity-70">{item.description}</span>
               </div>
             </Link>
           )
@@ -83,9 +71,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Footer */}
       <div className="border-t border-white/20 px-4 py-4">
-        <p className="text-xs text-white/60">
-          Maternelle - Cycle 1
-        </p>
+        <p className="text-xs text-white/60">Maternelle - Cycle 1</p>
       </div>
     </div>
   )
@@ -97,7 +83,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-default-50">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 shrink-0 bg-primary lg:block" style={{ background: "oklch(0.35 0.12 240)" }}>
+      <aside
+        className="hidden w-64 shrink-0 lg:block"
+        style={{ background: "var(--color-sidebar-bg)" }}
+      >
         <NavContent />
       </aside>
 
@@ -115,12 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Image
-              src="/lighthouse.png"
-              alt="Lighthouse"
-              width={32}
-              height={32}
-            />
+            <Image src="/lighthouse.png" alt="Lighthouse" width={32} height={32} />
             <span className="font-semibold text-foreground">Lighthouse</span>
           </div>
         </header>
@@ -129,7 +113,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Drawer>
           <Drawer.Backdrop isOpen={open} onOpenChange={setOpen}>
             <Drawer.Content placement="left" className="w-64 max-w-[80vw]">
-              <Drawer.Dialog className="h-full border-none shadow-none" style={{ background: "oklch(0.35 0.12 240)" }}>
+              <Drawer.Dialog
+                className="h-full border-none shadow-none"
+                style={{ background: "var(--color-sidebar-bg)" }}
+              >
                 <Drawer.Header className="sr-only">
                   <Drawer.Heading>Navigation</Drawer.Heading>
                 </Drawer.Header>

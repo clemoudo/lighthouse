@@ -43,7 +43,8 @@ export const domains: Domain[] = [
           {
             id: "oral-2",
             title: "S'exprimer dans un langage oral syntaxiquement correct",
-            description: "Pratiquer divers usages de la langue orale : raconter, décrire, évoquer, expliquer, questionner, proposer des solutions, discuter un point de vue",
+            description:
+              "Pratiquer divers usages de la langue orale : raconter, décrire, évoquer, expliquer, questionner, proposer des solutions, discuter un point de vue",
             domain: "Français",
             subdomain: "L'oral",
             pdfPage: 14,
@@ -67,7 +68,8 @@ export const domains: Domain[] = [
           {
             id: "ecrit-1",
             title: "Reconnaître les lettres de l'alphabet",
-            description: "Commencer à écrire tout seul : reconnaître les lettres de l'alphabet, associer le nom d'une lettre à son tracé",
+            description:
+              "Commencer à écrire tout seul : reconnaître les lettres de l'alphabet, associer le nom d'une lettre à son tracé",
             domain: "Français",
             subdomain: "L'écrit",
             pdfPage: 20,
@@ -98,7 +100,8 @@ export const domains: Domain[] = [
           {
             id: "nombres-1",
             title: "Évaluer et comparer des collections d'objets",
-            description: "Utiliser des procédures non numériques pour comparer : correspondance terme à terme, procédures perceptives",
+            description:
+              "Utiliser des procédures non numériques pour comparer : correspondance terme à terme, procédures perceptives",
             domain: "Mathématiques",
             subdomain: "Découvrir les nombres",
             pdfPage: 45,
@@ -116,7 +119,8 @@ export const domains: Domain[] = [
           {
             id: "nombres-3",
             title: "Utiliser le dénombrement pour comparer deux quantités",
-            description: "Dire combien il faut ajouter ou enlever pour obtenir des quantités égales",
+            description:
+              "Dire combien il faut ajouter ou enlever pour obtenir des quantités égales",
             domain: "Mathématiques",
             subdomain: "Découvrir les nombres",
             pdfPage: 49,
@@ -131,7 +135,8 @@ export const domains: Domain[] = [
           {
             id: "formes-1",
             title: "Classer des objets selon leur forme",
-            description: "Reconnaître quelques solides et formes planes : carré, triangle, rond, rectangle",
+            description:
+              "Reconnaître quelques solides et formes planes : carré, triangle, rond, rectangle",
             domain: "Mathématiques",
             subdomain: "Explorer des formes",
             pdfPage: 52,
@@ -162,7 +167,8 @@ export const domains: Domain[] = [
           {
             id: "plastiques-1",
             title: "Choisir différents outils, médiums, supports",
-            description: "Pratiquer le dessin pour représenter ou illustrer, en étant fidèle au réel ou à un modèle, ou en inventant",
+            description:
+              "Pratiquer le dessin pour représenter ou illustrer, en étant fidèle au réel ou à un modèle, ou en inventant",
             domain: "Activités artistiques",
             subdomain: "Productions plastiques",
             pdfPage: 60,
@@ -171,7 +177,8 @@ export const domains: Domain[] = [
           {
             id: "plastiques-2",
             title: "Réaliser des compositions plastiques",
-            description: "Réaliser des compositions plastiques, seul ou en petit groupe, en choisissant et combinant des matériaux",
+            description:
+              "Réaliser des compositions plastiques, seul ou en petit groupe, en choisissant et combinant des matériaux",
             domain: "Activités artistiques",
             subdomain: "Productions plastiques",
             pdfPage: 62,
@@ -186,7 +193,8 @@ export const domains: Domain[] = [
           {
             id: "sonores-1",
             title: "Avoir mémorisé un répertoire varié de comptines et de chansons",
-            description: "Jouer avec sa voix et acquérir un répertoire de comptines et de chansons adapté à son âge",
+            description:
+              "Jouer avec sa voix et acquérir un répertoire de comptines et de chansons adapté à son âge",
             domain: "Activités artistiques",
             subdomain: "Univers sonores",
             pdfPage: 65,
@@ -208,7 +216,8 @@ export const domains: Domain[] = [
           {
             id: "motricite-1",
             title: "Courir, sauter, lancer de différentes façons",
-            description: "Ajuster et enchaîner ses actions et ses déplacements en fonction d'obstacles à franchir ou de la trajectoire d'objets",
+            description:
+              "Ajuster et enchaîner ses actions et ses déplacements en fonction d'obstacles à franchir ou de la trajectoire d'objets",
             domain: "Activité physique",
             subdomain: "Motricité",
             pdfPage: 70,
@@ -217,7 +226,8 @@ export const domains: Domain[] = [
           {
             id: "motricite-2",
             title: "Se déplacer avec aisance dans des environnements variés",
-            description: "Adapter ses équilibres et ses déplacements à des environnements ou contraintes variés",
+            description:
+              "Adapter ses équilibres et ses déplacements à des environnements ou contraintes variés",
             domain: "Activité physique",
             subdomain: "Motricité",
             pdfPage: 72,
@@ -239,7 +249,8 @@ export const domains: Domain[] = [
           {
             id: "temps-1",
             title: "Situer des événements vécus les uns par rapport aux autres",
-            description: "Ordonner une suite de photographies ou d'images, pour rendre compte d'une situation vécue ou d'un récit fictif entendu",
+            description:
+              "Ordonner une suite de photographies ou d'images, pour rendre compte d'une situation vécue ou d'un récit fictif entendu",
             domain: "Explorer le monde",
             subdomain: "Le temps",
             pdfPage: 80,
@@ -248,7 +259,8 @@ export const domains: Domain[] = [
           {
             id: "temps-2",
             title: "Se repérer dans l'espace d'une page",
-            description: "Utiliser des marqueurs spatiaux adaptés dans des récits, descriptions ou explications",
+            description:
+              "Utiliser des marqueurs spatiaux adaptés dans des récits, descriptions ou explications",
             domain: "Explorer le monde",
             subdomain: "L'espace",
             pdfPage: 82,
@@ -286,7 +298,7 @@ export const domains: Domain[] = [
 
 export function getAllCompetences(): Competence[] {
   return domains.flatMap((domain) =>
-    domain.subdomains.flatMap((subdomain) => subdomain.competences)
+    domain.subdomains.flatMap((subdomain) => subdomain.competences),
   )
 }
 
@@ -299,7 +311,8 @@ export function searchCompetences(query: string): (Competence & { score: number 
 
   for (const competence of allCompetences) {
     let score = 0
-    const searchText = `${competence.title} ${competence.description} ${competence.domain} ${competence.subdomain}`.toLowerCase()
+    const searchText =
+      `${competence.title} ${competence.description} ${competence.domain} ${competence.subdomain}`.toLowerCase()
 
     // Check for exact phrase match
     if (searchText.includes(normalizedQuery)) {
