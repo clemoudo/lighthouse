@@ -17,7 +17,7 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
   )
 
   return (
-    <ThemeProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ThemeProvider>
   )

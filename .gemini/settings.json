@@ -1,17 +1,12 @@
 {
   "mcpServers": {
-    "shadcn": {
-      "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
-    },
     "next-devtools": {
       "command": "npx",
-      "args": [
-        "next-devtools-mcp@latest"
-      ]
+      "args": ["next-devtools-mcp@latest"]
+    },
+    "heroui-react": {
+      "command": "npx",
+      "args": ["-y", "@heroui/react-mcp@latest"]
     }
   }
 }

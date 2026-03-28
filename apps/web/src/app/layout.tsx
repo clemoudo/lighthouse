@@ -1,7 +1,7 @@
-import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
-import { Providers } from "@/contexts/Providers"
-import "./globals.css"
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import { Providers } from '@/contexts/Providers'
+import './globals.css'
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,21 +9,18 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Lighthouse - Assistant Programme Scolaire",
-  description:
-    "Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences",
+  title: 'Lighthouse - Assistant Programme Scolaire',
+  description: 'Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences',
+  generator: 'v0.app',
   icons: {
-    icon: [
-      { url: "/lighthouse-32.ico", sizes: "32x32", type: "image/x-icon" },
-      { url: "/lighthouse.png", type: "image/png" },
-    ],
-    apple: "/lighthouse.png",
+    icon: '/lighthouse.png',
+    apple: '/lighthouse.png',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
-  width: "device-width",
+  themeColor: '#2563eb',
+  width: 'device-width',
   initialScale: 1,
 }
 
@@ -35,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )
