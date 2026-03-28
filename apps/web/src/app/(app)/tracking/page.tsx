@@ -120,13 +120,13 @@ export default function SuiviPage() {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-sm bg-success-500" />
+                      <div className="h-3 w-3 rounded-sm bg-success" />
                       <span className="text-default-500">
                         Acquis: <span className="font-medium text-foreground">{totalAcquired}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-sm bg-warning-500" />
+                      <div className="h-3 w-3 rounded-sm bg-warning" />
                       <span className="text-default-500">
                         Vues: <span className="font-medium text-foreground">{totalSeen}</span>
                       </span>
@@ -166,7 +166,7 @@ export default function SuiviPage() {
                           ? "success"
                           : domain.progress >= 40
                             ? "warning"
-                            : "default"
+                            : "danger"
                       }
                     >
                       <ProgressBar.Track>

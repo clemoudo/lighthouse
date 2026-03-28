@@ -66,15 +66,15 @@ export default function ReferentielPage() {
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <span className="text-sm text-default-500">Légende :</span>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-success-500" />
+              <div className="h-2 w-2 rounded-full bg-success" />
               <span className="text-sm">Acquis</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-warning-500" />
+              <div className="h-2 w-2 rounded-full bg-warning" />
               <span className="text-sm">Vue</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-default-300" />
+              <div className="h-2 w-2 rounded-full bg-default" />
               <span className="text-sm">Non vue</span>
             </div>
           </div>

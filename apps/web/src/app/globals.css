@@ -11,5 +11,10 @@
   --color-sidebar-border: oklch(0.4 0.1 240);
   --color-sidebar-accent: oklch(0.4 0.1 240);
   --color-sidebar-accent-fg: oklch(0.99 0 0);
+
+  --color-primary: oklch(0.35 0.12 240);
   --color-success: oklch(0.6 0.18 145);
+  --color-warning: oklch(0.7 0.15 65);
+  --color-danger: oklch(0.55 0.2 25);
+  --color-default: oklch(0.9 0.02 240);
 }

@@ -70,8 +70,14 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/20 px-4 py-4">
-        <p className="text-xs text-white/60">Maternelle - Cycle 1</p>
+      <div className="border-t border-white/20 px-4 py-4 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+          <p className="text-[10px] uppercase tracking-wider text-white/60">
+            Services Operationnels
+          </p>
+        </div>
+        <p className="text-xs text-white/40">© {new Date().getFullYear()} Lighthouse</p>
       </div>
     </div>
   )
@@ -84,7 +90,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-default-50">
       {/* Desktop Sidebar */}
       <aside
-        className="hidden w-64 shrink-0 lg:block"
+        className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block"
         style={{ background: "var(--color-sidebar-bg)" }}
       >
         <NavContent />
