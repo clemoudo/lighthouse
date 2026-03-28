@@ -3,17 +3,17 @@
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router) + TypeScript.
-- **Styling:** Tailwind CSS v4 (CSS-first mode).
+- **Styling:** Tailwind CSS v4 (CSS-first mode) + HeroUI v3.
 - **State/Fetching:** TanStack Query.
 
 ## Critical Rules
 
 - **Hydration:** Always include `suppressHydrationWarning` on the `<html>` tag in `layout.tsx` to prevent mismatches from theme scripts or extensions.
-- **UI Components:** Do NOT create local UI components in `apps/web/src/components` if they are generic. Use `@repo/ui` instead.
+- **UI Components:** Use `@heroui/react` for UI components. Follow the compound component pattern (e.g., `Card.Header`).
 - **Tailwind v4:** Variables and theme configuration are located in `src/app/globals.css`. Use `@theme inline` for custom tokens.
 - **Icons:** Use `lucide-react`.
 
-## Component Addition
+## Theme
 
-- When adding a component via shadcn CLI, use: `pnpm dlx shadcn@latest add <component> --cwd apps/web`.
-- Ensure the component is moved to or created in `packages/ui` if it's meant to be shared.
+- The application uses `oklch()` color tokens defined in `globals.css`.
+- Sidebar and persistent UI elements should use themed variables (e.g., `var(--color-sidebar-bg)`).
