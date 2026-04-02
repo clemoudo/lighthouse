@@ -4,7 +4,6 @@ import { useState, useMemo } from "react"
 import { FileText, Sparkles, Search as SearchIcon } from "lucide-react"
 import { Input, Button, Card, Chip } from "@heroui/react"
 import { searchCompetences, type Competence } from "@/lib/data"
-import { PageHeader } from "@/components/page-header"
 import { cn } from "@/lib/utils"
 
 function StatusChip({ status }: { status: Competence["status"] }) {
@@ -43,30 +42,34 @@ export default function RecherchePage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
-      <PageHeader
-        title="Rechercher une compétence"
-        subtitle="Recherche sémantique"
-        description="Trouvez rapidement les compétences du programme par sens ou mot-clé"
-        icon={Sparkles}
-      />
-
-      {/* Search Bar */}
+      {/* Search Area */}
       <div className="border-b border-default-200 bg-default-50 px-4 py-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <Input
-            aria-label="Rechercher une compétence"
-            placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
-            value={query}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full"
-            fullWidth
-            render={(props) => (
-              <div className="relative w-full">
-                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-default-400 pointer-events-none" />
-                <input {...props} className={cn(props.className, "pl-10")} />
-              </div>
-            )}
-          />
+        <div className="mx-auto max-w-4xl space-y-4">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="h-5 w-5 text-primary shrink-0" />
+            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Rechercher une compétence
+            </h1>
+          </div>
+          <div className="space-y-1.5">
+            <Input
+              aria-label="Rechercher une compétence"
+              placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full"
+              fullWidth
+              render={(props) => (
+                <div className="relative w-full">
+                  <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-default-400 pointer-events-none" />
+                  <input {...props} className={cn(props.className, "pl-10")} />
+                </div>
+              )}
+            />
+            <p className="text-xs font-normal text-default-400 max-w-2xl leading-normal px-1">
+              Trouvez rapidement les compétences du programme par sens ou mot-clé
+            </p>
+          </div>
         </div>
       </div>
 

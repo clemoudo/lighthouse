@@ -78,12 +78,12 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Footer */}
       <div className="border-t border-white/20 px-4 py-4 space-y-2">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+          <div className="h-2 w-2 rounded-full bg-success" />
           <p className="text-[10px] uppercase tracking-wider text-white/60">
             Services Operationnels
           </p>
         </div>
-        <p className="text-xs text-white/40">© {new Date().getFullYear()} Lighthouse</p>
+        <p className="text-xs text-white/40">&copy; {new Date().getFullYear()} - Lighthouse</p>
       </div>
     </div>
   )

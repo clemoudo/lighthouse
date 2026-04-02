@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ProgressBar, Switch, Card, Tabs, Label } from "@heroui/react"
+import { Switch, Card, Tabs, Label } from "@heroui/react"
 import { BarChart3, LayoutGrid, CheckSquare, Info } from "lucide-react"
 import { domains } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { PageHeader } from "@/components/page-header"
+import { SectionHeader } from "@/components/section-header"
 
 const domainColorMap: Record<string, string> = {
   "bg-chart-1": "bg-blue-500",
@@ -85,17 +86,16 @@ export default function SuiviPage() {
   const overallProgress = Math.round((totalAcquired / totalCompetences) * 100)
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
-      <PageHeader
-        title="Mon Suivi"
-        subtitle="Progression"
-        description="Suivez l'acquisition des compétences pour votre classe"
-        icon={BarChart3}
-      />
-
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Content */}
-      <div className="px-4 py-6 lg:px-8">
+      <div className="flex-1 px-4 py-8 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-8">
+          <PageHeader
+            title="Mon Suivi"
+            description="Suivez l'acquisition des compétences pour votre classe"
+            icon={BarChart3}
+          />
+
           {/* Overall Progress Card */}
           <Card className="border border-primary/20 bg-primary/5 shadow-sm rounded-xl">
             <Card.Header className="pb-2">
@@ -107,34 +107,73 @@ export default function SuiviPage() {
               </Card.Description>
             </Card.Header>
             <Card.Content className="pt-0">
-              <div className="space-y-3">
-                <ProgressBar
-                  value={overallProgress}
-                  maxValue={100}
-                  aria-label="Progression globale"
-                  color="accent"
-                  className="h-3"
-                >
-                  <ProgressBar.Track className="bg-default-200">
-                    <ProgressBar.Fill />
-                  </ProgressBar.Track>
-                </ProgressBar>
+              <div className="space-y-4">
+                <div className="flex h-3 w-full overflow-hidden rounded-full bg-default-100/50 shadow-inner border border-default-200/50">
+                  <div
+                    className="h-full bg-success transition-all duration-500 ease-out"
+                    style={{ width: `${(totalAcquired / totalCompetences) * 100}%` }}
+                    title={`Acquis: ${totalAcquired}`}
+                  />
+                  <div
+                    className="h-full bg-warning transition-all duration-500 ease-out"
+                    style={{ width: `${(totalSeen / totalCompetences) * 100}%` }}
+                    title={`Vue: ${totalSeen}`}
+                  />
+                  <div
+                    className="h-full bg-default-200 transition-all duration-500 ease-out"
+                    style={{
+                      width: `${((totalCompetences - totalAcquired - totalSeen) / totalCompetences) * 100}%`,
+                    }}
+                    title={`Non vues: ${totalCompetences - totalAcquired - totalSeen}`}
+                  />
+                </div>
+
                 <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-sm bg-success" />
-                      <span className="text-default-600">
+                      <span className="text-default-600 text-xs">
                         Acquis: <span className="font-bold text-foreground">{totalAcquired}</span>
+                        <span className="ml-1 opacity-60">
+                          ({Math.round((totalAcquired / totalCompetences) * 100)}%)
+                        </span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-sm bg-warning" />
-                      <span className="text-default-600">
+                      <span className="text-default-600 text-xs">
                         Vues: <span className="font-bold text-foreground">{totalSeen}</span>
+                        <span className="ml-1 opacity-60">
+                          ({Math.round((totalSeen / totalCompetences) * 100)}%)
+                        </span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-sm bg-default-200" />
+                      <span className="text-default-600 text-xs">
+                        Non vues:{" "}
+                        <span className="font-bold text-foreground">
+                          {totalCompetences - totalAcquired - totalSeen}
+                        </span>
+                        <span className="ml-1 opacity-60">
+                          (
+                          {Math.round(
+                            ((totalCompetences - totalAcquired - totalSeen) / totalCompetences) *
+                              100,
+                          )}
+                          %)
+                        </span>
                       </span>
                     </div>
                   </div>
-                  <span className="font-bold text-lg text-primary">{overallProgress}%</span>
+                  <div className="flex flex-col items-end">
+                    <span className="font-bold text-2xl text-primary leading-none">
+                      {overallProgress}%
+                    </span>
+                    <span className="text-[10px] font-bold text-primary/60 uppercase tracking-tighter">
+                      Acquis
+                    </span>
+                  </div>
                 </div>
               </div>
             </Card.Content>
@@ -142,10 +181,7 @@ export default function SuiviPage() {
 
           {/* Progress by Domain */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <LayoutGrid className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold text-foreground">Progression par domaine</h2>
-            </div>
+            <SectionHeader title="Progression par domaine" icon={LayoutGrid} />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {progress.map((domain) => (
                 <Card key={domain.id} className="border border-default-200 shadow-sm rounded-xl">
@@ -163,29 +199,30 @@ export default function SuiviPage() {
                     </div>
                   </Card.Header>
                   <Card.Content className="pt-0">
-                    <div className="space-y-2">
-                      <ProgressBar
-                        value={domain.progress}
-                        maxValue={100}
-                        aria-label={`Progression ${domain.name}`}
-                        color={
-                          domain.progress >= 80
-                            ? "success"
-                            : domain.progress >= 40
-                              ? "warning"
-                              : "accent"
-                        }
-                      >
-                        <ProgressBar.Track className="bg-default-100">
-                          <ProgressBar.Fill />
-                        </ProgressBar.Track>
-                      </ProgressBar>
-                      <div className="flex items-center justify-between text-xs text-default-500">
-                        <span>
-                          <span className="font-bold text-foreground">{domain.acquired}</span>/
-                          {domain.total} acquis
-                        </span>
-                        <span className="font-bold text-foreground">{domain.progress}%</span>
+                    <div className="space-y-3">
+                      <div className="flex h-2 w-full overflow-hidden rounded-full bg-default-50 shadow-inner border border-default-100">
+                        <div
+                          className="h-full bg-success transition-all duration-500 ease-out"
+                          style={{ width: `${(domain.acquired / domain.total) * 100}%` }}
+                        />
+                        <div
+                          className="h-full bg-warning transition-all duration-500 ease-out"
+                          style={{ width: `${(domain.seen / domain.total) * 100}%` }}
+                        />
+                        <div
+                          className="h-full bg-default-200 transition-all duration-500 ease-out"
+                          style={{
+                            width: `${((domain.total - domain.acquired - domain.seen) / domain.total) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-default-500 font-bold uppercase tracking-wider">
+                        ...
+                        <div className="flex gap-2">
+                          <span className="text-success">{domain.acquired} Acquis</span>
+                          <span className="text-warning">{domain.seen} Vues</span>
+                        </div>
+                        <span className="text-primary">{domain.progress}%</span>
                       </div>
                     </div>
                   </Card.Content>
@@ -196,12 +233,7 @@ export default function SuiviPage() {
 
           {/* Detailed tracking */}
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
-              <div className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-bold text-foreground">Suivi détaillé</h2>
-              </div>
-
+            <SectionHeader title="Suivi détaillé" icon={CheckSquare}>
               <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 border border-primary/20">
                 <Info className="h-3.5 w-3.5 text-primary shrink-0" />
                 <p className="text-[11px] text-primary-700 leading-tight">
@@ -209,7 +241,7 @@ export default function SuiviPage() {
                   <span className="font-bold">Acquis</span> : Maîtrisé
                 </p>
               </div>
-            </div>
+            </SectionHeader>
 
             <Card className="border border-default-200 shadow-sm overflow-hidden rounded-xl">
               <Card.Content className="p-0">

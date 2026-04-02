@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
-import { Providers } from "@/contexts/Providers"
+import { Providers } from "@/contexts/providers"
 import "./globals.css"
 
 const inter = Inter({
@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   title: "Lighthouse - Assistant Programme Scolaire",
   description:
     "Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences",
-  generator: "v0.app",
   icons: {
     icon: "/lighthouse.png",
     apple: "/lighthouse.png",

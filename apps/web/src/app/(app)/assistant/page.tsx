@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Send, Bot, User, Sparkles, FileText } from "lucide-react"
 import { Input, Button, Card, Chip, Avatar, ScrollShadow } from "@heroui/react"
-import { PageHeader } from "@/components/page-header"
 import { cn } from "@/lib/utils"
 
 type Message = {
@@ -89,13 +88,6 @@ export default function AssistantPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-default-50">
-      <PageHeader
-        title="Assistant IA"
-        subtitle="Aide à la planification"
-        description="Posez vos questions sur le programme et obtenez des réponses basées sur le référentiel officiel."
-        icon={Bot}
-      />
-
       {/* Chat Area */}
       <ScrollShadow ref={scrollRef} className="flex-1 p-4 lg:p-8 space-y-6">
         <div className="mx-auto max-w-3xl space-y-6 pb-20">
@@ -131,7 +123,7 @@ export default function AssistantPage() {
                   className={cn(
                     "p-4 border-none shadow-sm rounded-2xl",
                     message.role === "user"
-                      ? "bg-accent/20 text-accent-950 rounded-tr-none border border-accent/20"
+                      ? "bg-accent-soft-hover text-accent-950 rounded-tr-none border border-accent-soft-hover"
                       : "bg-background text-foreground rounded-tl-none border border-default-200",
                   )}
                 >

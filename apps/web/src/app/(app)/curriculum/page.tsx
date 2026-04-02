@@ -51,17 +51,17 @@ function StatusChip({ status }: { status: Competence["status"] }) {
 
 export default function ReferentielPage() {
   return (
-    <div className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
-      <PageHeader
-        title="Référentiel"
-        subtitle="Programme scolaire"
-        description="Cycle 1 - Enseignement Maternel"
-        icon={BookOpen}
-      />
-
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Content */}
-      <div className="px-4 py-6 lg:px-8">
+      <div className="flex-1 px-4 py-8 lg:px-8">
         <div className="mx-auto max-w-4xl">
+          <PageHeader
+            title="Référentiel"
+            description="Cycle 1 - Enseignement Maternel"
+            icon={BookOpen}
+            className="mb-8"
+          />
+
           {/* Legend */}
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-default-50 p-4 rounded-xl border border-default-200">
             <div className="flex items-center gap-3">
