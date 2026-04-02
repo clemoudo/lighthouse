@@ -1,9 +1,10 @@
 "use client"
 
-import { FileText, ChevronDown } from "lucide-react"
+import { FileText, ChevronDown, BookOpen, Layers } from "lucide-react"
 import { Accordion, Chip, Button } from "@heroui/react"
 import { domains, type Competence } from "@/lib/data"
 import { cn } from "@/lib/utils"
+import { PageHeader } from "@/components/page-header"
 
 const domainColorMap: Record<string, string> = {
   "bg-chart-1": "bg-blue-500",
@@ -51,51 +52,67 @@ function StatusChip({ status }: { status: Competence["status"] }) {
 export default function ReferentielPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
-      {/* Header */}
-      <div className="border-b border-default-200 bg-background px-4 py-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">Référentiel</h1>
-          <p className="text-default-500">Programme scolaire - Cycle 1 Maternelle</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Référentiel"
+        subtitle="Programme scolaire"
+        description="Cycle 1 - Enseignement Maternel"
+        icon={BookOpen}
+      />
 
       {/* Content */}
       <div className="px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Legend */}
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-default-500">Légende :</span>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-success" />
-              <span className="text-sm">Acquis</span>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-default-50 p-4 rounded-xl border border-default-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-background rounded-lg border border-default-200">
+                <Layers className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-foreground">Statuts de progression</span>
+                <p className="text-[11px] text-default-500">Suivi des compétences du programme</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-warning" />
-              <span className="text-sm">Vue</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-default" />
-              <span className="text-sm">Non vue</span>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-success shadow-sm" />
+                <span className="text-xs font-semibold text-default-700">Acquis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-warning shadow-sm" />
+                <span className="text-xs font-semibold text-default-700">Vue</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-default-300 shadow-sm" />
+                <span className="text-xs font-semibold text-default-700">Non vue</span>
+              </div>
             </div>
           </div>
 
           {/* Domains Accordion */}
           <Accordion allowsMultipleExpanded className="gap-4">
             {domains.map((domain) => (
-              <Accordion.Item key={domain.id} id={domain.id}>
+              <Accordion.Item
+                key={domain.id}
+                id={domain.id}
+                className="border border-default-200 rounded-xl overflow-hidden bg-background shadow-sm"
+              >
                 <Accordion.Heading>
-                  <Accordion.Trigger className="py-4">
-                    <div className="flex items-center gap-3">
+                  <Accordion.Trigger className="py-5 px-5 hover:bg-default-50 transition-colors">
+                    <div className="flex items-center gap-4">
                       <div
                         className={cn(
-                          "h-3 w-3 shrink-0 rounded-sm",
+                          "h-4 w-4 shrink-0 rounded-md shadow-inner",
                           domainColorMap[domain.color] ?? "bg-default-400",
                         )}
                       />
-                      <span className="font-medium text-left">{domain.name}</span>
+                      <span className="font-bold text-foreground text-lg leading-tight text-left">
+                        {domain.name}
+                      </span>
                     </div>
                     <Accordion.Indicator>
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-5 w-5 text-default-400" />
                     </Accordion.Indicator>
                   </Accordion.Trigger>
                 </Accordion.Heading>
@@ -106,43 +123,49 @@ export default function ReferentielPage() {
                       {domain.subdomains.map((subdomain) => (
                         <Accordion.Item key={subdomain.id} id={subdomain.id}>
                           <Accordion.Heading>
-                            <Accordion.Trigger className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-foreground">
+                            <Accordion.Trigger className="px-5 py-4 hover:bg-default-50/80 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-bold text-foreground">
                                   {subdomain.name}
                                 </span>
-                                <Chip size="sm" variant="secondary" className="ml-1">
+                                <Chip size="sm" variant="secondary" className="font-bold">
                                   {subdomain.competences.length}
                                 </Chip>
                               </div>
                               <Accordion.Indicator>
-                                <ChevronDown className="h-3.5 w-3.5" />
+                                <ChevronDown className="h-4 w-4 text-default-400" />
                               </Accordion.Indicator>
                             </Accordion.Trigger>
                           </Accordion.Heading>
                           <Accordion.Panel>
                             <Accordion.Body className="p-0">
                               {/* Competences */}
-                              <div className="divide-y divide-default-100 bg-default-50/50">
+                              <div className="divide-y divide-default-100 bg-default-50/30">
                                 {subdomain.competences.map((competence) => (
                                   <div
                                     key={competence.id}
-                                    className="flex items-start gap-4 px-4 py-4"
+                                    className="flex items-start gap-4 px-5 py-5 transition-colors hover:bg-default-100/50"
                                   >
-                                    <StatusDot status={competence.status} />
+                                    <div className="mt-1.5">
+                                      <StatusDot status={competence.status} />
+                                    </div>
                                     <div className="flex-1 min-w-0">
-                                      <h4 className="text-sm font-medium text-foreground leading-tight mb-1">
+                                      <h4 className="text-sm font-bold text-foreground leading-snug mb-1">
                                         {competence.title}
                                       </h4>
-                                      <p className="text-xs text-default-500 line-clamp-2">
+                                      <p className="text-xs text-default-600 leading-relaxed line-clamp-2">
                                         {competence.description}
                                       </p>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex items-center gap-3 shrink-0">
                                       <StatusChip status={competence.status} />
                                       {competence.pdfPage && (
-                                        <Button variant="ghost" size="sm" className="h-8">
-                                          <FileText className="h-3.5 w-3.5 mr-1" />
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-9 font-medium text-default-600 border border-default-200"
+                                        >
+                                          <FileText className="h-4 w-4 mr-1.5 text-primary" />
                                           <span className="hidden sm:inline">Page </span>
                                           {competence.pdfPage}
                                         </Button>
