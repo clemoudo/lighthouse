@@ -4,11 +4,17 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Search, BookOpen, BarChart3, Menu } from "lucide-react"
+import { Search, BookOpen, BarChart3, Menu, MessageSquare } from "lucide-react"
 import { Button, Drawer } from "@heroui/react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
+  {
+    name: "Assistant IA",
+    href: "/assistant",
+    icon: MessageSquare,
+    description: "Aide à la planification",
+  },
   {
     name: "Recherche",
     href: "/search",
