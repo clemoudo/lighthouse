@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, Bot, User, Sparkles, FileText } from "lucide-react"
-import { Input, Button, Card, Chip, Avatar, ScrollShadow } from "@heroui/react"
+import { Send, User, Sparkles, FileText, Bot } from "lucide-react"
+import { Input, Button, Card, Chip, Avatar, ScrollShadow, Description } from "@heroui/react"
 import { cn } from "@/lib/utils"
 
 type Message = {
@@ -56,6 +56,12 @@ export default function AssistantPage() {
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Mock user data
+  const user = {
+    name: "Utilisateur",
+    avatar: "", // Set to a path to test image, empty for fallback
+  }
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -101,15 +107,31 @@ export default function AssistantPage() {
             >
               <Avatar
                 className={cn(
-                  "shrink-0 shadow-sm",
-                  message.role === "assistant" ? "bg-primary text-primary-fg" : "bg-default-200",
+                  "shrink-0 scale-120",
+                  message.role === "assistant"
+                    ? "overflow-visible bg-transparent shadow-none"
+                    : "shadow-sm",
                 )}
                 size="sm"
               >
                 {message.role === "assistant" ? (
-                  <Bot className="h-5 w-5" />
+                  <>
+                    <Avatar.Image
+                      src="/albatross.png"
+                      alt="Lighthouse"
+                      className="overflow-visible translate-x-0.5 -translate-y-0.5"
+                    />
+                    <Avatar.Fallback className="bg-default-100 text-default-500 rounded-full overflow-hidden">
+                      <Bot className="h-5 w-5" />
+                    </Avatar.Fallback>
+                  </>
                 ) : (
-                  <User className="h-5 w-5" />
+                  <>
+                    <Avatar.Image src={user.avatar} alt={user.name} />
+                    <Avatar.Fallback className="bg-default-100 text-default-500 rounded-full overflow-hidden">
+                      <User className="h-5 w-5" />
+                    </Avatar.Fallback>
+                  </>
                 )}
               </Avatar>
 
@@ -184,10 +206,10 @@ export default function AssistantPage() {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <p className="mt-2 text-[10px] text-center text-default-400">
+          <Description className="mt-2 text-[10px] text-center text-default-400 block w-full">
             Lighthouse peut faire des erreurs. Vérifiez toujours les informations importantes dans
             le référentiel officiel.
-          </p>
+          </Description>
         </div>
       </div>
     </div>

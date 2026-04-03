@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Switch, Card, Tabs, Label } from "@heroui/react"
+import { Switch, Card, Tabs, Label, ProgressBar } from "@heroui/react"
 import { BarChart3, LayoutGrid, CheckSquare, Info } from "lucide-react"
 import { domains } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -108,25 +108,31 @@ export default function SuiviPage() {
             </Card.Header>
             <Card.Content className="pt-0">
               <div className="space-y-4">
-                <div className="flex h-3 w-full overflow-hidden rounded-full bg-default-100/50 shadow-inner border border-default-200/50">
-                  <div
-                    className="h-full bg-success transition-all duration-500 ease-out"
-                    style={{ width: `${(totalAcquired / totalCompetences) * 100}%` }}
-                    title={`Acquis: ${totalAcquired}`}
-                  />
-                  <div
-                    className="h-full bg-warning transition-all duration-500 ease-out"
-                    style={{ width: `${(totalSeen / totalCompetences) * 100}%` }}
-                    title={`Vue: ${totalSeen}`}
-                  />
-                  <div
-                    className="h-full bg-default-200 transition-all duration-500 ease-out"
-                    style={{
-                      width: `${((totalCompetences - totalAcquired - totalSeen) / totalCompetences) * 100}%`,
-                    }}
-                    title={`Non vues: ${totalCompetences - totalAcquired - totalSeen}`}
-                  />
-                </div>
+                <ProgressBar
+                  aria-label="Progression globale"
+                  value={totalAcquired}
+                  maxValue={totalCompetences}
+                >
+                  <ProgressBar.Track className="flex h-3 overflow-hidden border border-default-200/50 shadow-inner">
+                    <div
+                      className="h-full bg-success transition-all duration-500 ease-out"
+                      style={{ width: `${(totalAcquired / totalCompetences) * 100}%` }}
+                      title={`Acquis: ${totalAcquired}`}
+                    />
+                    <div
+                      className="h-full bg-warning transition-all duration-500 ease-out"
+                      style={{ width: `${(totalSeen / totalCompetences) * 100}%` }}
+                      title={`Vue: ${totalSeen}`}
+                    />
+                    <div
+                      className="h-full bg-default-200 transition-all duration-500 ease-out"
+                      style={{
+                        width: `${((totalCompetences - totalAcquired - totalSeen) / totalCompetences) * 100}%`,
+                      }}
+                      title={`Non vues: ${totalCompetences - totalAcquired - totalSeen}`}
+                    />
+                  </ProgressBar.Track>
+                </ProgressBar>
 
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
@@ -200,24 +206,30 @@ export default function SuiviPage() {
                   </Card.Header>
                   <Card.Content className="pt-0">
                     <div className="space-y-3">
-                      <div className="flex h-2 w-full overflow-hidden rounded-full bg-default-50 shadow-inner border border-default-100">
-                        <div
-                          className="h-full bg-success transition-all duration-500 ease-out"
-                          style={{ width: `${(domain.acquired / domain.total) * 100}%` }}
-                        />
-                        <div
-                          className="h-full bg-warning transition-all duration-500 ease-out"
-                          style={{ width: `${(domain.seen / domain.total) * 100}%` }}
-                        />
-                        <div
-                          className="h-full bg-default-200 transition-all duration-500 ease-out"
-                          style={{
-                            width: `${((domain.total - domain.acquired - domain.seen) / domain.total) * 100}%`,
-                          }}
-                        />
-                      </div>
+                      <ProgressBar
+                        aria-label={`Progression ${domain.name}`}
+                        value={domain.acquired}
+                        maxValue={domain.total}
+                        size="sm"
+                      >
+                        <ProgressBar.Track className="flex h-2 overflow-hidden border border-default-100 shadow-inner">
+                          <div
+                            className="h-full bg-success transition-all duration-500 ease-out"
+                            style={{ width: `${(domain.acquired / domain.total) * 100}%` }}
+                          />
+                          <div
+                            className="h-full bg-warning transition-all duration-500 ease-out"
+                            style={{ width: `${(domain.seen / domain.total) * 100}%` }}
+                          />
+                          <div
+                            className="h-full bg-default-200 transition-all duration-500 ease-out"
+                            style={{
+                              width: `${((domain.total - domain.acquired - domain.seen) / domain.total) * 100}%`,
+                            }}
+                          />
+                        </ProgressBar.Track>
+                      </ProgressBar>
                       <div className="flex items-center justify-between text-[10px] text-default-500 font-bold uppercase tracking-wider">
-                        ...
                         <div className="flex gap-2">
                           <span className="text-success">{domain.acquired} Acquis</span>
                           <span className="text-warning">{domain.seen} Vues</span>
@@ -278,7 +290,7 @@ export default function SuiviPage() {
                       <div className="divide-y divide-default-100">
                         {domain.subdomains.map((subdomain) => (
                           <div key={subdomain.id}>
-                            <div className="bg-default-100/50 px-4 py-3 border-y border-default-100">
+                            <div className="bg-default-100/50 px-4 py-3 border-b border-default-100">
                               <h4 className="text-sm font-bold text-foreground uppercase tracking-wider">
                                 {subdomain.name}
                               </h4>

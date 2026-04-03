@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Search, BookOpen, BarChart3, Menu, MessageSquare } from "lucide-react"
-import { Button, Drawer } from "@heroui/react"
+import { Button, Drawer, Separator } from "@heroui/react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -76,7 +76,8 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/20 px-4 py-4 space-y-2">
+      <Separator className="bg-white/20" />
+      <div className="px-4 py-4 space-y-4">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-success" />
           <p className="text-[10px] uppercase tracking-wider text-white/60">

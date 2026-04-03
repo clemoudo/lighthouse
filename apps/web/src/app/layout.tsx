@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences",
   icons: {
-    icon: "/lighthouse.png",
+    icon: "/lighthouse-32x32.ico",
     apple: "/lighthouse.png",
   },
 }

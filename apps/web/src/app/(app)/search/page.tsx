@@ -1,10 +1,9 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { FileText, Sparkles, Search as SearchIcon } from "lucide-react"
-import { Input, Button, Card, Chip } from "@heroui/react"
+import { FileText, Sparkles } from "lucide-react"
+import { Button, Card, Chip, Description, SearchField, Separator } from "@heroui/react"
 import { searchCompetences, type Competence } from "@/lib/data"
-import { cn } from "@/lib/utils"
 
 function StatusChip({ status }: { status: Competence["status"] }) {
   if (status === "acquired") {
@@ -43,7 +42,7 @@ export default function RecherchePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Search Area */}
-      <div className="border-b border-default-200 bg-default-50 px-4 py-6 lg:px-8">
+      <div className="sticky top-0 z-20 border-b border-default-200 bg-default-50/90 backdrop-blur-md px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-4">
           <div className="flex items-center gap-2.5">
             <Sparkles className="h-5 w-5 text-primary shrink-0" />
@@ -52,23 +51,24 @@ export default function RecherchePage() {
             </h1>
           </div>
           <div className="space-y-1.5">
-            <Input
+            <SearchField
               aria-label="Rechercher une compétence"
-              placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
               value={query}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={handleSearch}
               className="w-full"
-              fullWidth
-              render={(props) => (
-                <div className="relative w-full">
-                  <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-default-400 pointer-events-none" />
-                  <input {...props} className={cn(props.className, "pl-10")} />
-                </div>
-              )}
-            />
-            <p className="text-xs font-normal text-default-400 max-w-2xl leading-normal px-1">
+            >
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input
+                  placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
+                  className="w-full"
+                />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+            <Description>
               Trouvez rapidement les compétences du programme par sens ou mot-clé
-            </p>
+            </Description>
           </div>
         </div>
       </div>
@@ -152,7 +152,8 @@ export default function RecherchePage() {
                       <Card.Description className="text-sm text-default-600 mb-6 leading-relaxed line-clamp-3">
                         {competence.description}
                       </Card.Description>
-                      <div className="flex items-center justify-between gap-4 pt-4 border-t border-default-100">
+                      <Separator className="my-4" />
+                      <div className="flex items-center justify-between gap-4">
                         <StatusChip status={competence.status} />
                         {competence.pdfPage && (
                           <Button
