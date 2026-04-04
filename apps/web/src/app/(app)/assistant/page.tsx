@@ -93,7 +93,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen bg-default-50">
+    <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
       {/* Chat Area */}
       <ScrollShadow ref={scrollRef} className="flex-1 p-4 lg:p-8 space-y-6">
         <div className="mx-auto max-w-3xl space-y-6 pb-20">

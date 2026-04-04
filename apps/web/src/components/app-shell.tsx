@@ -94,7 +94,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-default-50">
+    <div className="flex min-h-screen bg-default-100">
       {/* Desktop Sidebar */}
       <aside
         className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block"
@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile Header + Content */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile Header */}
         <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-default-200 bg-background px-4 lg:hidden">
           <Button
@@ -142,7 +142,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Drawer>
 
         {/* Main Content */}
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   )

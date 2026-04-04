@@ -42,7 +42,7 @@ export default function RecherchePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Search Area */}
-      <div className="sticky top-0 z-20 border-b border-default-200 bg-default-50/90 backdrop-blur-md px-4 py-6 lg:px-8">
+      <div className="sticky top-0 z-20 border-b border-default-200 bg-background/80 backdrop-blur-md px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-4">
           <div className="flex items-center gap-2.5">
             <Sparkles className="h-5 w-5 text-primary shrink-0" />
