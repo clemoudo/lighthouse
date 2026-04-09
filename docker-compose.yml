@@ -15,14 +15,20 @@ services:
       # SSL / Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=contact@${BASE_DOMAIN}"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--ping=true"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./infra/traefik/letsencrypt:/letsencrypt
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${BASE_DOMAIN}`)"
@@ -44,8 +50,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres:/docker-entrypoint-initdb.d
@@ -55,6 +59,35 @@ services:
       timeout: 5s
       retries: 5
     networks:
+      - internal
+
+  pgadmin:
+    image: dpage/pgadmin4:9
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/misc/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.tls=true"
+      - "traefik.http.routers.pgadmin.tls.certresolver=myresolver"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+      - "traefik.docker.network=gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gateway
       - internal
 
   web:
@@ -77,6 +110,11 @@ services:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${WEB_PORT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
@@ -108,6 +146,11 @@ services:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - API_PORT=${API_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT}/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${BASE_DOMAIN}`) && PathPrefix(`/api`)"

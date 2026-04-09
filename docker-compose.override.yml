@@ -6,13 +6,21 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:444" # Dummy port to satisfy base routers validation
+      - "--entrypoints.websecure.address=:443"
+      - "--ping=true"
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     labels:
       - "traefik.http.routers.traefik-dashboard.entrypoints=web"
       - "traefik.http.routers.traefik-dashboard.tls=false"
+
+  pgadmin:
+    ports:
+      - "5050:80"
+    labels:
+      - "traefik.enable=false"
 
   web:
     tty: true

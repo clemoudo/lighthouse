@@ -2,7 +2,7 @@ FROM node:24-trixie-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-RUN apt-get update && apt-get install -y openssl tini && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl tini curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 FROM base AS pruner
