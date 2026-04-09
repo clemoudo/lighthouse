@@ -9,6 +9,7 @@
     "clean": "turbo run clean",
     "docker:dev": "infisical run --env=dev -- docker compose up -d",
     "docker:stop": "infisical run --env=dev -- docker compose down",
+    "docker:restart": "pnpm docker:stop && pnpm docker:dev",
     "docker:prod": "infisical run --env=prod -- docker compose -f docker-compose.yml up -d",
     "docker:build": "infisical run --env=prod -- docker compose -f docker-compose.yml build",
     "docker:logs": "docker compose logs -f",

@@ -1,6 +1,20 @@
 services:
+  traefik:
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:444" # Dummy port to satisfy base routers validation
+    ports:
+      - "80:80"
+      - "8080:8080"
+    labels:
+      - "traefik.http.routers.traefik-dashboard.entrypoints=web"
+      - "traefik.http.routers.traefik-dashboard.tls=false"
+
   web:
-    # No target here, inherited from base but used with NODE_ENV=development
     tty: true
     stdin_open: true
     volumes:
@@ -10,6 +24,10 @@ services:
       - /app/apps/web/.next
     environment:
       - WATCHPACK_POLLING=true
+    labels:
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.routers.web.tls=false"
+      - "traefik.http.routers.web.middlewares="
 
   api:
     tty: true
@@ -21,3 +39,7 @@ services:
     environment:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+    labels:
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.tls=false"
+      - "traefik.http.routers.api.middlewares=api-strip"
