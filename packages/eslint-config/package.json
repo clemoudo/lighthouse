@@ -9,19 +9,19 @@
     "server.js"
   ],
   "devDependencies": {
-    "@eslint/compat": "^2.0.4",
+    "@eslint/compat": "^2.0.5",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
-    "@next/eslint-plugin-next": "^16.2.2",
-    "@typescript-eslint/eslint-plugin": "^8.58.0",
-    "@typescript-eslint/parser": "^8.58.0",
+    "@next/eslint-plugin-next": "^16.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-config-turbo": "^2.9.4",
+    "eslint-config-turbo": "^2.9.5",
     "eslint-plugin-jest": "^29.15.1",
     "eslint-plugin-only-warn": "^1.2.1",
-    "eslint-plugin-turbo": "^2.9.4",
+    "eslint-plugin-turbo": "^2.9.5",
     "globals": "^17.4.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.58.1"
   }
 }
