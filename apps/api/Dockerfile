@@ -1,49 +1,42 @@
-ARG NODE_VERSION=24
-FROM node:${NODE_VERSION}-slim AS base
+FROM node:24-trixie-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-
+RUN apt-get update && apt-get install -y openssl tini && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-FROM base AS prepare
+FROM base AS pruner
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune api --docker
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=prepare /app/out/json/ .
-RUN pnpm install --frozen-lockfile --ignore-scripts
-COPY --from=prepare /app/out/full/ .
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
+RUN pnpm install --frozen-lockfile
 
-# Build variables
-ARG TURBO_TEAM
-ENV TURBO_TEAM=$TURBO_TEAM
-ARG TURBO_TOKEN
-ENV TURBO_TOKEN=$TURBO_TOKEN
+FROM installer AS development
+COPY --from=pruner /app/out/full/ .
+CMD ["pnpm", "--filter", "api", "dev"]
 
-RUN pnpm turbo build
+FROM installer AS builder
+COPY --from=pruner /app/out/full/ .
+# Injects build-time env vars if needed
+ARG DATABASE_URL
+ARG API_PORT
+RUN pnpm turbo run build --filter=api
+# Deploy only the API and its prod dependencies to /app/deploy
+RUN pnpm --filter=api --prod deploy /app/deploy
 
-# TODO use dhi.io/node:${NODE_VERSION}
-FROM node:${NODE_VERSION}-alpine AS runner
-WORKDIR /app
-
-# Security and Compatibility
-RUN apk add --no-cache libc6-compat tini
+FROM base AS production
 ENV NODE_ENV=production
-
-# Don't run production as root
 RUN addgroup --system --gid 1001 expressjs && \
     adduser --system --uid 1001 expressjs
 USER expressjs
 
-# Selective Copy (Only build artifacts and runtime dependencies)
-COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/apps/api/dist ./apps/api/dist
-COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/apps/api/package.json ./apps/api/package.json
-COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/node_modules ./node_modules
-COPY --from=builder --chown=expressjs:expressjs --chmod=555 /app/package.json ./package.json
+# Copy only the deployed app
+COPY --from=builder --chown=expressjs:expressjs /app/deploy/dist ./apps/api/dist
+COPY --from=builder --chown=expressjs:expressjs /app/deploy/package.json ./apps/api/package.json
+COPY --from=builder --chown=expressjs:expressjs /app/deploy/node_modules ./node_modules
 
-# Use Tini as Init process
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "apps/api/dist/index.js"]

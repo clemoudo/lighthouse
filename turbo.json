@@ -1,6 +1,17 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalEnv": ["NODE_ENV", "API_PORT", "NEXT_PUBLIC_*"],
+  "globalEnv": [
+    "NODE_ENV",
+    "BASE_DOMAIN",
+    "API_HOST",
+    "API_PORT",
+    "WEB_HOST",
+    "WEB_PORT",
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "NEXT_PUBLIC_API_HOST"
+  ],
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],

@@ -1,48 +1,45 @@
-ARG NODE_VERSION=24
-FROM node:${NODE_VERSION}-slim AS base
+FROM node:24-trixie-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-
+RUN apt-get update && apt-get install -y openssl tini && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-FROM base AS prepare
+FROM base AS pruner
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune web --docker
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=prepare /app/out/json/ .
-RUN pnpm install --frozen-lockfile --ignore-scripts
-COPY --from=prepare /app/out/full/ .
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
+RUN pnpm install --frozen-lockfile
 
-# Build variables
-ARG TURBO_TEAM
-ENV TURBO_TEAM=$TURBO_TEAM
-ARG TURBO_TOKEN
-ENV TURBO_TOKEN=$TURBO_TOKEN
+FROM installer AS development
+COPY --from=pruner /app/out/full/ .
+CMD ["pnpm", "--filter", "web", "dev"]
 
-RUN pnpm turbo build
+FROM installer AS builder
+COPY --from=pruner /app/out/full/ .
 
-# TODO use dhi.io/node:${NODE_VERSION}
-FROM node:${NODE_VERSION}-alpine AS runner
-WORKDIR /app
+# CRITICAL: Next.js needs these at BUILD TIME to bake them into the JS bundle
+ARG NEXT_PUBLIC_API_HOST
+ARG BASE_DOMAIN
+ARG API_HOST
+ARG API_PORT
+ARG WEB_HOST
+ARG WEB_PORT
 
-# Security and Compatibility
-RUN apk add --no-cache libc6-compat tini
+RUN pnpm turbo run build --filter=web
+
+FROM base AS production
 ENV NODE_ENV=production
-
-# Don't run production as root
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 USER nextjs
 
-# Next.js standalone selective copy (already optimized)
-COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder --chown=nextjs:nodejs --chmod=555 /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
-# Use Tini as Init process
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "apps/web/server.js"]

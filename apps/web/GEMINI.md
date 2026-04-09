@@ -3,8 +3,9 @@
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router) + TypeScript.
+- **Infrastructure:** Docker.
 - **Styling:** Tailwind CSS v4 (CSS-first mode) + HeroUI v3.
-- **State/Fetching:** TanStack Query.
+- **State/Forms/Tables:** TanStack Query, TanStack Form (+ Zod), TanStack Table.
 
 ## Critical Rules
 
