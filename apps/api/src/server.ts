@@ -1,25 +1,56 @@
-import { json, urlencoded } from "body-parser"
-import express, { type Express } from "express"
-import morgan from "morgan"
+import express, { type Express, type Request, type Response, type NextFunction } from "express"
 import cors from "cors"
+import helmet from "helmet"
+import { logger } from "@repo/logger"
+import { prisma } from "@repo/db"
 
 export const createServer = (): Express => {
   const app = express()
-  app
-    .disable("x-powered-by")
-    .use(morgan("dev"))
-    .use(urlencoded({ extended: true }))
-    .use(json())
-    .use(cors())
-    .get("/message/:name", (req, res) => {
-      return res.json({ message: `hello ${req.params.name}` })
+
+  // Security & Middleware
+  app.use(helmet())
+  app.use(
+    cors({
+      origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
+      credentials: true,
+    }),
+  )
+  app.use(express.json())
+
+  // Logging Middleware
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.path}`)
+    next()
+  })
+
+  // Health / Status Route
+  app.get("/status", async (_req: Request, res: Response) => {
+    try {
+      // Check DB connection
+      await prisma.$queryRaw`SELECT 1`
+      res.json({
+        status: "ok",
+        uptime: process.uptime(),
+        database: "connected",
+        timestamp: new Date().toISOString(),
+      })
+    } catch (error) {
+      logger.error("Health check failed:", error)
+      res.status(503).json({
+        status: "error",
+        database: "disconnected",
+      })
+    }
+  })
+
+  // Error Handling
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    logger.error("Unhandled error:", err)
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: process.env.NODE_ENV === "development" ? err.message : undefined,
     })
-    .get("/status", (_, res) => {
-      return res.json({ ok: true })
-    })
-    .get("/hello", (_, res) => {
-      return res.json({ message: "hello" })
-    })
+  })
 
   return app
 }

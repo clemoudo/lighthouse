@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --external:express --external:morgan --external:cors --external:body-parser",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --external:express --external:cors --external:helmet --external:@prisma/client",
     "clean": "rm -rf dist",
-    "dev": "tsx watch --watch src --clear-screen=false src/index.ts",
+    "dev": "pnpm --filter @repo/db generate && tsx watch --watch src --clear-screen=false src/index.ts",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\" --max-warnings 0",
     "start": "node dist/index.js",
     "tsc": "tsc --noEmit",
@@ -17,22 +17,22 @@
     "preset": "@repo/jest-presets/node"
   },
   "dependencies": {
+    "@repo/db": "workspace:*",
     "@repo/logger": "workspace:*",
-    "body-parser": "^2.2.2",
+    "better-auth": "^1.1.21",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "morgan": "^1.10.1"
+    "helmet": "^8.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/morgan": "^1.9.10",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/supertest": "^7.2.0",
     "concurrently": "^9.1.2",
     "esbuild": "^0.28.0",

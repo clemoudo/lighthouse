@@ -23,6 +23,8 @@ COPY --from=pruner /app/out/full/ .
 # Injects build-time env vars if needed
 ARG DATABASE_URL
 ARG API_PORT
+# Generate Prisma Client for the build
+RUN pnpm --filter @repo/db generate
 RUN pnpm turbo run build --filter=api
 # Deploy only the API and its prod dependencies to /app/deploy
 RUN pnpm --filter=api --prod deploy /app/deploy
