@@ -78,6 +78,9 @@ desktop.ini
 
 # Docker
 .docker/
+infra/traefik/letsencrypt/acme.json
+infra/postgres/data/
+postgres_data/
 
 .gemini/
 gha-creds-*.json

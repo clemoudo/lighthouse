@@ -16,3 +16,6 @@ next-env.d.ts
 
 #pnpm
 pnpm-lock.yaml
+
+# Cercificate
+acme.json

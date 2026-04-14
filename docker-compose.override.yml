@@ -1,26 +1,28 @@
 services:
   traefik:
-    command:
-      - "--api.dashboard=true"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--ping=true"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/traefik/letsencrypt:/letsencrypt
+      - ./infra/traefik/traefik.dev.yml:/etc/traefik/traefik.yml:ro
     labels:
       - "traefik.http.routers.traefik-dashboard.entrypoints=web"
       - "traefik.http.routers.traefik-dashboard.tls=false"
+      - "traefik.docker.network=gateway"
+    networks:
+      - proxy-only
+      - gateway
 
   pgadmin:
     ports:
       - "5050:80"
     labels:
       - "traefik.enable=false"
+    networks:
+      - admin
 
   web:
     tty: true
@@ -36,6 +38,9 @@ services:
       - "traefik.http.routers.web.entrypoints=web"
       - "traefik.http.routers.web.tls=false"
       - "traefik.http.routers.web.middlewares="
+      - "traefik.docker.network=gateway"
+    networks:
+      - gateway
 
   api:
     tty: true
@@ -46,8 +51,16 @@ services:
       - /app/apps/api/node_modules
     environment:
       - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
     labels:
       - "traefik.http.routers.api.entrypoints=web"
       - "traefik.http.routers.api.tls=false"
       - "traefik.http.routers.api.middlewares=api-strip"
+      - "traefik.docker.network=gateway"
+    networks:
+      - gateway
+      - backend
+
+  postgres:
+    networks:
+      - backend
+      - admin
