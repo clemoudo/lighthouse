@@ -1,7 +1,7 @@
 import { createServer } from "./server"
 import { logger } from "@repo/logger"
 
-const port = process.env.API_PORT || 5001
+const port = process.env.API_PORT
 const server = createServer()
 
 const nodeServer = server.listen(port, () => {
