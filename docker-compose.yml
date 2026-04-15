@@ -55,37 +55,6 @@ services:
       start_period: 30s
     networks:
       - backend
-      - admin
-
-  pgadmin:
-    image: dpage/pgadmin4:9
-    container_name: pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    healthcheck:
-      test:
-        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/misc/ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.pgadmin.entrypoints=websecure"
-      - "traefik.http.routers.pgadmin.tls=true"
-      - "traefik.http.routers.pgadmin.tls.certresolver=letsencrypt"
-      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
-      - "traefik.docker.network=gateway"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - gateway
-      - admin
 
   web:
     container_name: web
@@ -183,7 +152,6 @@ networks:
   admin:
     name: admin
     driver: bridge
-    internal: true
 
 volumes:
   postgres_data:
