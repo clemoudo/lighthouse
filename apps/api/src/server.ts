@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node"
 import { logger } from "@repo/logger"
 import { prisma } from "@repo/db"
 import { auth } from "./lib/auth"
+import { authMiddleware, requireAuth } from "./middlewares/auth"
 
 export const createServer = (): Express => {
   const app = express()
@@ -23,10 +24,28 @@ export const createServer = (): Express => {
 
   app.use(express.json())
 
+  // Authentication Middleware (Attaches user to req.user)
+  app.use(authMiddleware)
+
   // Logging Middleware
   app.use((req: Request, _res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.path}`)
     next()
+  })
+
+  // Auth Status Test Route
+  app.get("/auth-check", async (req: Request, res: Response) => {
+    res.json({
+      authenticated: !!req.user,
+      user: req.user,
+    })
+  })
+
+  // Protected Profile Route
+  app.get("/me", requireAuth, async (req: Request, res: Response) => {
+    res.json({
+      user: req.user,
+    })
   })
 
   // Health / Status Route
