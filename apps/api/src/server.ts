@@ -10,34 +10,41 @@ import { authMiddleware, requireAuth } from "./middlewares/auth"
 export const createServer = (): Express => {
   const app = express()
 
-  // DEBUG: Voir ce que l'API reçoit réellement
-  app.use((req, _res, next) => {
-    logger.info(`[Incoming Request] ${req.method} ${req.url} (Path: ${req.path})`)
-    next()
-  })
-
-  // Security & Middleware
-  app.use(helmet())
+  // 1. CORS MUST BE FIRST
+  // In development, origin: true reflects the request origin, which bypasses CORS issues
   app.use(
     cors({
-      origin: process.env.ALLOWED_ORIGINS?.split(","),
+      origin: true,
       credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie", "Accept"],
     }),
   )
 
-  // Better Auth Handler (Must be before express.json())
-  app.all("/auth/*splat", toNodeHandler(auth))
+  // 2. DEBUG LOGS (Right after CORS)
+  app.use((req, _res, next) => {
+    logger.info(
+      `[Incoming] ${req.method} ${req.url} - Origin: ${req.headers.origin || "no-origin"}`,
+    )
+    next()
+  })
+
+  // 3. HELMET (Relaxed for development)
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+  )
+
+  // Better Auth Handler
+  const authHandler = toNodeHandler(auth)
+  app.all("/auth/*splat", authHandler)
+  app.all("/api/auth/*splat", authHandler)
 
   app.use(express.json())
 
-  // Authentication Middleware (Attaches user to req.user)
+  // Authentication Middleware
   app.use(authMiddleware)
-
-  // Logging Middleware
-  app.use((req: Request, _res: Response, next: NextFunction) => {
-    logger.info(`${req.method} ${req.path}`)
-    next()
-  })
 
   // Auth Status Test Route
   app.get("/auth-check", async (req: Request, res: Response) => {

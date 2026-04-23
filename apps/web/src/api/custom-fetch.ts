@@ -27,7 +27,7 @@ export const customFetch = async <T>(
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://lighthouse.local/api"
   const fullUrl = `${baseUrl}${url}${queryParams}`
 
   const response = await fetch(fullUrl, {

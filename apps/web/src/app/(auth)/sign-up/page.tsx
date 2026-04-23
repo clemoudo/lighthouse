@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation"
 import { Card, Input, Button, Alert, Typography, Form } from "antd"
 import { User, Mail, Lock } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
+import { useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import { signUp } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
+import { getGetMeQueryKey } from "@/api/generated/lighthouse"
 
 const { Title, Text } = Typography
 
@@ -21,6 +23,7 @@ const signUpSchema = z.object({
 
 export default function SignUpPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { refetch } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
@@ -50,6 +53,9 @@ export default function SignUpPage() {
           setError(signUpError.message || "Une erreur est survenue lors de l'inscription.")
           setIsPending(false)
         } else {
+          // Invalidate user profile query in React Query
+          await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() })
+          // Refresh Better-Auth context
           await refetch()
           router.push("/")
         }
