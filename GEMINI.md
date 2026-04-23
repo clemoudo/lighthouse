@@ -7,8 +7,8 @@ Application web (microservices) destinée aux institutrices maternelles pour per
 ## Technologies Principales
 
 - **Monorepo:** Turborepo (`with-docker` template) avec `pnpm`.
-- **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + HeroUI v3 + TanStack (Query, Form/Zod, Table).
-- **API Gateway (Backend):** Express.js + TypeScript + Prisma ORM + Better Auth.
+- **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + Ant Design 6 + TanStack (Query, Form/Zod, Table) + Orval (API Client).
+- **API Gateway (Backend):** Express 5 + TypeScript + Prisma ORM + Better Auth.
 - **Base de données:** PostgreSQL avec l'extension `pgvector` (Single Source of Truth) et IDs UUID v7.
 - **Service IA (Worker):** Python (FastAPI).
   - _Note:_ Les technologies RAG (LlamaIndex, LlamaParse, modèles d'embedding) ne sont pas encore définitivement fixées et feront l'objet de tests.
