@@ -4,7 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider, useTheme } from "next-themes"
 import { ReactNode, useState, useEffect } from "react"
 import { AuthProvider } from "./AuthContext"
-import { ConfigProvider, theme } from "antd"
+import { ConfigProvider, theme, App } from "antd"
+import { StyleProvider } from "@ant-design/cssinjs"
 import frBE from "antd/locale/fr_BE"
 
 function AntdThemeProvider({ children }: { children: ReactNode }) {
@@ -17,19 +18,24 @@ function AntdThemeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <ConfigProvider
-      locale={frBE}
-      theme={{
-        algorithm:
-          mounted && resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          colorPrimary: "#2563eb", // Using your primary blue
-          borderRadius: 20,
-        },
-      }}
-    >
-      {children}
-    </ConfigProvider>
+    <StyleProvider layer>
+      <ConfigProvider
+        locale={frBE}
+        theme={{
+          algorithm:
+            mounted && resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          token: {
+            colorPrimary: "#2563eb",
+            borderRadius: 12,
+            fontFamily: "var(--font-inter)",
+          },
+          cssVar: { key: "ant" },
+          hashed: false,
+        }}
+      >
+        <App>{children}</App>
+      </ConfigProvider>
+    </StyleProvider>
   )
 }
 
