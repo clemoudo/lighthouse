@@ -2,18 +2,22 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, Form, Input, Button, Alert, Typography, Checkbox } from "antd"
+import { Card, Input, Button, Alert, Typography, Checkbox, Form } from "antd"
 import { Mail, Lock } from "lucide-react"
+import { useForm } from "@tanstack/react-form"
+import { z } from "zod"
 import { signIn } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
+import { FormField } from "@/components/ui/form-field"
 
 const { Title, Text } = Typography
 
-interface SignInValues {
-  email: string
-  password: string
-  remember?: boolean
-}
+// Corrected Zod 4 Schema
+const signInSchema = z.object({
+  email: z.string().min(1, "L'email est requis").email("Veuillez saisir un email valide"),
+  password: z.string().min(1, "Le mot de passe est requis"),
+  remember: z.boolean(),
+})
 
 export default function SignInPage() {
   const router = useRouter()
@@ -21,29 +25,39 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
-  const onFinish = async (values: SignInValues) => {
-    setError(null)
-    setIsPending(true)
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: true,
+    },
+    validators: {
+      onChange: signInSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setError(null)
+      setIsPending(true)
 
-    try {
-      const { error: signInError } = await signIn.email({
-        email: values.email,
-        password: values.password,
-        callbackURL: "/",
-      })
+      try {
+        const { error: signInError } = await signIn.email({
+          email: value.email,
+          password: value.password,
+          callbackURL: "/",
+        })
 
-      if (signInError) {
-        setError(signInError.message || "Email ou mot de passe incorrect.")
+        if (signInError) {
+          setError(signInError.message || "Email ou mot de passe incorrect.")
+          setIsPending(false)
+        } else {
+          await refetch()
+          router.push("/")
+        }
+      } catch (err) {
+        setError(`Une erreur inattendue est survenue : ${err}`)
         setIsPending(false)
-      } else {
-        await refetch()
-        router.push("/")
       }
-    } catch (err) {
-      setError(`Une erreur inattendue est survenue : ${err}`)
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <Card className="shadow-lg">
@@ -54,47 +68,53 @@ export default function SignInPage() {
         <Text type="secondary">Ravi de vous revoir ! Connectez-vous à votre compte.</Text>
       </div>
 
-      {error && <Alert title="Erreur" description={error} type="error" showIcon className="mb-4" />}
+      {error && (
+        <Alert message="Erreur" description={error} type="error" showIcon className="mb-4" />
+      )}
 
       <Form
-        name="signin"
         layout="vertical"
-        onFinish={onFinish}
-        autoComplete="off"
         size="large"
-        initialValues={{ remember: true }}
+        onFinish={() => form.handleSubmit()}
+        requiredMark="optional"
       >
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[
-            { required: true, message: "Veuillez saisir votre email" },
-            { type: "email", message: "Veuillez saisir un email valide" },
-          ]}
-        >
-          <Input
-            prefix={<Mail size={18} style={{ opacity: 0.45 }} />}
-            placeholder="jean.dupont@example.com"
-          />
-        </Form.Item>
+        <FormField form={form} name="email" label="Email" required>
+          {(field) => (
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              prefix={<Mail size={18} style={{ opacity: 0.45 }} />}
+              placeholder="jean.dupont@example.com"
+            />
+          )}
+        </FormField>
 
-        <Form.Item
-          label="Mot de passe"
-          name="password"
-          rules={[{ required: true, message: "Veuillez saisir votre mot de passe" }]}
-        >
-          <Input.Password
-            prefix={<Lock size={18} style={{ opacity: 0.45 }} />}
-            placeholder="••••••••"
-          />
-        </Form.Item>
+        <FormField form={form} name="password" label="Mot de passe" required>
+          {(field) => (
+            <Input.Password
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              prefix={<Lock size={18} style={{ opacity: 0.45 }} />}
+              placeholder="••••••••"
+            />
+          )}
+        </FormField>
 
-        <Form.Item name="remember" valuePropName="checked">
-          <Checkbox>Se souvenir de moi</Checkbox>
-        </Form.Item>
+        <FormField form={form} name="remember" valuePropName="checked">
+          {(field) => (
+            <Checkbox
+              checked={field.state.value}
+              onChange={(e) => field.handleChange(e.target.checked)}
+            >
+              Se souvenir de moi
+            </Checkbox>
+          )}
+        </FormField>
 
-        <Form.Item style={{ marginTop: 24, marginBottom: 8 }}>
-          <Button type="primary" htmlType="submit" block loading={isPending}>
+        <Form.Item style={{ marginBottom: 0 }}>
+          <Button type="primary" htmlType="submit" block loading={isPending} className="mt-2">
             Se connecter
           </Button>
         </Form.Item>
