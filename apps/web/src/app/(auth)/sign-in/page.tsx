@@ -68,9 +68,7 @@ export default function SignInPage() {
         <Text type="secondary">Ravi de vous revoir ! Connectez-vous à votre compte.</Text>
       </div>
 
-      {error && (
-        <Alert message="Erreur" description={error} type="error" showIcon className="mb-4" />
-      )}
+      {error && <Alert title="Erreur" description={error} type="error" showIcon className="mb-4" />}
 
       <Form
         layout="vertical"

@@ -6,9 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
     "start": "next start",
     "tsc": "tsc --noEmit",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "format": "prettier --write . --ignore-path ../../.prettierignore --list-different",
     "generate-api": "orval"
   },
   "dependencies": {

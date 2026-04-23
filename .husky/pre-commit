@@ -27,16 +27,36 @@ fi
 if pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
   echo "✅ Linting (ESLint) - OK"
 else
-  echo "❌ Linting (ESLint) - KO\n"
-  pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only
-  exit 1
+  echo "⚠️  Linting failed, attempting auto-fix..."
+  pnpm turbo run lint:fix --filter=[HEAD] --output-logs=errors-only
+  
+  # Stage the fixed files
+  git add -u
+  
+  if pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
+    echo "✅ Linting (ESLint) - Fixed & OK"
+  else
+    echo "❌ Linting (ESLint) - KO (Some errors could not be fixed automatically)\n"
+    pnpm turbo run lint --filter=[HEAD] --output-logs=errors-only
+    exit 1
+  fi
 fi
 
 # 4. Formatage (Prettier)
 if pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
   echo "✅ Formating (Prettier) - OK"
 else
-  echo "❌ Formating (Prettier) - KO\n"
-  pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only
-  exit 1
+  echo "⚠️  Formatting failed, attempting auto-fix..."
+  pnpm turbo run format --filter=[HEAD] --output-logs=errors-only
+  
+  # Stage the fixed files
+  git add -u
+  
+  if pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only > /dev/null 2>&1; then
+    echo "✅ Formating (Prettier) - Fixed & OK"
+  else
+    echo "❌ Formating (Prettier) - KO\n"
+    pnpm turbo run format:check --filter=[HEAD] --output-logs=errors-only
+    exit 1
+  fi
 fi

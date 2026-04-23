@@ -30,10 +30,14 @@
     "lint": {
       "dependsOn": ["^build"]
     },
+    "lint:fix": {
+      "dependsOn": ["^build"]
+    },
     "tsc": {
       "dependsOn": ["^build"]
     },
     "format:check": {},
+    "format": {},
     "dev": {
       "cache": false,
       "persistent": true
