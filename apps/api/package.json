@@ -17,6 +17,7 @@
     "preset": "@repo/jest-presets/node"
   },
   "dependencies": {
+    "@repo/api": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/logger": "workspace:*",
     "better-auth": "^1.6.3",

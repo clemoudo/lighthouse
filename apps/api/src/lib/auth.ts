@@ -11,4 +11,9 @@ export const auth = betterAuth({
     enabled: true,
   },
   socialProviders: {},
+  advanced: {
+    database: {
+      generateId: false,
+    },
+  },
 })

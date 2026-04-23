@@ -10,6 +10,12 @@ import { authMiddleware, requireAuth } from "./middlewares/auth"
 export const createServer = (): Express => {
   const app = express()
 
+  // DEBUG: Voir ce que l'API reçoit réellement
+  app.use((req, _res, next) => {
+    logger.info(`[Incoming Request] ${req.method} ${req.url} (Path: ${req.path})`)
+    next()
+  })
+
   // Security & Middleware
   app.use(helmet())
   app.use(

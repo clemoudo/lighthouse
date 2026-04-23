@@ -1,0 +1,22 @@
+{
+  "name": "@repo/api",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "tsc": "tsc --noEmit",
+    "generate-openapi": "tsx -e \"import { generateOpenAPI } from './src/openapi'; console.log(JSON.stringify(generateOpenAPI(), null, 2))\" > openapi.json"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "openapi3-ts": "^4.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3"
+  }
+}
