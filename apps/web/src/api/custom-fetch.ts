@@ -1,3 +1,5 @@
+import { env } from "@/env"
+
 /**
  * Custom fetch client for Orval
  * Matches the signature: (url, config)
@@ -27,7 +29,7 @@ export const customFetch = async <T>(
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://lighthouse.local/api"
+  const baseUrl = env.NEXT_PUBLIC_API_URL
   const fullUrl = `${baseUrl}${url}${queryParams}`
 
   const response = await fetch(fullUrl, {

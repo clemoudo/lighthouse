@@ -29,5 +29,8 @@
     "eslint": "^9.39.4",
     "jest": "^30.3.0",
     "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   }
 }

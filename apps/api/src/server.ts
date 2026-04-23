@@ -6,45 +6,46 @@ import { logger } from "@repo/logger"
 import { prisma } from "@repo/db"
 import { auth } from "./lib/auth"
 import { authMiddleware, requireAuth } from "./middlewares/auth"
+import { env } from "./env"
 
 export const createServer = (): Express => {
   const app = express()
 
-  // 1. CORS MUST BE FIRST
-  // In development, origin: true reflects the request origin, which bypasses CORS issues
+  // Security & Middleware
+  app.use(helmet())
+
+  const formattedOrigins = env.ALLOWED_ORIGINS.flatMap((origin) => [
+    `http://${origin}`,
+    `https://${origin}`,
+  ])
+
   app.use(
     cors({
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin || formattedOrigins.includes(origin) || env.NODE_ENV === "development") {
+          callback(null, true)
+        } else {
+          logger.warn(`[CORS REJECTED] Origin: "${origin}" not in [${formattedOrigins.join(", ")}]`)
+          callback(new Error("Not allowed by CORS"))
+        }
+      },
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization", "Cookie", "Accept"],
-    }),
-  )
-
-  // 2. DEBUG LOGS (Right after CORS)
-  app.use((req, _res, next) => {
-    logger.info(
-      `[Incoming] ${req.method} ${req.url} - Origin: ${req.headers.origin || "no-origin"}`,
-    )
-    next()
-  })
-
-  // 3. HELMET (Relaxed for development)
-  app.use(
-    helmet({
-      crossOriginResourcePolicy: { policy: "cross-origin" },
     }),
   )
 
   // Better Auth Handler
-  const authHandler = toNodeHandler(auth)
-  app.all("/auth/*splat", authHandler)
-  app.all("/api/auth/*splat", authHandler)
+  app.all("/auth/*splat", toNodeHandler(auth))
 
   app.use(express.json())
 
   // Authentication Middleware
   app.use(authMiddleware)
+
+  // Standard Logging
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.path}`)
+    next()
+  })
 
   // Auth Status Test Route
   app.get("/auth-check", async (req: Request, res: Response) => {
@@ -86,7 +87,7 @@ export const createServer = (): Express => {
     logger.error("Unhandled error:", err)
     res.status(500).json({
       error: "Internal Server Error",
-      message: process.env.NODE_ENV === "development" ? err.message : undefined,
+      message: env.NODE_ENV === "development" ? err.message : undefined,
     })
   })
 

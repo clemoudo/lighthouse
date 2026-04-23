@@ -4,9 +4,18 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Search, BookOpen, BarChart3, Menu, MessageSquare } from "lucide-react"
-import { Button, Drawer, Divider } from "antd"
+import {
+  Search,
+  BookOpen,
+  BarChart3,
+  Menu,
+  MessageSquare,
+  LogOut,
+  User as UserIcon,
+} from "lucide-react"
+import { Button, Drawer, Divider, Avatar, Dropdown, type MenuProps, Skeleton } from "antd"
 import { cn } from "@/lib/utils"
+import { useSession, signOut } from "@/lib/auth-client"
 
 const navItems = [
   {
@@ -34,6 +43,74 @@ const navItems = [
     description: "Progression",
   },
 ]
+
+function UserProfile() {
+  const { data: session, isPending } = useSession()
+
+  if (isPending) {
+    return (
+      <div className="flex items-center gap-3 px-4 py-4">
+        <Skeleton.Avatar active size="small" shape="circle" />
+        <div className="flex flex-1 flex-col gap-1">
+          <div className="h-3 w-20 rounded bg-white/10" />
+          <div className="h-2 w-24 rounded bg-white/5" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="px-4 py-4">
+        <Link href="/sign-in" className="block w-full">
+          <Button
+            type="primary"
+            block
+            className="bg-white/10 hover:bg-white/20 border-white/20 text-white text-xs h-9 flex items-center justify-center gap-2"
+          >
+            <UserIcon size={14} />
+            Connexion / Inscription
+          </Button>
+        </Link>
+      </div>
+    )
+  }
+
+  const items: MenuProps["items"] = [
+    {
+      key: "profile",
+      label: "Mon Profil",
+      icon: <UserIcon size={16} />,
+    },
+    {
+      key: "logout",
+      label: "Déconnexion",
+      danger: true,
+      icon: <LogOut size={16} />,
+      onClick: async () => {
+        await signOut()
+      },
+    },
+  ]
+
+  return (
+    <div className="px-3 py-4">
+      <Dropdown menu={{ items }} placement="topRight" trigger={["click"]}>
+        <div className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-white/10">
+          <Avatar
+            src={session.user.image}
+            icon={!session.user.image && <UserIcon size={18} />}
+            className="bg-white/20 shrink-0 border-none"
+          />
+          <div className="flex flex-1 flex-col min-w-0">
+            <span className="truncate text-sm font-medium text-white">{session.user.name}</span>
+            <span className="truncate text-[10px] text-white/50">{session.user.email}</span>
+          </div>
+        </div>
+      </Dropdown>
+    </div>
+  )
+}
 
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
@@ -75,17 +152,9 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
-      {/* Footer */}
-      <Divider className="bg-white/20 m-0" />
-      <div className="px-4 py-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-success" />
-          <p className="text-[10px] uppercase tracking-wider text-white/60">
-            Services Operationnels
-          </p>
-        </div>
-        <p className="text-xs text-white/40">&copy; {new Date().getFullYear()} - Lighthouse</p>
-      </div>
+      {/* Footer / User Profile */}
+      <Divider className="bg-white/10 m-0" />
+      <UserProfile />
     </div>
   )
 }

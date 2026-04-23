@@ -69,7 +69,7 @@ export default function RecherchePage() {
           {!hasSearched ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="mb-6 rounded-2xl bg-primary/5 p-6 border border-primary/10 shadow-inner">
-                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                <Sparkles className="h-10 w-10 text-primary" />
               </div>
               <Title level={3} style={{ marginBottom: 12 }}>
                 Commencez votre recherche

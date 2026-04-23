@@ -1,9 +1,8 @@
 import { createAuthClient } from "better-auth/react"
+import { env } from "@/env"
 
 const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL
-    ? `${process.env.NEXT_PUBLIC_API_URL}/auth`
-    : "http://lighthouse.local/api/auth",
+  baseURL: `${env.NEXT_PUBLIC_API_URL}/auth`,
   fetchOptions: {
     credentials: "include",
   },

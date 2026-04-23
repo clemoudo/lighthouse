@@ -1,3 +1,5 @@
+import { env } from "./env"
+
 type LogLevel = "info" | "warn" | "error" | "debug"
 
 const logMessage = (level: LogLevel, message: unknown, ...args: unknown[]) => {
@@ -15,7 +17,7 @@ const logMessage = (level: LogLevel, message: unknown, ...args: unknown[]) => {
       console.error(prefix, message, ...args)
       break
     case "debug":
-      if (process.env.NODE_ENV !== "production") {
+      if (env.NODE_ENV !== "production") {
         console.debug(prefix, message, ...args)
       }
       break

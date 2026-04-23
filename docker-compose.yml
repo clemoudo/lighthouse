@@ -115,6 +115,7 @@ services:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - API_PORT=${API_PORT}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${API_PORT}/status"]
       interval: 10s

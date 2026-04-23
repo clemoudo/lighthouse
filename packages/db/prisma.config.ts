@@ -1,5 +1,7 @@
+import { env } from "./src/env"
+
 export default {
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: env.DATABASE_URL,
   },
 }
