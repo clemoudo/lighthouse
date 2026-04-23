@@ -2,23 +2,18 @@
 
 import { useState, useMemo } from "react"
 import { FileText, Sparkles } from "lucide-react"
-import { Button, Card, Chip, Description, SearchField, Separator } from "@heroui/react"
+import { Button, Card, Tag, Typography, Input, Divider } from "antd"
 import { searchCompetences, type Competence } from "@/lib/data"
+
+const { Text, Title } = Typography
+const { Search } = Input
 
 function StatusChip({ status }: { status: Competence["status"] }) {
   if (status === "acquired") {
-    return (
-      <Chip size="sm" color="success" variant="soft">
-        Acquis
-      </Chip>
-    )
+    return <Tag color="success">Acquis</Tag>
   }
   if (status === "seen") {
-    return (
-      <Chip size="sm" color="warning" variant="soft">
-        Vue
-      </Chip>
-    )
+    return <Tag color="warning">Vue</Tag>
   }
   return null
 }
@@ -42,33 +37,28 @@ export default function RecherchePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Search Area */}
-      <div className="sticky top-0 z-20 border-b border-default-200 bg-background/80 backdrop-blur-md px-4 py-6 lg:px-8">
+      <div className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 py-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-4">
           <div className="flex items-center gap-2.5">
             <Sparkles className="h-5 w-5 text-primary shrink-0" />
-            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            <Title level={4} style={{ margin: 0 }} className="tracking-tight">
               Rechercher une compétence
-            </h1>
+            </Title>
           </div>
           <div className="space-y-1.5">
-            <SearchField
-              aria-label="Rechercher une compétence"
+            <Search
+              placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
+              allowClear
+              enterButton="Rechercher"
+              size="large"
+              onSearch={handleSearch}
               value={query}
-              onChange={handleSearch}
+              onChange={(e) => setQuery(e.target.value)}
               className="w-full"
-            >
-              <SearchField.Group>
-                <SearchField.SearchIcon />
-                <SearchField.Input
-                  placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
-                  className="w-full"
-                />
-                <SearchField.ClearButton />
-              </SearchField.Group>
-            </SearchField>
-            <Description>
+            />
+            <Text type="secondary" className="text-sm">
               Trouvez rapidement les compétences du programme par sens ou mot-clé
-            </Description>
+            </Text>
           </div>
         </div>
       </div>
@@ -81,19 +71,20 @@ export default function RecherchePage() {
               <div className="mb-6 rounded-2xl bg-primary/5 p-6 border border-primary/10 shadow-inner">
                 <Sparkles className="h-10 w-10 text-primary animate-pulse" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-3">Commencez votre recherche</h2>
-              <p className="text-default-600 max-w-md mb-8 leading-relaxed">
+              <Title level={3} style={{ marginBottom: 12 }}>
+                Commencez votre recherche
+              </Title>
+              <Text type="secondary" className="max-w-md mb-8 leading-relaxed block mx-auto">
                 Tapez un mot-clé ou une phrase pour trouver les compétences correspondantes dans le
                 programme scolaire maternel.
-              </p>
+              </Text>
               <div className="flex flex-wrap justify-center gap-3">
                 {["oral", "compter", "formes", "couleurs", "chansons"].map((suggestion) => (
                   <Button
                     key={suggestion}
-                    variant="secondary"
-                    size="sm"
-                    className="font-semibold px-4"
-                    onPress={() => handleSearch(suggestion)}
+                    size="small"
+                    className="font-semibold"
+                    onClick={() => handleSearch(suggestion)}
                   >
                     {suggestion}
                   </Button>
@@ -102,71 +93,76 @@ export default function RecherchePage() {
             </div>
           ) : results.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="mb-6 rounded-2xl bg-default-100 p-6 border border-default-200">
-                <FileText className="h-10 w-10 text-default-400" />
+              <div className="mb-6 rounded-2xl bg-surface-secondary p-6 border border-border">
+                <FileText className="h-10 w-10 text-muted" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Aucun résultat</h2>
-              <p className="text-default-600">{"Essayez avec d'autres termes de recherche"}</p>
+              <Title level={3} style={{ marginBottom: 8 }}>
+                Aucun résultat
+              </Title>
+              <Text type="secondary">{"Essayez avec d'autres termes de recherche"}</Text>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="flex items-center justify-between px-1">
-                <p className="text-sm font-semibold text-default-600">
+                <Text strong type="secondary" className="text-sm">
                   {results.length} résultat{results.length > 1 ? "s" : ""} trouvé
                   {results.length > 1 ? "s" : ""}
-                </p>
+                </Text>
               </div>
 
               <div className="grid gap-4">
                 {results.map((competence) => (
                   <Card
                     key={competence.id}
-                    className="transition-all hover:shadow-lg hover:border-primary/30 border border-default-200 shadow-sm overflow-hidden group rounded-xl"
+                    variant="borderless"
+                    className="transition-all hover:shadow-lg hover:border-primary/30 border border-border shadow-sm overflow-hidden group rounded-xl"
+                    styles={{ body: { padding: "24px" } }}
                   >
-                    <Card.Header className="pb-3 flex items-start justify-between gap-6 px-6 pt-6">
+                    <div className="flex items-start justify-between gap-6 mb-4">
                       <div className="flex-1 min-w-0">
-                        <Card.Title className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                        <Title
+                          level={4}
+                          style={{ margin: 0 }}
+                          className="group-hover:text-primary transition-colors leading-snug"
+                        >
                           {competence.title}
-                        </Card.Title>
-                        <div className="mt-2 flex flex-wrap items-center gap-3">
-                          <Chip size="sm" variant="secondary" className="font-bold">
-                            {competence.domain}
-                          </Chip>
-                          <span className="text-xs font-bold text-default-400 uppercase tracking-wider">
+                        </Title>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <Tag className="font-bold m-0">{competence.domain}</Tag>
+                          <Text strong className="text-[10px] text-muted uppercase tracking-wider">
                             {competence.subdomain}
-                          </span>
+                          </Text>
                         </div>
                       </div>
                       <div className="shrink-0 flex flex-col items-end gap-2">
-                        <Chip
-                          size="sm"
-                          variant="soft"
-                          color="accent"
-                          className="font-bold border border-accent-soft-hover"
-                        >
+                        <Tag color="blue" className="font-bold m-0 px-2 py-0.5 rounded-full">
                           {competence.score}% pertinent
-                        </Chip>
+                        </Tag>
                       </div>
-                    </Card.Header>
-                    <Card.Content className="pt-0 pb-6 px-6">
-                      <Card.Description className="text-sm text-default-600 mb-6 leading-relaxed line-clamp-3">
-                        {competence.description}
-                      </Card.Description>
-                      <Separator className="my-4" />
-                      <div className="flex items-center justify-between gap-4">
-                        <StatusChip status={competence.status} />
-                        {competence.pdfPage && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="font-semibold text-default-600 hover:text-primary hover:bg-primary/5 transition-all"
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Voir page {competence.pdfPage}
-                          </Button>
-                        )}
-                      </div>
-                    </Card.Content>
+                    </div>
+
+                    <Text
+                      type="secondary"
+                      className="text-sm leading-relaxed line-clamp-3 block mb-6"
+                    >
+                      {competence.description}
+                    </Text>
+
+                    <Divider className="my-4" />
+
+                    <div className="flex items-center justify-between gap-4">
+                      <StatusChip status={competence.status} />
+                      {competence.pdfPage && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="font-semibold text-muted hover:text-primary transition-all flex items-center p-0"
+                          icon={<FileText size={16} />}
+                        >
+                          Voir page {competence.pdfPage}
+                        </Button>
+                      )}
+                    </div>
                   </Card>
                 ))}
               </div>

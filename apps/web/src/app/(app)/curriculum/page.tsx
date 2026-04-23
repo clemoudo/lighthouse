@@ -1,10 +1,12 @@
 "use client"
 
-import { FileText, ChevronDown, BookOpen, Layers } from "lucide-react"
-import { Accordion, Chip, Button } from "@heroui/react"
+import { FileText, BookOpen, Layers } from "lucide-react"
+import { Collapse, Tag, Button, Typography } from "antd"
 import { domains, type Competence } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { PageHeader } from "@/components/page-header"
+
+const { Text } = Typography
 
 const domainColorMap: Record<string, string> = {
   "bg-chart-1": "bg-blue-500",
@@ -19,9 +21,9 @@ function StatusDot({ status }: { status: Competence["status"] }) {
     <span
       className={cn(
         "inline-block h-2 w-2 shrink-0 rounded-full",
-        status === "acquired" && "bg-success-500",
-        status === "seen" && "bg-warning-500",
-        status === "not-seen" && "bg-default-300",
+        status === "acquired" && "bg-green-500",
+        status === "seen" && "bg-orange-500",
+        status === "not-seen" && "bg-gray-300",
       )}
     />
   )
@@ -29,24 +31,12 @@ function StatusDot({ status }: { status: Competence["status"] }) {
 
 function StatusChip({ status }: { status: Competence["status"] }) {
   if (status === "acquired") {
-    return (
-      <Chip size="sm" color="success" variant="soft">
-        Acquis
-      </Chip>
-    )
+    return <Tag color="success">Acquis</Tag>
   }
   if (status === "seen") {
-    return (
-      <Chip size="sm" color="warning" variant="soft">
-        Vue
-      </Chip>
-    )
+    return <Tag color="warning">Vue</Tag>
   }
-  return (
-    <Chip size="sm" variant="secondary">
-      Non vue
-    </Chip>
-  )
+  return <Tag color="default">Non vue</Tag>
 }
 
 export default function ReferentielPage() {
@@ -63,127 +53,112 @@ export default function ReferentielPage() {
           />
 
           {/* Legend */}
-          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-default-50 p-4 rounded-xl border border-default-200">
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-secondary p-4 rounded-xl border border-border">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-background rounded-lg border border-default-200">
+              <div className="p-2 bg-background rounded-lg border border-border">
                 <Layers className="h-4 w-4 text-primary" />
               </div>
-              <div>
+              <div className="flex flex-col">
                 <span className="text-sm font-bold text-foreground">Statuts de progression</span>
-                <p className="text-[11px] text-default-500">Suivi des compétences du programme</p>
+                <p className="text-[11px] text-muted m-0">Suivi des compétences du programme</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-success shadow-sm" />
-                <span className="text-xs font-semibold text-default-700">Acquis</span>
+                <div className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-sm" />
+                <span className="text-xs font-semibold text-foreground">Acquis</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-warning shadow-sm" />
-                <span className="text-xs font-semibold text-default-700">Vue</span>
+                <div className="h-2.5 w-2.5 rounded-full bg-orange-500 shadow-sm" />
+                <span className="text-xs font-semibold text-foreground">Vue</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-default-300 shadow-sm" />
-                <span className="text-xs font-semibold text-default-700">Non vue</span>
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-300 shadow-sm" />
+                <span className="text-xs font-semibold text-foreground">Non vue</span>
               </div>
             </div>
           </div>
 
           {/* Domains Accordion */}
-          <Accordion allowsMultipleExpanded className="gap-4">
-            {domains.map((domain) => (
-              <Accordion.Item
-                key={domain.id}
-                id={domain.id}
-                className="border border-default-200 rounded-xl overflow-hidden bg-background shadow-sm"
-              >
-                <Accordion.Heading>
-                  <Accordion.Trigger className="py-5 px-5 hover:bg-default-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          "h-4 w-4 shrink-0 rounded-md shadow-inner",
-                          domainColorMap[domain.color] ?? "bg-default-400",
-                        )}
-                      />
-                      <span className="font-bold text-foreground text-lg leading-tight text-left">
-                        {domain.name}
-                      </span>
-                    </div>
-                    <Accordion.Indicator>
-                      <ChevronDown className="h-5 w-5 text-default-400" />
-                    </Accordion.Indicator>
-                  </Accordion.Trigger>
-                </Accordion.Heading>
-                <Accordion.Panel>
-                  <Accordion.Body className="p-0">
-                    {/* Subdomains */}
-                    <Accordion allowsMultipleExpanded className="border-t border-default-200">
-                      {domain.subdomains.map((subdomain) => (
-                        <Accordion.Item key={subdomain.id} id={subdomain.id}>
-                          <Accordion.Heading>
-                            <Accordion.Trigger className="px-5 py-4 hover:bg-default-50/80 transition-colors">
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-bold text-foreground">
-                                  {subdomain.name}
-                                </span>
-                                <Chip size="sm" variant="secondary" className="font-bold">
-                                  {subdomain.competences.length}
-                                </Chip>
+          <Collapse
+            ghost
+            className="flex flex-col gap-4 p-0"
+            items={domains.map((domain) => ({
+              key: domain.id,
+              label: (
+                <div className="flex items-center gap-4 py-1">
+                  <div
+                    className={cn(
+                      "h-4 w-4 shrink-0 rounded-md shadow-inner",
+                      domainColorMap[domain.color] ?? "bg-gray-400",
+                    )}
+                  />
+                  <span className="font-bold text-foreground text-lg leading-tight">
+                    {domain.name}
+                  </span>
+                </div>
+              ),
+              children: (
+                <div className="flex flex-col gap-2 pt-2 pb-0">
+                  <Collapse
+                    ghost
+                    items={domain.subdomains.map((subdomain) => ({
+                      key: subdomain.id,
+                      label: (
+                        <div className="flex items-center gap-3 py-0.5">
+                          <span className="text-sm font-bold text-foreground">
+                            {subdomain.name}
+                          </span>
+                          <Tag className="font-bold m-0">{subdomain.competences.length}</Tag>
+                        </div>
+                      ),
+                      children: (
+                        <div className="divide-y divide-border bg-surface-secondary/30 -mx-4 -my-3">
+                          {subdomain.competences.map((competence) => (
+                            <div
+                              key={competence.id}
+                              className="flex items-start gap-4 px-5 py-5 transition-colors hover:bg-surface-secondary/50"
+                            >
+                              <div className="mt-1.5">
+                                <StatusDot status={competence.status} />
                               </div>
-                              <Accordion.Indicator>
-                                <ChevronDown className="h-4 w-4 text-default-400" />
-                              </Accordion.Indicator>
-                            </Accordion.Trigger>
-                          </Accordion.Heading>
-                          <Accordion.Panel>
-                            <Accordion.Body className="p-0">
-                              {/* Competences */}
-                              <div className="divide-y divide-default-100 bg-default-50/30">
-                                {subdomain.competences.map((competence) => (
-                                  <div
-                                    key={competence.id}
-                                    className="flex items-start gap-4 px-5 py-5 transition-colors hover:bg-default-100/50"
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-bold text-foreground leading-snug mb-1">
+                                  {competence.title}
+                                </h4>
+                                <Text
+                                  type="secondary"
+                                  className="text-xs leading-relaxed line-clamp-2 m-0 block"
+                                >
+                                  {competence.description}
+                                </Text>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                <StatusChip status={competence.status} />
+                                {competence.pdfPage && (
+                                  <Button
+                                    size="small"
+                                    icon={<FileText size={14} className="text-primary" />}
+                                    className="flex items-center"
                                   >
-                                    <div className="mt-1.5">
-                                      <StatusDot status={competence.status} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="text-sm font-bold text-foreground leading-snug mb-1">
-                                        {competence.title}
-                                      </h4>
-                                      <p className="text-xs text-default-600 leading-relaxed line-clamp-2">
-                                        {competence.description}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-3 shrink-0">
-                                      <StatusChip status={competence.status} />
-                                      {competence.pdfPage && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-9 font-medium text-default-600 border border-default-200"
-                                        >
-                                          <FileText className="h-4 w-4 mr-1.5 text-primary" />
-                                          <span className="hidden sm:inline">Page </span>
-                                          {competence.pdfPage}
-                                        </Button>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
+                                    <span className="hidden sm:inline ml-1">Page </span>
+                                    {competence.pdfPage}
+                                  </Button>
+                                )}
                               </div>
-                            </Accordion.Body>
-                          </Accordion.Panel>
-                        </Accordion.Item>
-                      ))}
-                    </Accordion>
-                  </Accordion.Body>
-                </Accordion.Panel>
-              </Accordion.Item>
-            ))}
-          </Accordion>
+                            </div>
+                          ))}
+                        </div>
+                      ),
+                    }))}
+                  />
+                </div>
+              ),
+              className:
+                "border border-border rounded-xl overflow-hidden bg-background shadow-sm px-4",
+            }))}
+          />
         </div>
       </div>
     </div>

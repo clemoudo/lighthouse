@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Search, BookOpen, BarChart3, Menu, MessageSquare } from "lucide-react"
-import { Button, Drawer, Separator } from "@heroui/react"
+import { Button, Drawer, Divider } from "antd"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -76,7 +76,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Footer */}
-      <Separator className="bg-white/20" />
+      <Divider className="bg-white/20 m-0" />
       <div className="px-4 py-4 space-y-4">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-success" />
@@ -94,7 +94,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-default-100">
+    <div className="flex min-h-screen bg-surface-secondary">
       {/* Desktop Sidebar */}
       <aside
         className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block"
@@ -106,13 +106,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Mobile Header + Content */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-default-200 bg-background px-4 lg:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background px-4 lg:hidden">
           <Button
-            variant="ghost"
-            size="sm"
-            onPress={() => setOpen(true)}
+            type="text"
+            onClick={() => setOpen(true)}
             aria-label="Menu"
-            className="p-2"
+            className="p-2 flex items-center justify-center"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -123,22 +122,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Mobile Drawer */}
-        <Drawer>
-          <Drawer.Backdrop isOpen={open} onOpenChange={setOpen}>
-            <Drawer.Content placement="left" className="w-64 max-w-[80vw]">
-              <Drawer.Dialog
-                className="h-full border-none shadow-none"
-                style={{ background: "var(--color-sidebar-bg)" }}
-              >
-                <Drawer.Header className="sr-only">
-                  <Drawer.Heading>Navigation</Drawer.Heading>
-                </Drawer.Header>
-                <Drawer.Body className="p-0 overflow-hidden">
-                  <NavContent onNavigate={() => setOpen(false)} />
-                </Drawer.Body>
-              </Drawer.Dialog>
-            </Drawer.Content>
-          </Drawer.Backdrop>
+        <Drawer
+          placement="left"
+          onClose={() => setOpen(false)}
+          open={open}
+          closable={false}
+          styles={{ body: { padding: 0, background: "var(--color-sidebar-bg)" } }}
+          size={256}
+        >
+          <NavContent onNavigate={() => setOpen(false)} />
         </Drawer>
 
         {/* Main Content */}

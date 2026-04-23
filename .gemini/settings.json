@@ -10,6 +10,10 @@
     },
     "better-auth": {
       "url": "https://mcp.better-auth.com/mcp"
+    },
+    "antd": {
+      "command": "antd",
+      "args": ["mcp"]
     }
   }
 }

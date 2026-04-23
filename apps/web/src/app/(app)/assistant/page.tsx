@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, User, Sparkles, FileText, Bot } from "lucide-react"
-import { Input, Button, Card, Chip, Avatar, ScrollShadow, Description } from "@heroui/react"
+import { Send, User, Sparkles, FileText } from "lucide-react"
+import { Input, Button, Card, Tag, Avatar, Typography } from "antd"
 import { cn } from "@/lib/utils"
+
+const { Text } = Typography
 
 type Message = {
   id: string
@@ -59,7 +61,7 @@ export default function AssistantPage() {
   // Mock user data
   const user = {
     name: "Utilisateur",
-    avatar: "", // Set to a path to test image, empty for fallback
+    avatar: null,
   }
 
   useEffect(() => {
@@ -95,7 +97,7 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
       {/* Chat Area */}
-      <ScrollShadow ref={scrollRef} className="flex-1 p-4 lg:p-8 space-y-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-8">
         <div className="mx-auto max-w-3xl space-y-6 pb-20">
           {messages.map((message) => (
             <div
@@ -107,33 +109,13 @@ export default function AssistantPage() {
             >
               <Avatar
                 className={cn(
-                  "shrink-0 scale-120",
-                  message.role === "assistant"
-                    ? "overflow-visible bg-transparent shadow-none"
-                    : "shadow-sm",
+                  "shrink-0",
+                  message.role === "assistant" ? "bg-transparent" : "bg-primary-soft",
                 )}
-                size="sm"
-              >
-                {message.role === "assistant" ? (
-                  <>
-                    <Avatar.Image
-                      src="/albatross.png"
-                      alt="Lighthouse"
-                      className="overflow-visible translate-x-0.5 -translate-y-0.5"
-                    />
-                    <Avatar.Fallback className="bg-default-100 text-default-500 rounded-full overflow-hidden">
-                      <Bot className="h-5 w-5" />
-                    </Avatar.Fallback>
-                  </>
-                ) : (
-                  <>
-                    <Avatar.Image src={user.avatar} alt={user.name} />
-                    <Avatar.Fallback className="bg-default-100 text-default-500 rounded-full overflow-hidden">
-                      <User className="h-5 w-5" />
-                    </Avatar.Fallback>
-                  </>
-                )}
-              </Avatar>
+                size={40}
+                icon={message.role === "assistant" ? null : <User size={20} />}
+                src={message.role === "assistant" ? "/albatross.png" : user.avatar}
+              />
 
               <div
                 className={cn(
@@ -142,33 +124,31 @@ export default function AssistantPage() {
                 )}
               >
                 <Card
+                  variant="borderless"
                   className={cn(
-                    "p-4 border-none shadow-sm rounded-2xl",
+                    "shadow-sm",
                     message.role === "user"
-                      ? "bg-accent-soft-hover text-accent-950 rounded-tr-none border border-accent-soft-hover"
-                      : "bg-background text-foreground rounded-tl-none border border-default-200",
+                      ? "bg-primary text-white rounded-tr-none"
+                      : "bg-background text-foreground rounded-tl-none border border-border",
                   )}
+                  styles={{ body: { padding: "12px 16px" } }}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap m-0">
+                    {message.content}
+                  </p>
                 </Card>
 
                 {message.sources && message.sources.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-1">
                     {message.sources.map((source) => (
-                      <Chip
+                      <Tag
                         key={source.id}
-                        size="sm"
-                        variant="soft"
-                        className="bg-primary/10 text-primary-700 border border-primary/20 h-auto py-1 px-2"
+                        icon={<FileText size={12} className="mr-1" />}
+                        className="flex items-center bg-primary-soft text-primary-dark border-primary-soft px-2 py-1 rounded-full m-0"
                       >
-                        <div className="flex items-center gap-1.5">
-                          <FileText className="h-3 w-3" />
-                          <span className="text-[10px] font-bold uppercase truncate max-w-[120px]">
-                            {source.title}
-                          </span>
-                          <span className="text-[10px] opacity-60">p.{source.page}</span>
-                        </div>
-                      </Chip>
+                        <span className="text-[10px] font-bold uppercase mr-1">{source.title}</span>
+                        <span className="text-[10px] opacity-60">p.{source.page}</span>
+                      </Tag>
                     ))}
                   </div>
                 )}
@@ -176,40 +156,33 @@ export default function AssistantPage() {
             </div>
           ))}
         </div>
-      </ScrollShadow>
+      </div>
 
       {/* Input Area */}
-      <div className="sticky bottom-0 border-t border-default-200 bg-background/80 backdrop-blur-md p-4 lg:p-6">
+      <div className="sticky bottom-0 border-t border-border bg-background/80 backdrop-blur-md p-4 lg:p-6">
         <div className="mx-auto max-w-3xl">
           <div className="flex gap-2">
             <Input
+              size="large"
               placeholder="Posez votre question sur le programme..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              onPressEnter={handleSend}
+              suffix={<Sparkles size={16} className="text-primary opacity-40" />}
               className="flex-1"
-              fullWidth
-              render={(props) => (
-                <div className="relative w-full">
-                  <input {...props} className={cn(props.className, "pr-12")} />
-                  <Sparkles className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/40 pointer-events-none" />
-                </div>
-              )}
             />
             <Button
-              variant="primary"
-              isIconOnly
-              onPress={handleSend}
-              className="shrink-0 shadow-sm"
-              aria-label="Envoyer"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+              type="primary"
+              size="large"
+              icon={<Send size={18} />}
+              onClick={handleSend}
+              className="shrink-0 flex items-center justify-center"
+            />
           </div>
-          <Description className="mt-2 text-[10px] text-center text-default-400 block w-full">
+          <Text type="secondary" className="mt-2 text-[10px] text-center block w-full">
             Lighthouse peut faire des erreurs. Vérifiez toujours les informations importantes dans
             le référentiel officiel.
-          </Description>
+          </Text>
         </div>
       </div>
     </div>
