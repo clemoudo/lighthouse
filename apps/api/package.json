@@ -22,7 +22,7 @@
     "@repo/api": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/logger": "workspace:*",
-    "better-auth": "^1.6.3",
+    "better-auth": "^1.6.9",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.0.0",
