@@ -80,3 +80,18 @@ services:
     networks:
       - backend
       - admin
+
+networks:
+  proxy-only:
+    name: proxy-only
+    driver: bridge
+  gateway:
+    name: gateway
+    driver: bridge
+  backend:
+    name: backend
+    driver: bridge
+    internal: true
+  admin:
+    name: admin
+    driver: bridge
