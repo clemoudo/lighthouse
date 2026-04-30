@@ -43,7 +43,8 @@ COPY --from=builder --chown=expressjs:expressjs /app/deploy/dist ./apps/api/dist
 COPY --from=builder --chown=expressjs:expressjs /app/deploy/package.json ./apps/api/package.json
 COPY --from=builder --chown=expressjs:expressjs /app/deploy/node_modules ./node_modules
 
-COPY --from=base /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY infra/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["node", "apps/api/dist/index.js"]
