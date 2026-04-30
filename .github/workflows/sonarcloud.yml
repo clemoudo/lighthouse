@@ -32,6 +32,8 @@ jobs:
 
       - name: Build packages
         run: pnpm turbo build
+        env:
+          SKIP_ENV_VALIDATION: 1
 
       - name: Generate Coverage
         run: pnpm turbo test:coverage

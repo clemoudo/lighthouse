@@ -11,7 +11,8 @@
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
     "NEXT_PUBLIC_API_URL",
-    "ALLOWED_ORIGINS"
+    "ALLOWED_ORIGINS",
+    "SKIP_ENV_VALIDATION"
   ],
   "tasks": {
     "build": {

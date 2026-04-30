@@ -40,13 +40,15 @@ const processEnv = {
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
 }
 
-// Validation : Schéma strict sur le serveur, schéma souple sur le client
-const result = isServer ? serverSchema.safeParse(processEnv) : envSchema.safeParse(processEnv)
+// Validation : Schéma strict sur le serveur (sauf au build), schéma souple sur le client
+const isBuild = process.env.SKIP_ENV_VALIDATION === "1"
+const result =
+  isServer && !isBuild ? serverSchema.safeParse(processEnv) : envSchema.safeParse(processEnv)
 
 if (!result.success) {
   console.error(
-    `❌ Invalid environment variables in Web app (${isServer ? "Server" : "Client"}):`,
-    result.error.flatten().fieldErrors,
+    `❌ Invalid environment variables in Web app (${isServer ? "Server" : "Client"}) :\n`,
+    result.error,
   )
 
   if (isServer) {

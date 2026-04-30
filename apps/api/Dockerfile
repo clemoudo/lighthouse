@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y openssl tini curl && \
     apt-get install -y infisical && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+COPY infra/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 FROM base AS pruner
 RUN npm install -g turbo
@@ -19,8 +21,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM installer AS development
 COPY --from=pruner /app/out/full/ .
-COPY infra/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY --from=base /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["pnpm", "--filter", "api", "dev"]
@@ -43,8 +44,7 @@ COPY --from=builder --chown=expressjs:expressjs /app/deploy/dist ./apps/api/dist
 COPY --from=builder --chown=expressjs:expressjs /app/deploy/package.json ./apps/api/package.json
 COPY --from=builder --chown=expressjs:expressjs /app/deploy/node_modules ./node_modules
 
-COPY infra/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY --from=base /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["node", "apps/api/dist/index.js"]
