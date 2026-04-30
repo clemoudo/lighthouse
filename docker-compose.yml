@@ -58,6 +58,7 @@ services:
 
   web:
     container_name: web
+    image: ${WEB_IMAGE:-lighthouse-web:latest}
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
@@ -103,6 +104,7 @@ services:
 
   api:
     container_name: api
+    image: ${API_IMAGE:-lighthouse-api:latest}
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile

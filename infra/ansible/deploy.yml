@@ -1,0 +1,7 @@
+---
+- name: Déployer l'application
+  hosts: vps
+  become: no
+  remote_user: deploy
+  roles:
+    - app

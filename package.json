@@ -23,7 +23,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
-    "provision": "cd infra/ansible && infisical run --env=dev -- ansible-playbook provision.yml"
+    "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
+    "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

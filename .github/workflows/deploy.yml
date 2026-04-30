@@ -1,0 +1,125 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase image names
+        run: |
+          echo "IMAGE_NAME_WEB=$(echo ${{ env.IMAGE_BASE_NAME }}-web | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME_API=$(echo ${{ env.IMAGE_BASE_NAME }}-api | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract metadata (tags, labels) for Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          target: production
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.INF_NEXT_PUBLIC_API_URL }}
+            BASE_DOMAIN=${{ secrets.INF_BASE_DOMAIN }}
+            API_HOST=${{ secrets.INF_API_HOST }}
+            API_PORT=${{ secrets.INF_API_PORT }}
+            WEB_HOST=${{ secrets.INF_WEB_HOST }}
+            WEB_PORT=${{ secrets.INF_WEB_PORT }}
+
+      - name: Extract metadata (tags, labels) for API
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          target: production
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.INF_SSH_PRIVATE_KEY }}" > ~/.ssh/ansible
+          chmod 600 ~/.ssh/ansible
+
+      - name: Lowercase image names for Ansible
+        run: |
+          echo "IMAGE_NAME_WEB=$(echo ${{ env.IMAGE_BASE_NAME }}-web | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME_API=$(echo ${{ env.IMAGE_BASE_NAME }}-api | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Run Ansible Deploy Playbook
+        working-directory: infra/ansible
+        run: |
+          # Récupération du SHA court pour le tag d'image
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          
+          ansible-playbook deploy.yml \
+            -e "vps_ip=${{ secrets.INF_VPS_IP }}" \
+            -e "base_domain=${{ secrets.INF_BASE_DOMAIN }}" \
+            -e "traefik_dashboard_auth=${{ secrets.INF_TRAEFIK_DASHBOARD_AUTH }}" \
+            -e "db_user=${{ secrets.INF_DB_USER }}" \
+            -e "db_password=${{ secrets.INF_DB_PASSWORD }}" \
+            -e "db_name=${{ secrets.INF_DB_NAME }}" \
+            -e "ghcr_username=${{ github.actor }}" \
+            -e "ghcr_pat=${{ secrets.GITHUB_TOKEN }}" \
+            -e "web_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:sha-${SHORT_SHA}" \
+            -e "api_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${SHORT_SHA}" \
+            -e "infisical_project_id=${{ secrets.INFISICAL_PROJECT_ID }}" \
+            -e "infisical_client_id_web=${{ secrets.INFISICAL_CLIENT_ID_WEB }}" \
+            -e "infisical_client_secret_web=${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}" \
+            -e "infisical_client_id_api=${{ secrets.INFISICAL_CLIENT_ID_API }}" \
+            -e "infisical_client_secret_api=${{ secrets.INFISICAL_CLIENT_SECRET_API }}" \
+            --private-key ~/.ssh/ansible

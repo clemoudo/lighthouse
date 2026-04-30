@@ -1,0 +1,71 @@
+---
+- name: Créer le répertoire de l'application
+  file:
+    path: /home/deploy/app/infra/traefik
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: '0755'
+    recurse: yes
+
+- name: Créer le répertoire pour PostgreSQL
+  file:
+    path: /home/deploy/app/infra/postgres
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: '0755'
+    recurse: yes
+
+- name: Copier le fichier docker-compose.yml
+  copy:
+    src: "{{ playbook_dir }}/../../docker-compose.yml"
+    dest: /home/deploy/app/docker-compose.yml
+    owner: deploy
+    group: deploy
+    mode: '0644'
+
+- name: Copier la configuration Traefik
+  copy:
+    src: "{{ playbook_dir }}/../traefik/traefik.yml"
+    dest: /home/deploy/app/infra/traefik/traefik.yml
+    owner: deploy
+    group: deploy
+    mode: '0644'
+
+- name: Copier les fichiers de base de données PostgreSQL
+  copy:
+    src: "{{ playbook_dir }}/../postgres/"
+    dest: /home/deploy/app/infra/postgres/
+    owner: deploy
+    group: deploy
+    mode: '0644'
+
+- name: Créer le dossier pour les certificats Let's Encrypt
+  file:
+    path: /home/deploy/app/infra/traefik/letsencrypt
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: '0755'
+
+- name: Générer le fichier .env de production
+  template:
+    src: env.j2
+    dest: /home/deploy/app/.env
+    owner: deploy
+    group: deploy
+    mode: '0600'
+
+- name: Se connecter à GHCR
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ ghcr_username }}"
+    password: "{{ ghcr_pat }}"
+
+- name: Déployer l'application avec Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /home/deploy/app
+    state: present
+    pull: always
+    remove_orphans: yes
