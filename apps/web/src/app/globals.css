@@ -2,11 +2,19 @@
 
 @import "tailwindcss";
 
+:root {
+  /* Brand colors (Sidebar color is the true primary) */
+  --brand-primary: oklch(0.35 0.12 240);
+  --brand-success: oklch(0.58 0.16 145);
+  --brand-warning: oklch(0.68 0.15 65);
+  --brand-error: oklch(0.52 0.22 25);
+}
+
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", monospace;
 
-  /* Sync Tailwind primary with Ant Design generated CSS variables */
+  /* Sync Tailwind with Ant Design generated CSS variables */
   --color-primary: var(--ant-color-primary);
   --color-primary-hover: var(--ant-color-primary-hover);
   --color-primary-active: var(--ant-color-primary-active);
@@ -15,16 +23,10 @@
   --color-warning: var(--ant-color-warning);
   --color-error: var(--ant-color-error);
 
-  /* Brand colors mapped to Tailwind utilities */
-  --color-sidebar-bg: oklch(0.35 0.12 240);
+  /* Sidebar uses the brand primary color */
+  --color-sidebar-bg: var(--brand-primary);
   --color-sidebar-fg: oklch(0.95 0.01 240);
   --color-sidebar-border: oklch(0.4 0.1 240);
   --color-sidebar-accent: oklch(0.4 0.1 240);
   --color-sidebar-accent-fg: oklch(0.99 0 0);
-
-  --color-brand-primary: oklch(0.42 0.14 240);
-  --color-brand-success: oklch(0.58 0.16 145);
-  --color-brand-warning: oklch(0.68 0.15 65);
-  --color-brand-danger: oklch(0.52 0.22 25);
-  --color-default: oklch(0.92 0.01 240);
 }

@@ -79,7 +79,7 @@ function UserProfile() {
   const items: MenuProps["items"] = [
     {
       key: "profile",
-      label: "Mon Profil",
+      label: <Link href="/settings">Mon Profil</Link>,
       icon: <UserIcon size={16} />,
     },
     {
