@@ -1,0 +1,48 @@
+---
+- name: Installer les paquets nécessaires pour Docker
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+
+- name: Créer le dossier pour les clés apt
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Ajouter la clé GPG officielle de Docker
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
+    state: present
+    keyring: /etc/apt/keyrings/docker.gpg
+
+- name: Ajouter le dépôt Docker
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_facts['distribution_release'] }} stable"
+    state: present
+
+- name: Installer Docker Engine et Docker Compose
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+- name: S'assurer que Docker est lancé et activé
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ajouter l'utilisateur deploy au groupe docker
+  user:
+    name: deploy
+    groups: docker
+    append: yes

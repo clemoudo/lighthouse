@@ -22,7 +22,8 @@
     "prepare": "husky",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "release": "turbo run build && changeset publish",
+    "provision": "cd infra/ansible && infisical run --env=dev -- ansible-playbook provision.yml"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

@@ -1,0 +1,70 @@
+---
+- name: Mettre à jour le cache apt et les paquets
+  apt:
+    update_cache: yes
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Installer les dépendances de base
+  apt:
+    name:
+      - curl
+      - gnupg
+      - software-properties-common
+      - ufw
+      - fail2ban
+      - git
+    state: present
+
+- name: Créer l'utilisateur de déploiement
+  user:
+    name: deploy
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: Ajouter la clé SSH au compte deploy depuis la machine locale
+  authorized_key:
+    user: deploy
+    state: present
+    key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"
+
+- name: Configurer UFW - Autoriser SSH (Port par défaut 22 pour l'instant)
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: Configurer UFW - Autoriser HTTP
+  ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+
+- name: Configurer UFW - Autoriser HTTPS
+  ufw:
+    rule: allow
+    port: '443'
+    proto: tcp
+
+- name: Activer UFW
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: S'assurer que Fail2ban est lancé et activé
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: Hardening SSH - Désactiver le login root et l'auth par mot de passe
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+  notify: restart ssh

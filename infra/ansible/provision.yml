@@ -1,0 +1,7 @@
+---
+- name: Provisionner et sécuriser le VPS
+  hosts: vps
+  become: yes
+  roles:
+    - security
+    - docker
