@@ -36,7 +36,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 RUN pnpm --filter @repo/db generate
 RUN pnpm turbo run build --filter=api
 # Deploy only the API and its prod dependencies to /app/deploy
-RUN pnpm --filter=api --prod deploy /app/deploy
+RUN pnpm --filter=api --prod deploy --legacy /app/deploy
 
 FROM base AS production
 RUN addgroup --system --gid 1001 expressjs && \

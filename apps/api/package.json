@@ -10,13 +10,8 @@
     "lint:fix": "eslint \"src/**/*.ts*\" --fix",
     "start": "node dist/index.js",
     "tsc": "tsc --noEmit",
-    "test": "jest --detectOpenHandles",
-    "test:coverage": "jest --coverage",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
     "format": "prettier --write . --ignore-path ../../.prettierignore --list-different"
-  },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
   },
   "dependencies": {
     "@repo/api": "workspace:*",
