@@ -104,24 +104,30 @@ jobs:
 
       - name: Run Ansible Deploy Playbook
         working-directory: infra/ansible
+        env:
+          VPS_IP: ${{ secrets.INF_VPS_IP }}
+          BASE_DOMAIN: ${{ secrets.INF_BASE_DOMAIN }}
+          TRAEFIK_DASHBOARD_AUTH: ${{ secrets.INF_TRAEFIK_DASHBOARD_AUTH }}
+          DB_USER: ${{ secrets.INF_DB_USER }}
+          DB_PASSWORD: ${{ secrets.INF_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.INF_DB_NAME }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.INF_NEXT_PUBLIC_API_URL }}
+          API_HOST: ${{ secrets.INF_API_HOST }}
+          API_PORT: ${{ secrets.INF_API_PORT }}
+          WEB_HOST: ${{ secrets.INF_WEB_HOST }}
+          WEB_PORT: ${{ secrets.INF_WEB_PORT }}
+          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
+          INFISICAL_CLIENT_ID_WEB: ${{ secrets.INFISICAL_CLIENT_ID_WEB }}
+          INFISICAL_CLIENT_SECRET_WEB: ${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}
+          INFISICAL_CLIENT_ID_API: ${{ secrets.INFISICAL_CLIENT_ID_API }}
+          INFISICAL_CLIENT_SECRET_API: ${{ secrets.INFISICAL_CLIENT_SECRET_API }}
         run: |
           # Récupération du SHA court pour le tag d'image
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           
           ansible-playbook deploy.yml \
-            -e "vps_ip=${{ secrets.INF_VPS_IP }}" \
-            -e "base_domain=${{ secrets.INF_BASE_DOMAIN }}" \
-            -e "traefik_dashboard_auth=${{ secrets.INF_TRAEFIK_DASHBOARD_AUTH }}" \
-            -e "db_user=${{ secrets.INF_DB_USER }}" \
-            -e "db_password=${{ secrets.INF_DB_PASSWORD }}" \
-            -e "db_name=${{ secrets.INF_DB_NAME }}" \
             -e "ghcr_username=${{ github.actor }}" \
             -e "ghcr_pat=${{ secrets.GITHUB_TOKEN }}" \
             -e "web_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:sha-${SHORT_SHA}" \
             -e "api_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${SHORT_SHA}" \
-            -e "infisical_project_id=${{ secrets.INFISICAL_PROJECT_ID }}" \
-            -e "infisical_client_id_web=${{ secrets.INFISICAL_CLIENT_ID_WEB }}" \
-            -e "infisical_client_secret_web=${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}" \
-            -e "infisical_client_id_api=${{ secrets.INFISICAL_CLIENT_ID_API }}" \
-            -e "infisical_client_secret_api=${{ secrets.INFISICAL_CLIENT_SECRET_API }}" \
             --private-key ~/.ssh/ansible
