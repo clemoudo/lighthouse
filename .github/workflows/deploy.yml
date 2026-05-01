@@ -75,6 +75,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
+          build-args: |
+            DATABASE_URL=${{ secrets.INF_DATABASE_URL }}
 
   deploy:
     needs: build-and-push

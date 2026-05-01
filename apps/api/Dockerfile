@@ -28,6 +28,10 @@ CMD ["pnpm", "--filter", "api", "dev"]
 
 FROM installer AS builder
 COPY --from=pruner /app/out/full/ .
+
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 # Generate Prisma Client for the build
 RUN pnpm --filter @repo/db generate
 RUN pnpm turbo run build --filter=api
