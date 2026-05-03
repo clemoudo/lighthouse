@@ -31,6 +31,7 @@ COPY --from=pruner /app/out/full/ .
 
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
+ENV SKIP_ENV_VALIDATION=1
 
 # Generate Prisma client and build
 RUN pnpm --filter @repo/db generate
@@ -38,6 +39,10 @@ RUN pnpm turbo run build --filter=api
 
 # Deploy isolated API
 RUN pnpm --filter=api --prod deploy --legacy /app/deploy
+
+# Generate Prisma client inside the isolated directory so it's placed correctly in the deployed node_modules
+WORKDIR /app/deploy
+RUN pnpm dlx prisma generate --schema=node_modules/@repo/db/prisma/schema.prisma
 
 FROM base AS production
 RUN addgroup --system --gid 1001 expressjs && \

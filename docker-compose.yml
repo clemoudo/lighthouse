@@ -15,7 +15,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 10s
     depends_on:
       web:
         condition: service_healthy
@@ -78,11 +78,11 @@ services:
       - INFISICAL_CLIENT_ID=${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID_WEB}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET_WEB}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${WEB_PORT}"]
+      test: ["CMD", "curl", "-f", "http://web:${WEB_PORT}"]
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
@@ -119,11 +119,11 @@ services:
       - INFISICAL_CLIENT_ID=${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID_API}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET_API}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT}/status"]
+      test: ["CMD", "curl", "-f", "http://api:${API_PORT}/status"]
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${BASE_DOMAIN}`) && PathPrefix(`/api`)"

@@ -44,7 +44,11 @@ FROM base AS production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-RUN chown -R nextjs:nodejs /app
+# Installer curl pour le healthcheck et donner la propriété du dossier /app
+RUN apt-get update && apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    chown -R nextjs:nodejs /app
+
 USER nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
