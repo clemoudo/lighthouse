@@ -1,21 +1,18 @@
 ---
-- name: Créer le répertoire de l'application
+- name: Créer les répertoires de l'application
   file:
-    path: /home/deploy/app/infra/traefik
+    path: "/home/deploy/app/{{ item }}"
     state: directory
     owner: deploy
     group: deploy
     mode: '0755'
     recurse: yes
-
-- name: Créer le répertoire pour PostgreSQL
-  file:
-    path: /home/deploy/app/infra/postgres
-    state: directory
-    owner: deploy
-    group: deploy
-    mode: '0755'
-    recurse: yes
+  loop:
+    - infra/traefik
+    - infra/postgres
+    - infra/traefik/letsencrypt
+    - apps/web
+    - apps/api
 
 - name: Copier le fichier docker-compose.yml
   copy:
@@ -24,6 +21,17 @@
     owner: deploy
     group: deploy
     mode: '0644'
+
+- name: Copier les Dockerfiles (Requis pour que Docker Compose puisse parser le fichier)
+  copy:
+    src: "{{ playbook_dir }}/../../{{ item }}"
+    dest: "/home/deploy/app/{{ item }}"
+    owner: deploy
+    group: deploy
+    mode: '0644'
+  loop:
+    - apps/web/Dockerfile
+    - apps/api/Dockerfile
 
 - name: Copier la configuration Traefik
   copy:
@@ -40,14 +48,6 @@
     owner: deploy
     group: deploy
     mode: '0644'
-
-- name: Créer le dossier pour les certificats Let's Encrypt
-  file:
-    path: /home/deploy/app/infra/traefik/letsencrypt
-    state: directory
-    owner: deploy
-    group: deploy
-    mode: '0755'
 
 - name: Générer le fichier .env de production
   template:
