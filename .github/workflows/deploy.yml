@@ -117,14 +117,14 @@ jobs:
           WEB_HOST: ${{ secrets.INF_WEB_HOST }}
           WEB_PORT: ${{ secrets.INF_WEB_PORT }}
           INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
-          INFISICAL_UNIVERSAL_AUTH_CLIENT_ID_WEB: ${{ secrets.INFISICAL_CLIENT_ID_WEB }}
-          INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET_WEB: ${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}
-          INFISICAL_UNIVERSAL_AUTH_CLIENT_ID_API: ${{ secrets.INFISICAL_CLIENT_ID_API }}
-          INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET_API: ${{ secrets.INFISICAL_CLIENT_SECRET_API }}
+          INFISICAL_CLIENT_ID_WEB: ${{ secrets.INFISICAL_CLIENT_ID_WEB }}
+          INFISICAL_CLIENT_SECRET_WEB: ${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}
+          INFISICAL_CLIENT_ID_API: ${{ secrets.INFISICAL_CLIENT_ID_API }}
+          INFISICAL_CLIENT_SECRET_API: ${{ secrets.INFISICAL_CLIENT_SECRET_API }}
         run: |
           # Récupération du SHA court pour le tag d'image
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          
+
           ansible-playbook deploy.yml \
             -e "ghcr_username=${{ github.actor }}" \
             -e "ghcr_pat=${{ secrets.GITHUB_TOKEN }}" \
