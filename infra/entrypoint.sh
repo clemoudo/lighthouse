@@ -9,11 +9,18 @@ echo "🔐 Infisical: Authentication check..."
 # If Client ID and Secret are provided, we login to get a fresh token
 if [ -n "$INFISICAL_CLIENT_ID" ] && [ -n "$INFISICAL_CLIENT_SECRET" ]; then
     echo "🔑 Logging in with Machine Identity..."
-    export INFISICAL_TOKEN=$(infisical login --method=universal-auth \
+    LOGIN_OUTPUT=$(infisical login --method=universal-auth \
         --client-id="$INFISICAL_CLIENT_ID" \
         --client-secret="$INFISICAL_CLIENT_SECRET" \
-        --silent --plain)
-    echo "✅ Successfully authenticated with Infisical."
+        --silent --plain 2>&1)
+    
+    if [ $? -eq 0 ] && [ -n "$LOGIN_OUTPUT" ]; then
+        export INFISICAL_TOKEN=$LOGIN_OUTPUT
+        echo "✅ Successfully authenticated with Infisical."
+    else
+        echo "❌ Infisical authentication failed: $LOGIN_OUTPUT"
+        exit 1
+    fi
 elif [ -n "$INFISICAL_TOKEN" ]; then
     echo "🎫 Using provided INFISICAL_TOKEN."
 else

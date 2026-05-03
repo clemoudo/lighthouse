@@ -43,6 +43,7 @@ services:
   web:
     tty: true
     stdin_open: true
+    image: ${WEB_IMAGE:-lighthouse-web:latest-dev}
     volumes:
       - .:/app
       - /app/node_modules
@@ -61,6 +62,7 @@ services:
   api:
     tty: true
     stdin_open: true
+    image: ${API_IMAGE:-lighthouse-api:latest-dev}
     volumes:
       - .:/app
       - /app/node_modules

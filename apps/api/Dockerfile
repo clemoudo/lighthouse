@@ -32,15 +32,18 @@ COPY --from=pruner /app/out/full/ .
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
-# Generate Prisma Client for the build
+# Generate Prisma client and build
 RUN pnpm --filter @repo/db generate
 RUN pnpm turbo run build --filter=api
-# Deploy only the API and its prod dependencies to /app/deploy
+
+# Deploy isolated API
 RUN pnpm --filter=api --prod deploy --legacy /app/deploy
 
 FROM base AS production
 RUN addgroup --system --gid 1001 expressjs && \
     adduser --system --uid 1001 expressjs
+
+RUN chown -R expressjs:expressjs /app
 USER expressjs
 
 # Copy only the deployed app
