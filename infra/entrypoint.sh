@@ -37,7 +37,7 @@ fi
 
 # Export secrets to .env.local for better framework compatibility (Next.js, etc.)
 if [ -n "$INFISICAL_TOKEN" ] && [ -n "$INFISICAL_PROJECT_ID" ]; then
-    echo "📝 Exporting Infisical secrets to .env.local..."
+    echo "📝 Exporting Infisical secrets to .env.local... ($INFISICAL_ENV)"
     infisical export \
         --token="$INFISICAL_TOKEN" \
         --projectId="$INFISICAL_PROJECT_ID" \
