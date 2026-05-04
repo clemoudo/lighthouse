@@ -41,34 +41,24 @@ else
     echo "⚠️ No Infisical credentials found (INFISICAL_CLIENT_ID/SECRET or INFISICAL_TOKEN). Proceeding without Infisical run."
 fi
 
-# Export secrets to .env.local for better framework compatibility (Next.js, etc.)
+# Export secrets to .env for better compatibility with Node.js and Prisma
 if [ -n "$INFISICAL_TOKEN" ] && [ -n "$INFISICAL_PROJECT_ID" ]; then
-    echo "📝 Exporting Infisical secrets to .env.local..."
+    echo "📝 Exporting Infisical secrets to .env..."
     infisical export \
         --token="$INFISICAL_TOKEN" \
         --projectId="$INFISICAL_PROJECT_ID" \
         --env="$INFISICAL_ENV" \
         --domain="$INFISICAL_API_URL" \
-        --format=dotenv > .env.local
+        --format=dotenv > .env
 
-    # Copy to app directories for local framework detection
-    [ -d "apps/web" ] && cp .env.local apps/web/.env.local
-    [ -d "apps/api" ] && cp .env.local apps/api/.env.local
+    # Source variables into the current shell process so child processes inherit them
+    set -a
+    source .env
+    set +a
 
-    echo "✅ .env.local generated and distributed."
+    echo "✅ .env generated and variables loaded into environment."
 fi
 
-# Determine if we should use 'infisical run' for the final command
-if [ -n "$INFISICAL_TOKEN" ] && [ -n "$INFISICAL_PROJECT_ID" ]; then
-    echo "🚀 Running command with 'infisical run' (Environment: $INFISICAL_ENV)..."
-    exec infisical run \
-        --token="$INFISICAL_TOKEN" \
-        --projectId="$INFISICAL_PROJECT_ID" \
-        --env="$INFISICAL_ENV" \
-        --domain="$INFISICAL_API_URL" \
-        -- "$@"
-else
-    echo "🚀 Running command directly (no Infisical)..."
-    exec "$@"
-fi
+echo "🚀 Starting application..."
+exec "$@"
 

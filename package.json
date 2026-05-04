@@ -24,7 +24,11 @@
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
     "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
-    "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml"
+    "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml",
+    "db:generate": "set -a && . ./.env && set +a && pnpm --filter @repo/db db:generate",
+    "db:push": "set -a && . ./.env && set +a && pnpm --filter @repo/db db:push",
+    "db:reset": "set -a && . ./.env && set +a && pnpm --filter @repo/db db:reset",
+    "db:migrate": "set -a && . ./.env && set +a && pnpm --filter @repo/db db:migrate"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

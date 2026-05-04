@@ -19,6 +19,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Fetch secrets dynamically via Infisical Action
+      - name: Fetch Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID_PIPELINE }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_PIPELINE }}
+          env-slug: "prod"
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
+          domain: "https://eu.infisical.com"
+
       - name: Log in to the Container registry
         uses: docker/login-action@v4
         with:
@@ -50,12 +60,12 @@ jobs:
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.INF_NEXT_PUBLIC_API_URL }}
-            BASE_DOMAIN=${{ secrets.INF_BASE_DOMAIN }}
-            API_HOST=${{ secrets.INF_API_HOST }}
-            API_PORT=${{ secrets.INF_API_PORT }}
-            WEB_HOST=${{ secrets.INF_WEB_HOST }}
-            WEB_PORT=${{ secrets.INF_WEB_PORT }}
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
+            BASE_DOMAIN=${{ env.BASE_DOMAIN }}
+            API_HOST=${{ env.API_HOST }}
+            API_PORT=${{ env.API_PORT }}
+            WEB_HOST=${{ env.WEB_HOST }}
+            WEB_PORT=${{ env.WEB_PORT }}
 
       - name: Extract metadata (tags, labels) for API
         id: meta-api
@@ -76,7 +86,7 @@ jobs:
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
           build-args: |
-            DATABASE_URL=${{ secrets.INF_DATABASE_URL }}
+            DATABASE_URL=${{ env.DATABASE_URL }}
 
   deploy:
     needs: build-and-push
@@ -84,6 +94,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      # Fetch secrets dynamically again for the deploy job
+      - name: Fetch Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID_PIPELINE }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_PIPELINE }}
+          env-slug: "prod"
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
+          domain: "https://eu.infisical.com"
 
       - name: Setup Ansible
         run: |
@@ -94,7 +114,7 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.INF_SSH_PRIVATE_KEY }}" > ~/.ssh/ansible
+          echo "${{ env.SSH_PRIVATE_KEY }}" > ~/.ssh/ansible
           chmod 600 ~/.ssh/ansible
 
       - name: Lowercase image names for Ansible
@@ -104,23 +124,6 @@ jobs:
 
       - name: Run Ansible Deploy Playbook
         working-directory: infra/ansible
-        env:
-          VPS_IP: ${{ secrets.INF_VPS_IP }}
-          BASE_DOMAIN: ${{ secrets.INF_BASE_DOMAIN }}
-          TRAEFIK_DASHBOARD_AUTH: ${{ secrets.INF_TRAEFIK_DASHBOARD_AUTH }}
-          DB_USER: ${{ secrets.INF_DB_USER }}
-          DB_PASSWORD: ${{ secrets.INF_DB_PASSWORD }}
-          DB_NAME: ${{ secrets.INF_DB_NAME }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.INF_NEXT_PUBLIC_API_URL }}
-          API_HOST: ${{ secrets.INF_API_HOST }}
-          API_PORT: ${{ secrets.INF_API_PORT }}
-          WEB_HOST: ${{ secrets.INF_WEB_HOST }}
-          WEB_PORT: ${{ secrets.INF_WEB_PORT }}
-          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
-          INFISICAL_CLIENT_ID_WEB: ${{ secrets.INFISICAL_CLIENT_ID_WEB }}
-          INFISICAL_CLIENT_SECRET_WEB: ${{ secrets.INFISICAL_CLIENT_SECRET_WEB }}
-          INFISICAL_CLIENT_ID_API: ${{ secrets.INFISICAL_CLIENT_ID_API }}
-          INFISICAL_CLIENT_SECRET_API: ${{ secrets.INFISICAL_CLIENT_SECRET_API }}
         run: |
           # Récupération du SHA court pour le tag d'image
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
