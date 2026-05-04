@@ -6,7 +6,6 @@
     owner: deploy
     group: deploy
     mode: '0755'
-    recurse: yes
   loop:
     - infra/traefik
     - infra/postgres
