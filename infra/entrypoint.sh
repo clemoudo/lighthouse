@@ -2,7 +2,7 @@
 set -e
 
 # Configuration Infisical API URL if not set
-export INFISICAL_API_URL="${INFISICAL_API_URL:-https://app.infisical.com/api}"
+export INFISICAL_API_URL="${INFISICAL_API_URL:-https://eu.infisical.com/}"
 
 # Determine Infisical environment
 INFISICAL_ENV="dev"
