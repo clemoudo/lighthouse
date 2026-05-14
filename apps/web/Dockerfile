@@ -2,6 +2,8 @@ FROM node:24-trixie-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+# Explicitly set the pnpm store directory for cache mounts
+ENV PNPM_CONFIG_STORE_DIR=/pnpm/store
 RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
 RUN apt-get update && apt-get install -y openssl tini curl && \
     curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | bash && \
@@ -23,7 +25,8 @@ RUN turbo prune web --docker
 
 FROM base AS installer
 COPY --from=pruner /app/out/json/ .
-RUN pnpm install --frozen-lockfile
+# Use cache mount to persist pnpm store between builds
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM installer AS development
 COPY --from=pruner /app/out/full/ .

@@ -21,7 +21,6 @@
     "test": "infisical run --env=dev -- turbo run test",
     "tsc": "infisical run --env=dev -- turbo run tsc",
     "prepare": "husky",
-    "postinstall": "pnpm --filter @repo/db generate",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
