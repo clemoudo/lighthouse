@@ -4,10 +4,6 @@
       "command": "npx",
       "args": ["next-devtools-mcp@latest"]
     },
-    "heroui-react": {
-      "command": "npx",
-      "args": ["-y", "@heroui/react-mcp@latest"]
-    },
     "better-auth": {
       "url": "https://mcp.better-auth.com/mcp"
     },

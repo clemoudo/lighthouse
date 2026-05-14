@@ -6,6 +6,11 @@ RUN apt-get update && apt-get install -y openssl tini curl && \
     curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | bash && \
     apt-get install -y infisical && \
     rm -rf /var/lib/apt/lists/*
+
+# Global shell configuration to load .env automatically
+COPY infra/bash_profile.sh /etc/profile.d/load_env.sh
+RUN echo "source /etc/profile.d/load_env.sh" >> /etc/bash.bashrc
+
 WORKDIR /app
 COPY infra/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

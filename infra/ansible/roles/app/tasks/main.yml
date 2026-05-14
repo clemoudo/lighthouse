@@ -72,7 +72,7 @@
 - name: Appliquer les migrations Prisma (Sécurisé pour la production)
   community.docker.docker_container_exec:
     container: api
-    command: npx prisma migrate deploy --schema=node_modules/@repo/db/prisma/schema.prisma
+    command: /bin/sh -c "set -a && . ./.env && set +a && npx prisma migrate deploy --schema=node_modules/@repo/db/prisma/schema.prisma"
   register: migration_result
   failed_when: migration_result.rc != 0
 
