@@ -1,75 +1,82 @@
-# Turborepo Docker starter
+# Lighthouse 🏛️
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
+**Faciliter l'accès au programme scolaire belge via l'intelligence artificielle.**
 
-## Using this example
+Lighthouse est une plateforme web conçue pour les institutrices maternelles en Belgique. Elle permet une recherche sémantique et contextuelle au sein du programme scolaire grâce à une architecture RAG (Retrieval Augmented Generation).
 
-Run the following command:
+## 🚀 Guide de démarrage rapide (Local)
 
-```sh
-npx create-turbo@latest -e with-docker
-```
+Ce projet utilise un monorepo géré par **Turborepo** avec **pnpm**.
 
-## What's inside?
+### 📋 Prérequis
 
-This Turborepo includes the following:
+- **Node.js**: >= 24.0.0
+- **pnpm**: >= 11.0.0
+- **Docker & Docker Compose**: Pour le déploiement de l'application.
+- **Infisical CLI**: Utilisé pour la gestion sécurisée des variables d'environnement.
+- **Configuration des hôtes**: Ajouter `127.0.0.1 lighthouse.local` à votre fichier `/etc/hosts` (Linux/macOS) ou `C:\Windows\System32\drivers\etc\hosts` (Windows).
 
-### Apps and Packages
+### 🛠️ Installation
 
-- `web`: a [Next.js](https://nextjs.org/) app
-- `api`: an [Express](https://expressjs.com/) server
-- `@repo/ui`: a React component library
-- `@repo/logger`: Isomorphic logger (a small wrapper around console.log)
-- `@repo/eslint-config`: ESLint presets
-- `@repo/typescript-config`: tsconfig.json's used throughout the monorepo
-- `@repo/jest-presets`: Jest configurations
+1. **Cloner le projet**
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+   ```bash
+   git clone git@github.com:clemoudo/lighthouse.git
+   cd lighthouse
+   ```
 
-### Docker
+2. **Installer les dépendances**
 
-This repo is configured to be built with Docker, and Docker compose. To build all apps in this repo:
+   ```bash
+   pnpm install
+   ```
 
-```bash
-# Install dependencies
-yarn install
+3. **Lancer l'infrastructure (Docker)**
+   Cette commande lance PostgreSQL (avec pgvector) et Traefik.
 
-# Create a network, which allows containers to communicate
-# with each other, by using their container name as a hostname
-docker network create app_network
+   ```bash
+   pnpm docker:dev
+   ```
 
-# Build prod using new BuildKit engine
-COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml build
+4. **Préparer la base de données**
 
-# Start prod in detached mode
-docker-compose -f docker-compose.yml up -d
-```
+   ```bash
+   docker exec -it api pnpm db:push
+   ```
 
-Open <http://localhost:3000>.
+L'application sera accessible sur :
 
-To shutdown all running containers:
+- **Frontend**: [http://lighthouse.local:3000](http://lighthouse.local:3000)
+- **API Gateway**: [http://lighthouse.local:3001](http://lighthouse.local:3001)
 
-```bash
-# Stop running containers started by docker-compse
- docker-compose -f docker-compose.yml down
-```
+---
 
-### Remote Caching
+## 🏗️ Architecture du projet
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+Le projet est divisé en plusieurs applications et packages :
 
-This example includes optional remote caching. In the Dockerfiles of the apps, uncomment the build arguments for `TURBO_TEAM` and `TURBO_TOKEN`. Then, pass these build arguments to your Docker build.
+### Applications (`apps/`)
 
-You can test this behavior using a command like:
+- [**web**](./apps/web): Interface utilisateur Next.js 16.
+- [**api**](./apps/api): Gateway API Express 5 gérant l'authentification et la logique métier.
 
-`docker build -f apps/web/Dockerfile . --build-arg TURBO_TEAM=“your-team-name” --build-arg TURBO_TOKEN=“your-token“ --no-cache`
+### Packages (`packages/`)
 
-### Utilities
+- [**api**](./packages/api): Définitions OpenAPI et schémas Zod partagés.
+- [**db**](./packages/db): Couche d'accès aux données (Prisma ORM).
+- [**logger**](./packages/logger): Utilitaire de logging unifié.
+- [**eslint-config**](./packages/eslint-config): Configurations ESLint partagées.
+- [**typescript-config**](./packages/typescript-config): Configurations TypeScript partagées.
+- [**prettier-config**](./packages/prettier-config): Configuration Prettier partagée.
+- [**jest-presets**](./packages/jest-presets): Configurations Jest partagées.
 
-This Turborepo has some additional tools already setup for you:
+## 🛠️ Stack Technique
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Jest](https://jestjs.io) test runner for all things JavaScript
-- [Prettier](https://prettier.io) for code formatting
+- **Frontend**: Next.js 16 (App Router), Ant Design 6, Tailwind CSS v4, TanStack Query.
+- **Backend**: Express 5, Better Auth, Prisma ORM.
+- **Base de données**: PostgreSQL + pgvector.
+- **DevOps**: Docker, Traefik, Ansible, Infisical.
+
+## 📄 Licence
+
+Ce projet est réalisé dans le cadre d'un Travail de Fin d'Études (TFE) à l'EPHEC.

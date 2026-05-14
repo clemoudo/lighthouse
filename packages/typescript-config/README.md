@@ -1,3 +1,3 @@
-# `tsconfig`
+# TypeScript Config (`@repo/typescript-config`)
 
-These are base shared `tsconfig.json`s from which all other `tsconfig.json`'s inherit from.
+Configurations `tsconfig.json` partagées et réutilisables dans tout le monorepo.
