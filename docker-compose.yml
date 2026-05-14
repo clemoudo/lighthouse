@@ -73,6 +73,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV}
+      - CI=true
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_API_URL=${INFISICAL_API_URL}
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID_WEB}
@@ -114,6 +115,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV}
+      - CI=true
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_API_URL=${INFISICAL_API_URL}
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID_API}

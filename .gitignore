@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 .pnpm-debug.log*
+.pnpm-store/
 
 # Next.js
 .next/

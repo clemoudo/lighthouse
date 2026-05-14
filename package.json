@@ -8,6 +8,7 @@
     "build": "turbo run build",
     "clean": "turbo run clean",
     "docker:dev": "infisical run --env=dev -- docker compose up -d",
+    "docker:build-dev": "infisical run --env=dev -- docker compose build",
     "docker:stop": "infisical run --env=dev -- docker compose down",
     "docker:restart": "pnpm docker:stop && pnpm docker:dev",
     "docker:prod": "infisical run --env=prod -- docker compose -f docker-compose.yml up -d",
@@ -20,12 +21,13 @@
     "test": "infisical run --env=dev -- turbo run test",
     "tsc": "infisical run --env=dev -- turbo run tsc",
     "prepare": "husky",
+    "postinstall": "pnpm --filter @repo/db generate",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
     "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
     "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml",
-    "db:generate": "pnpm --filter @repo/db db:generate",
+    "db:generate": "pnpm --filter @repo/db generate",
     "db:push": "pnpm --filter @repo/db db:push",
     "db:reset": "pnpm --filter @repo/db db:reset",
     "db:migrate": "pnpm --filter @repo/db db:migrate",
@@ -53,7 +55,7 @@
   },
   "engines": {
     "node": ">=24.0.0",
-    "pnpm": ">=10.0.0"
+    "pnpm": ">=11.0.0"
   },
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+  "packageManager": "pnpm@11.1.1"
 }

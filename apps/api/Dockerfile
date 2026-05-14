@@ -1,7 +1,8 @@
 FROM node:24-trixie-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
 RUN apt-get update && apt-get install -y openssl tini curl && \
     curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | bash && \
     apt-get install -y infisical && \
@@ -27,6 +28,7 @@ RUN pnpm install --frozen-lockfile
 FROM installer AS development
 COPY --from=pruner /app/out/full/ .
 COPY --from=base /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN pnpm --filter @repo/db generate
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["pnpm", "--filter", "api", "dev"]
