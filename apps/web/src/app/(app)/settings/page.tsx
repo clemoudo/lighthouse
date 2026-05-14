@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header"
 import { SectionHeader } from "@/components/section-header"
 import { FormField } from "@/components/ui/form-field"
 import { useSession, updateUser, changePassword } from "@/lib/auth-client"
+import { AuthGuard } from "@/components/auth/auth-guard"
 
 // Validation Schemas
 const infoSchema = z.object({
@@ -26,7 +27,7 @@ const passwordSchema = z
     path: ["confirmPassword"],
   })
 
-export default function SettingsPage() {
+function SettingsContent() {
   const { data: session, isPending: isSessionPending, refetch } = useSession()
   const [infoPending, setInfoPending] = useState(false)
   const [passwordPending, setPasswordPending] = useState(false)
@@ -225,5 +226,13 @@ export default function SettingsPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <AuthGuard>
+      <SettingsContent />
+    </AuthGuard>
   )
 }

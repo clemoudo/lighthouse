@@ -2,8 +2,9 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, Input, Button, Alert, Typography, Form } from "antd"
-import { User, Mail, Lock } from "lucide-react"
+import Link from "next/link"
+import { Card, Input, Button, Alert, Typography, Form, Divider } from "antd"
+import { User, Mail, Lock, ArrowRight } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
@@ -129,11 +130,22 @@ export default function SignUpPage() {
       <div style={{ textAlign: "center", marginTop: 16 }}>
         <Text type="secondary" className="text-sm">
           Déjà un compte ?{" "}
-          <a href="/sign-in" className="font-medium text-primary">
+          <Link href="/sign-in" className="font-medium text-primary">
             Se connecter
-          </a>
+          </Link>
         </Text>
       </div>
+
+      <Divider plain>Ou</Divider>
+
+      <Link href="/">
+        <Button block className="flex items-center justify-center">
+          <span className="flex items-center gap-2">
+            Continuer sans compte
+            <ArrowRight size={18} />
+          </span>
+        </Button>
+      </Link>
     </Card>
   )
 }
