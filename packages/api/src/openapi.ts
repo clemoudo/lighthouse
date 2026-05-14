@@ -100,7 +100,7 @@ export function generateOpenAPI(): OpenAPIObject {
     info: {
       version: "1.0.0",
       title: "Lighthouse API",
-      description: "API for the Lighthouse TFE project",
+      description: "API for the Lighthouse project",
     },
     servers: [{ url: "http://localhost:3001" }],
   })

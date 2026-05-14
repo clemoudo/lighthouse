@@ -5,6 +5,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strictNullChecks": true,
+    "preserveWatchOutput": true,
     "paths": {
       "@/*": ["./src/*"]
     }

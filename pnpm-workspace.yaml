@@ -3,6 +3,7 @@ packages:
   - packages/*
 
 overrides:
+  '@hono/node-server@<1.19.13': ^1.19.13
   ajv@<6.14.0: ">=6.14.0"
   brace-expansion@<1.1.13: ">=1.1.13"
   brace-expansion@>=4.0.0 <5.0.5: ">=5.0.5"
@@ -10,11 +11,14 @@ overrides:
   glob@>=10.2.0 <10.5.0: ">=10.5.0"
   handlebars@>=4.0.0 <4.7.9: ">=4.7.9"
   handlebars@>=4.0.0 <=4.7.8: ">=4.7.9"
+  hono@<4.12.16: ^4.12.16
+  hono@<4.12.18: ^4.12.18
   minimatch@>=9.0.0 <9.0.6: ">=9.0.6"
   minimatch@>=9.0.0 <9.0.7: ">=9.0.7"
   path-to-regexp@>=8.0.0 <8.4.0: ">=8.4.0"
   picomatch@<2.3.2: ">=2.3.2"
   picomatch@>=4.0.0 <4.0.4: ">=4.0.4"
+  postcss@<8.5.10: ^8.5.10
 publicHoistPattern:
   - '*eslint*'
   - '*prettier*'
@@ -27,3 +31,8 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@hono/node-server@1.19.13'
+  - postcss@8.5.10
+  - hono@4.12.16
+  - hono@4.12.18

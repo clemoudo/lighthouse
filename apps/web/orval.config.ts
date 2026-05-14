@@ -9,7 +9,7 @@ export default defineConfig({
       client: "react-query",
       mock: false,
       formatter: "prettier",
-      clean: true,
+      clean: false,
       override: {
         mutator: {
           path: "./src/api/custom-fetch.ts",
