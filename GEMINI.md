@@ -20,7 +20,10 @@ L'architecture est basée sur des microservices orchestrés via Docker. Le rever
 
 ## Notes de développement
 
-- All code comments MUST be written in English.
-- Veiller à l'ergonomie et l'accessibilité (tablettes, mobile, PC).
-- Garantir des temps de réponse rapides (< 2s pour la recherche sémantique).
-- Respecter les contraintes GDPR (hébergement local des données, anonymisation).
+- **Local Host:** Always use `lighthouse.local` for local development. Ensure `127.0.0.1 lighthouse.local` is added to the system hosts file.
+- **API Gateway:** Accessible at `http://lighthouse.local:3001`.
+- **Frontend:** Accessible at `http://lighthouse.local:3000`.
+- **Language:** All code comments and technical documentation MUST be written in English.
+- **Ergonomics:** Prioritize accessibility and responsive design (tablets, mobile, PC).
+- **Performance:** Target response times < 2s for semantic search.
+- **GDPR:** Ensure local data hosting and anonymization where required.

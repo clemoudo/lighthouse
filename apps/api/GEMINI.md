@@ -17,6 +17,7 @@
 
 ## Development Rules
 
+- **Access:** Reached via `http://lighthouse.local:3001`.
 - **Tooling:** Use `pnpm build --watch` and `node --watch` (with `--env-file`) for development, and `esbuild` for bundling the production build.
 - **Validation:** Use Zod for request validation and OpenAPI schema definition.
 - **API Spec:** Update the OpenAPI schema whenever routes or schemas change to keep the frontend client in sync.
