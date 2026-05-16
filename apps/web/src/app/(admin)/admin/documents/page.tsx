@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Button, Card, Table, message, Space, Tag } from "antd"
-import { Upload as UploadIcon, FileText, Trash2, LayoutDashboard } from "lucide-react"
+import { Upload, Button, Card, Table, message, Space, Tag, Tooltip, Popconfirm } from "antd"
+import { Upload as UploadIcon, FileText, Trash2, LayoutDashboard, BrainCircuit } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
@@ -18,14 +18,13 @@ export default function AdminDocumentsPage() {
   const queryClient = useQueryClient()
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [ingestingId, setIngestingId] = useState<string | null>(null)
 
-  // Récupération des documents via TanStack Query (généré par Orval)
+  // Récupération des documents
   const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments()
-
-  // Correction du type : narrowing via le status 200
   const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
 
-  // Verification simple du rôle (en plus du middleware serveur)
+  // Verification simple du rôle
   if (!isPending && session?.user.role !== "admin") {
     router.push("/")
     return null
@@ -39,22 +38,16 @@ export default function AdminDocumentsPage() {
     }
 
     const actualFile: File = file.originFileObj || (file as unknown as File)
-
     const formData = new FormData()
     formData.append("file", actualFile)
 
     setUploading(true)
 
     try {
-      console.log(
-        "[UPLOAD_START] Sending request to:",
-        `${env.NEXT_PUBLIC_API_URL}/admin/documents`,
-      )
-
       const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/admin/documents`, {
         method: "POST",
         body: formData,
-        credentials: "include", // CRITIQUE pour envoyer le cookie de session
+        credentials: "include",
       })
 
       const text = await response.text()
@@ -71,14 +64,38 @@ export default function AdminDocumentsPage() {
 
       message.success("Document téléchargé avec succès")
       setFileList([])
-
-      // Invalidation de la requête pour rafraîchir la liste
       await queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
     } catch (error) {
       console.error("[UPLOAD_ERROR]", error)
       message.error(error instanceof Error ? error.message : "Échec du téléchargement")
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleIngest = async (id: string) => {
+    setIngestingId(id)
+    try {
+      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/admin/documents/${id}/ingest`, {
+        method: "POST",
+        credentials: "include",
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || result.error || "Échec de l'ingestion")
+      }
+
+      message.success(
+        `Ingestion réussie : ${result.chaptersCount} chapitres, ${result.chunksCount} chunks indexés.`,
+      )
+      await queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
+    } catch (error) {
+      console.error("[INGEST_ERROR]", error)
+      message.error(error instanceof Error ? error.message : "Erreur lors de l'ingestion IA")
+    } finally {
+      setIngestingId(null)
     }
   }
 
@@ -96,7 +113,7 @@ export default function AdminDocumentsPage() {
         return Upload.LIST_IGNORE
       }
       setFileList([file])
-      return false // On empêche l'upload automatique
+      return false
     },
     fileList,
   }
@@ -160,25 +177,38 @@ export default function AdminDocumentsPage() {
                     day: "2-digit",
                     month: "2-digit",
                     year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
                   }),
-              },
-              {
-                title: "Taille",
-                dataIndex: "fileSize",
-                key: "fileSize",
-                render: (size) => `${(size / 1024 / 1024).toFixed(2)} Mo`,
               },
               {
                 title: "Statut",
                 key: "status",
-                render: () => <Tag color="blue">En attente d'ingestion</Tag>,
+                render: () => <Tag color="blue">Prêt</Tag>,
               },
               {
                 title: "Actions",
                 key: "actions",
-                render: () => <Button type="text" danger icon={<Trash2 size={16} />} />,
+                render: (_, record) => (
+                  <Space>
+                    <Tooltip title="Lancer l'ingestion IA (Parsing + Vectorisation)">
+                      <Popconfirm
+                        title="Lancer l'ingestion ?"
+                        description="Cela va consommer des crédits API pour le parsing et les embeddings."
+                        onConfirm={() => handleIngest(record.id)}
+                        okText="Oui"
+                        cancelText="Non"
+                      >
+                        <Button
+                          type="primary"
+                          icon={<BrainCircuit size={16} />}
+                          loading={ingestingId === record.id}
+                        >
+                          Ingérer
+                        </Button>
+                      </Popconfirm>
+                    </Tooltip>
+                    <Button type="text" danger icon={<Trash2 size={16} />} />
+                  </Space>
+                ),
               },
             ]}
             locale={{ emptyText: "Aucun document pour le moment." }}

@@ -9,6 +9,7 @@ import { prisma } from "@repo/db"
 import { auth } from "./lib/auth"
 import { authMiddleware, requireAuth, requireAdmin } from "./middlewares/auth"
 import { env } from "./env"
+import { ingestDocument } from "./lib/ingestion"
 
 export const createServer = (): Express => {
   const app = express()
@@ -142,6 +143,25 @@ export const createServer = (): Express => {
       }
     },
   )
+
+  // Admin: Ingest Document
+  app.post("/admin/documents/:id/ingest", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params as { id: string }
+      const result = await ingestDocument(id)
+
+      res.json({
+        message: "Ingestion réussie",
+        ...result,
+      })
+    } catch (error) {
+      logger.error("Erreur lors de l'ingestion du document:", error)
+      res.status(500).json({
+        error: "Échec de l'ingestion IA",
+        message: error instanceof Error ? error.message : "Erreur inconnue",
+      })
+    }
+  })
 
   // Health / Status Route
   app.get("/status", async (_req: Request, res: Response) => {

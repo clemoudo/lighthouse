@@ -35,3 +35,11 @@ export const ListDocumentsResponseSchema = z
     documents: z.array(DocumentSchema),
   })
   .openapi("ListDocumentsResponse")
+
+export const IngestDocumentResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Ingestion démarrée avec succès" }),
+    chaptersCount: z.number().openapi({ example: 5 }),
+    chunksCount: z.number().openapi({ example: 120 }),
+  })
+  .openapi("IngestDocumentResponse")

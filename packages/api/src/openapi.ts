@@ -1,7 +1,7 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi"
 import { z } from "zod"
 import { AuthSessionSchema, UserSchema } from "./schemas/auth"
-import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema, ListDocumentsResponseSchema } from "./schemas/document"
+import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema, ListDocumentsResponseSchema, IngestDocumentResponseSchema } from "./schemas/document"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
@@ -110,6 +110,33 @@ registry.registerPath({
     403: {
       description: "Forbidden",
     },
+  },
+})
+
+registry.registerPath({
+  method: "post",
+  path: "/admin/documents/{id}/ingest",
+  summary: "Trigger AI ingestion for a document (Admin only)",
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string", format: "uuid" },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Ingestion completed successfully",
+      content: {
+        "application/json": {
+          schema: IngestDocumentResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    403: { description: "Forbidden" },
+    404: { description: "Document not found" },
   },
 })
 

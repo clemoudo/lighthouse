@@ -26,7 +26,7 @@
     "release": "turbo run build && changeset publish",
     "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
     "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml",
-    "db:generate": "pnpm --filter @repo/db generate",
+    "db:generate": "pnpm --filter @repo/db db:generate",
     "db:push": "pnpm --filter @repo/db db:push",
     "db:reset": "pnpm --filter @repo/db db:reset",
     "db:migrate": "pnpm --filter @repo/db db:migrate",
@@ -49,7 +49,7 @@
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "prettier": "^3.8.3",
-    "turbo": "^2.9.12",
+    "turbo": "^2.9.14",
     "typescript-eslint": "^8.59.3"
   },
   "engines": {

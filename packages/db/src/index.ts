@@ -1,23 +1,64 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, Prisma } from "@prisma/client"
 import { Pool } from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { env } from "./env"
 
 export * from "@prisma/client"
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
 const pool = new Pool({ connectionString: env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
-const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  })
+/**
+ * Extension Prisma pour gérer pgvector de manière élégante et sécurisée.
+ */
+const extendedPrisma = new PrismaClient({
+  adapter,
+  log: env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+}).$extends({
+  model: {
+    chunk: {
+      /**
+       * Insertion massive de chunks avec embeddings.
+       */
+      async createManyWithVectors(
+        chunks: { content: string; embedding: number[]; chapterId: string }[]
+      ) {
+        if (chunks.length === 0) return
+
+        // On crée un tableau de valeurs SQL pour une seule requête bulk insert très performante
+        const values = chunks.map((chunk) => {
+          const vectorStr = `[${chunk.embedding.join(",")}]`
+          return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, NOW(), NOW())`
+        })
+
+        // On utilise extendedPrisma.$executeRaw avec Prisma.join pour garantir la sécurité
+        return extendedPrisma.$executeRaw`
+          INSERT INTO chunk (id, content, embedding, "chapterId", "createdAt", "updatedAt")
+          VALUES ${Prisma.join(values)}
+        `
+      },
+
+      /**
+       * Recherche par similarité cosinus.
+       */
+      async search(embedding: number[], limit = 5) {
+        const vectorStr = `[${embedding.join(",")}]`
+        return extendedPrisma.$queryRaw`
+          SELECT id, content, "chapterId", 1 - (embedding <=> ${vectorStr}::vector) as similarity
+          FROM chunk
+          ORDER BY embedding <=> ${vectorStr}::vector
+          LIMIT ${limit}
+        `
+      }
+    },
+  },
+})
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: typeof extendedPrisma | undefined
+}
+
+const prisma = globalForPrisma.prisma ?? extendedPrisma
 
 if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
 

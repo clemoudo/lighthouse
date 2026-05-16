@@ -29,6 +29,7 @@ import type {
   GetMe401,
   GetStatus200,
   GetStatus503,
+  IngestDocumentResponse,
   ListDocumentsResponse,
 } from "./model"
 
@@ -501,6 +502,123 @@ export const usePostAdminDocuments = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getPostAdminDocumentsMutationOptions(options), queryClient)
+}
+
+export type postAdminDocumentsIdIngestResponse200 = {
+  data: IngestDocumentResponse
+  status: 200
+}
+
+export type postAdminDocumentsIdIngestResponse401 = {
+  data: void
+  status: 401
+}
+
+export type postAdminDocumentsIdIngestResponse403 = {
+  data: void
+  status: 403
+}
+
+export type postAdminDocumentsIdIngestResponse404 = {
+  data: void
+  status: 404
+}
+
+export type postAdminDocumentsIdIngestResponseSuccess = postAdminDocumentsIdIngestResponse200 & {
+  headers: Headers
+}
+export type postAdminDocumentsIdIngestResponseError = (
+  | postAdminDocumentsIdIngestResponse401
+  | postAdminDocumentsIdIngestResponse403
+  | postAdminDocumentsIdIngestResponse404
+) & {
+  headers: Headers
+}
+
+export type postAdminDocumentsIdIngestResponse =
+  | postAdminDocumentsIdIngestResponseSuccess
+  | postAdminDocumentsIdIngestResponseError
+
+export const getPostAdminDocumentsIdIngestUrl = (id: string) => {
+  return `/admin/documents/${id}/ingest`
+}
+
+/**
+ * @summary Trigger AI ingestion for a document (Admin only)
+ */
+export const postAdminDocumentsIdIngest = async (
+  id: string,
+  options?: RequestInit,
+): Promise<postAdminDocumentsIdIngestResponse> => {
+  return customFetch<postAdminDocumentsIdIngestResponse>(getPostAdminDocumentsIdIngestUrl(id), {
+    ...options,
+    method: "POST",
+  })
+}
+
+export const getPostAdminDocumentsIdIngestMutationOptions = <
+  TError = void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
+    TError,
+    { id: string },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["postAdminDocumentsIdIngest"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {}
+
+    return postAdminDocumentsIdIngest(id, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PostAdminDocumentsIdIngestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>
+>
+
+export type PostAdminDocumentsIdIngestMutationError = void
+
+/**
+ * @summary Trigger AI ingestion for a document (Admin only)
+ */
+export const usePostAdminDocumentsIdIngest = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getPostAdminDocumentsIdIngestMutationOptions(options), queryClient)
 }
 
 export type getStatusResponse200 = {

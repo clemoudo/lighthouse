@@ -31,7 +31,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM installer AS development
 COPY --from=pruner /app/out/full/ .
 COPY --from=base /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter @repo/db generate
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter @repo/db db:generate
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["pnpm", "--filter", "api", "dev"]
@@ -44,7 +44,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 ENV SKIP_ENV_VALIDATION=1
 
 # Generate Prisma client and build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter @repo/db generate
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter @repo/db db:generate
 RUN pnpm turbo run build --filter=api
 
 # Deploy isolated API
