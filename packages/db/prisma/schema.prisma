@@ -14,6 +14,10 @@ model User {
   email         String    @unique
   emailVerified Boolean
   image         String?
+  role          String?   @default("user")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -22,14 +26,55 @@ model User {
   @@map("user")
 }
 
-model Session {
+model Document {
   id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
+  title     String
+  filename  String
+  filePath  String
+  fileSize  Int
+  mimeType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chapters  Chapter[]
+
+  @@map("document")
+}
+
+model Chapter {
+  id         String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title      String
+  order      Int
+  content    String?   @db.Text
+  documentId String    @db.Uuid
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunks     Chunk[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("chapter")
+}
+
+model Chunk {
+  id        String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  content   String                      @db.Text
+  embedding Unsupported("vector(1024)")?
+  chapterId String                      @db.Uuid
+  chapter   Chapter                     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt DateTime                    @default(now())
+  updatedAt DateTime                    @updatedAt
+
+  @@map("chunk")
+}
+
+model Session {
+  id             String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime
+  updatedAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
 
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

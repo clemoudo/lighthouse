@@ -85,3 +85,6 @@ postgres_data/
 
 .gemini/
 gha-creds-*.json
+
+# Docs
+docs/

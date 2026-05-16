@@ -1,5 +1,3 @@
-console.log("🚀 SCRIPT LOADED"); // Log immédiat au chargement du fichier
-
 import { generateOpenAPI } from "./openapi";
 import fs from "node:fs";
 import path from "node:path";
@@ -18,5 +16,4 @@ function run() {
   }
 }
 
-console.log("🎯 Calling run()...");
 run();

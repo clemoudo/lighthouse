@@ -120,6 +120,9 @@ services:
       - INFISICAL_API_URL=${INFISICAL_API_URL}
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID_API}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET_API}
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - document_storage:/app/uploads
     healthcheck:
       test: ["CMD", "curl", "-f", "http://api:${API_PORT}/status"]
       interval: 10s
@@ -157,3 +160,4 @@ networks:
 
 volumes:
   postgres_data:
+  document_storage:

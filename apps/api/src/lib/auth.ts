@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth"
+import { admin } from "better-auth/plugins"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@repo/db"
 import { sendEmail } from "./email"
@@ -23,6 +24,7 @@ export const auth = betterAuth({
     },
   },
   socialProviders: {},
+  plugins: [admin()],
   advanced: {
     database: {
       generateId: false,
