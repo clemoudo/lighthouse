@@ -5,20 +5,31 @@
  * API for the Lighthouse project
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query"
 
-import type { GetAuthCheck200, GetMe200, GetMe401, GetStatus200, GetStatus503 } from "./model"
+import type {
+  CreateDocumentRequest,
+  CreateDocumentResponse,
+  GetAuthCheck200,
+  GetMe200,
+  GetMe401,
+  GetStatus200,
+  GetStatus503,
+} from "./model"
 
 import { customFetch } from "../custom-fetch"
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1]
@@ -248,6 +259,129 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Get
   }
 
   return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type postAdminDocumentsResponse201 = {
+  data: CreateDocumentResponse
+  status: 201
+}
+
+export type postAdminDocumentsResponse400 = {
+  data: void
+  status: 400
+}
+
+export type postAdminDocumentsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type postAdminDocumentsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type postAdminDocumentsResponseSuccess = postAdminDocumentsResponse201 & {
+  headers: Headers
+}
+export type postAdminDocumentsResponseError = (
+  | postAdminDocumentsResponse400
+  | postAdminDocumentsResponse401
+  | postAdminDocumentsResponse403
+) & {
+  headers: Headers
+}
+
+export type postAdminDocumentsResponse =
+  | postAdminDocumentsResponseSuccess
+  | postAdminDocumentsResponseError
+
+export const getPostAdminDocumentsUrl = () => {
+  return `/admin/documents`
+}
+
+/**
+ * @summary Upload a new document (Admin only)
+ */
+export const postAdminDocuments = async (
+  createDocumentRequest?: CreateDocumentRequest,
+  options?: RequestInit,
+): Promise<postAdminDocumentsResponse> => {
+  const formData = new FormData()
+  if (createDocumentRequest?.title !== undefined) {
+    formData.append(`title`, createDocumentRequest.title)
+  }
+  if (createDocumentRequest?.file !== undefined) {
+    formData.append(`file`, createDocumentRequest.file)
+  }
+
+  return customFetch<postAdminDocumentsResponse>(getPostAdminDocumentsUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  })
+}
+
+export const getPostAdminDocumentsMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminDocuments>>,
+    TError,
+    { data?: CreateDocumentRequest },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminDocuments>>,
+  TError,
+  { data?: CreateDocumentRequest },
+  TContext
+> => {
+  const mutationKey = ["postAdminDocuments"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminDocuments>>,
+    { data?: CreateDocumentRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return postAdminDocuments(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PostAdminDocumentsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminDocuments>>
+>
+export type PostAdminDocumentsMutationBody = CreateDocumentRequest | undefined
+export type PostAdminDocumentsMutationError = void
+
+/**
+ * @summary Upload a new document (Admin only)
+ */
+export const usePostAdminDocuments = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postAdminDocuments>>,
+      TError,
+      { data?: CreateDocumentRequest },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminDocuments>>,
+  TError,
+  { data?: CreateDocumentRequest },
+  TContext
+> => {
+  return useMutation(getPostAdminDocumentsMutationOptions(options), queryClient)
 }
 
 export type getStatusResponse200 = {

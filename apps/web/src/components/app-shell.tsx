@@ -12,6 +12,7 @@ import {
   MessageSquare,
   LogOut,
   User as UserIcon,
+  ShieldCheck,
 } from "lucide-react"
 import { Button, Drawer, Divider, Avatar, Dropdown, type MenuProps, Skeleton } from "antd"
 import { cn } from "@/lib/utils"
@@ -41,6 +42,15 @@ const navItems = [
     href: "/tracking",
     icon: BarChart3,
     description: "Progression",
+  },
+]
+
+const adminItems = [
+  {
+    name: "Administration",
+    href: "/admin/documents",
+    icon: ShieldCheck,
+    description: "Gestion des documents",
   },
 ]
 
@@ -114,6 +124,8 @@ function UserProfile() {
 
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const isAdmin = session?.user.role === "admin"
 
   return (
     <div className="flex h-full flex-col">
@@ -150,6 +162,38 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
             </Link>
           )
         })}
+
+        {isAdmin && (
+          <>
+            <div className="px-3 pt-4 pb-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                Administration
+              </p>
+            </div>
+            {adminItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <div className="flex flex-col">
+                    <span>{item.name}</span>
+                    <span className="text-xs font-normal opacity-70">{item.description}</span>
+                  </div>
+                </Link>
+              )
+            })}
+          </>
+        )}
       </nav>
 
       {/* Footer / User Profile */}

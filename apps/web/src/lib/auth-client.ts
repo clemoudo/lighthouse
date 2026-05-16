@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react"
+import { adminClient } from "better-auth/client/plugins"
 import { env } from "@/env"
 
 const authClient = createAuthClient({
@@ -6,6 +7,7 @@ const authClient = createAuthClient({
   fetchOptions: {
     credentials: "include",
   },
+  plugins: [adminClient()],
 })
 
 export const {
@@ -17,3 +19,5 @@ export const {
   changePassword,
   sendVerificationEmail,
 } = authClient
+
+export { authClient }

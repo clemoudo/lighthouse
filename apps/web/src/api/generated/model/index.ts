@@ -7,6 +7,9 @@
  */
 
 export * from "./authSession"
+export * from "./createDocumentRequest"
+export * from "./createDocumentResponse"
+export * from "./document"
 export * from "./getAuthCheck200"
 export * from "./getMe200"
 export * from "./getMe401"

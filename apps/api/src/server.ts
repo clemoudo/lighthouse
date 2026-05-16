@@ -1,15 +1,47 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express"
 import cors from "cors"
 import helmet from "helmet"
+import multer from "multer"
+import fs from "node:fs"
 import { toNodeHandler } from "better-auth/node"
 import { logger } from "@repo/logger"
 import { prisma } from "@repo/db"
 import { auth } from "./lib/auth"
-import { authMiddleware, requireAuth } from "./middlewares/auth"
+import { authMiddleware, requireAuth, requireAdmin } from "./middlewares/auth"
 import { env } from "./env"
 
 export const createServer = (): Express => {
   const app = express()
+
+  // Ensure upload directory exists
+  if (!fs.existsSync(env.UPLOAD_DIR)) {
+    fs.mkdirSync(env.UPLOAD_DIR, { recursive: true })
+  }
+
+  // Multer Configuration
+  const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, env.UPLOAD_DIR)
+    },
+    filename: (_req, file, cb) => {
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+      cb(null, `${uniqueSuffix}-${file.originalname}`)
+    },
+  })
+
+  const upload = multer({
+    storage,
+    fileFilter: (_req, file, cb) => {
+      if (file.mimetype === "application/pdf") {
+        cb(null, true)
+      } else {
+        cb(new Error("Seuls les fichiers PDF sont autorisés"))
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB
+    },
+  })
 
   // Security & Middleware
   app.use(helmet())
@@ -61,6 +93,42 @@ export const createServer = (): Express => {
       user: req.user,
     })
   })
+
+  // Admin: Upload Document
+  app.post(
+    "/admin/documents",
+    requireAdmin,
+    upload.single("file"),
+    async (req: Request, res: Response) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "Aucun fichier n'a été téléchargé" })
+        }
+
+        const { title } = req.body
+
+        const document = await prisma.document.create({
+          data: {
+            title: title || req.file.originalname,
+            filename: req.file.filename,
+            filePath: req.file.path,
+            fileSize: req.file.size,
+            mimeType: req.file.mimetype,
+          },
+        })
+
+        logger.info(`[ADMIN] Document uploaded: ${document.title} (ID: ${document.id})`)
+
+        res.status(201).json({
+          message: "Document téléchargé avec succès",
+          document,
+        })
+      } catch (error) {
+        logger.error("Erreur lors de l'upload du document:", error)
+        res.status(500).json({ error: "Erreur interne lors de l'enregistrement du document" })
+      }
+    },
+  )
 
   // Health / Status Route
   app.get("/status", async (_req: Request, res: Response) => {

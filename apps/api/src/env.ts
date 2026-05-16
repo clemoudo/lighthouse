@@ -12,6 +12,7 @@ const envSchema = z.object({
     .string()
     .default("")
     .transform((s) => (s ? s.split(",").map((o) => o.trim()) : [])),
+  UPLOAD_DIR: z.string().default("./uploads"),
 })
 
 const serverSchema = z.object({

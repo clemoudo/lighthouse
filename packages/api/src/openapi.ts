@@ -1,13 +1,15 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi"
 import { z } from "zod"
 import { AuthSessionSchema, UserSchema } from "./schemas/auth"
+import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema } from "./schemas/document"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
 
-// Register components manually or they are registered via .openapi() in schemas
+// Register components
 registry.register("User", UserSchema)
 registry.register("AuthSession", AuthSessionSchema)
+registry.register("Document", DocumentSchema)
 
 // Define routes
 registry.registerPath({
@@ -54,6 +56,40 @@ registry.registerPath({
           }),
         },
       },
+    },
+  },
+})
+
+registry.registerPath({
+  method: "post",
+  path: "/admin/documents",
+  summary: "Upload a new document (Admin only)",
+  request: {
+    body: {
+      content: {
+        "multipart/form-data": {
+          schema: CreateDocumentRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Document uploaded successfully",
+      content: {
+        "application/json": {
+          schema: CreateDocumentResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: "Bad Request",
+    },
+    401: {
+      description: "Unauthorized",
+    },
+    403: {
+      description: "Forbidden",
     },
   },
 })
