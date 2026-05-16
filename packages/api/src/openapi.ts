@@ -1,7 +1,7 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi"
 import { z } from "zod"
 import { AuthSessionSchema, UserSchema } from "./schemas/auth"
-import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema } from "./schemas/document"
+import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema, ListDocumentsResponseSchema } from "./schemas/document"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
@@ -56,6 +56,25 @@ registry.registerPath({
           }),
         },
       },
+    },
+  },
+})
+
+registry.registerPath({
+  method: "get",
+  path: "/documents",
+  summary: "List all documents",
+  responses: {
+    200: {
+      description: "Returns a list of documents",
+      content: {
+        "application/json": {
+          schema: ListDocumentsResponseSchema,
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized",
     },
   },
 })

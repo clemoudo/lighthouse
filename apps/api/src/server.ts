@@ -94,6 +94,19 @@ export const createServer = (): Express => {
     })
   })
 
+  // Documents: List
+  app.get("/documents", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const documents = await prisma.document.findMany({
+        orderBy: { createdAt: "desc" },
+      })
+      res.json({ documents })
+    } catch (error) {
+      logger.error("Erreur lors de la récupération des documents:", error)
+      res.status(500).json({ error: "Erreur interne" })
+    }
+  })
+
   // Admin: Upload Document
   app.post(
     "/admin/documents",

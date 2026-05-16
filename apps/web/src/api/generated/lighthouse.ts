@@ -29,6 +29,7 @@ import type {
   GetMe401,
   GetStatus200,
   GetStatus503,
+  ListDocumentsResponse,
 } from "./model"
 
 import { customFetch } from "../custom-fetch"
@@ -253,6 +254,124 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Get
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type getDocumentsResponse200 = {
+  data: ListDocumentsResponse
+  status: 200
+}
+
+export type getDocumentsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getDocumentsResponseSuccess = getDocumentsResponse200 & {
+  headers: Headers
+}
+export type getDocumentsResponseError = getDocumentsResponse401 & {
+  headers: Headers
+}
+
+export type getDocumentsResponse = getDocumentsResponseSuccess | getDocumentsResponseError
+
+export const getGetDocumentsUrl = () => {
+  return `/documents`
+}
+
+/**
+ * @summary List all documents
+ */
+export const getDocuments = async (options?: RequestInit): Promise<getDocumentsResponse> => {
+  return customFetch<getDocumentsResponse>(getGetDocumentsUrl(), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetDocumentsQueryKey = () => {
+  return [`/documents`] as const
+}
+
+export const getGetDocumentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDocuments>>,
+  TError = void,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocuments>>, TError, TData>>
+  request?: SecondParameter<typeof customFetch>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetDocumentsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDocuments>>> = ({ signal }) =>
+    getDocuments({ signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDocuments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof getDocuments>>>
+export type GetDocumentsQueryError = void
+
+export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>, TError = void>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocuments>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDocuments>>,
+          TError,
+          Awaited<ReturnType<typeof getDocuments>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocuments>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDocuments>>,
+          TError,
+          Awaited<ReturnType<typeof getDocuments>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocuments>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List all documents
+ */
+
+export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocuments>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetDocumentsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>

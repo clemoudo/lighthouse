@@ -29,3 +29,9 @@ export const CreateDocumentResponseSchema = z
     document: DocumentSchema,
   })
   .openapi("CreateDocumentResponse")
+
+export const ListDocumentsResponseSchema = z
+  .object({
+    documents: z.array(DocumentSchema),
+  })
+  .openapi("ListDocumentsResponse")

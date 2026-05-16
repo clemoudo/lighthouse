@@ -165,6 +165,20 @@
           "updatedAt"
         ]
       },
+      "ListDocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          }
+        },
+        "required": [
+          "documents"
+        ]
+      },
       "CreateDocumentResponse": {
         "type": "object",
         "properties": {
@@ -271,6 +285,26 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/documents": {
+      "get": {
+        "summary": "List all documents",
+        "responses": {
+          "200": {
+            "description": "Returns a list of documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDocumentsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

@@ -8,12 +8,22 @@ import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import type { UploadFile } from "antd/es/upload/interface"
 import { env } from "@/env"
+import { useGetDocuments } from "@/api/generated/lighthouse"
+import { useQueryClient } from "@tanstack/react-query"
+import { getGetDocumentsQueryKey } from "@/api/generated/lighthouse"
 
 export default function AdminDocumentsPage() {
   const { data: session, isPending } = useSession()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [uploading, setUploading] = useState(false)
+
+  // Récupération des documents via TanStack Query (généré par Orval)
+  const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments()
+
+  // Correction du type : narrowing via le status 200
+  const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
 
   // Verification simple du rôle (en plus du middleware serveur)
   if (!isPending && session?.user.role !== "admin") {
@@ -61,6 +71,9 @@ export default function AdminDocumentsPage() {
 
       message.success("Document téléchargé avec succès")
       setFileList([])
+
+      // Invalidation de la requête pour rafraîchir la liste
+      await queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
     } catch (error) {
       console.error("[UPLOAD_ERROR]", error)
       message.error(error instanceof Error ? error.message : "Échec du téléchargement")
@@ -97,6 +110,7 @@ export default function AdminDocumentsPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
+        {/* Colonne Upload */}
         <Card title="Importer un nouveau programme" className="shadow-sm">
           <Space orientation="vertical" className="w-full" size="large">
             <Upload.Dragger {...props} maxCount={1} accept=".pdf">
@@ -124,12 +138,38 @@ export default function AdminDocumentsPage() {
           </Space>
         </Card>
 
+        {/* Colonne Liste */}
         <Card title="Documents indexés" className="lg:col-span-2 shadow-sm">
           <Table
-            dataSource={[]}
+            dataSource={documents}
+            loading={isLoadingDocuments}
+            rowKey="id"
             columns={[
-              { title: "Titre", dataIndex: "title", key: "title" },
-              { title: "Date", dataIndex: "createdAt", key: "createdAt" },
+              {
+                title: "Titre",
+                dataIndex: "title",
+                key: "title",
+                render: (text) => <span className="font-medium">{text}</span>,
+              },
+              {
+                title: "Date d'ajout",
+                dataIndex: "createdAt",
+                key: "createdAt",
+                render: (date) =>
+                  new Date(date).toLocaleDateString("fr-BE", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+              },
+              {
+                title: "Taille",
+                dataIndex: "fileSize",
+                key: "fileSize",
+                render: (size) => `${(size / 1024 / 1024).toFixed(2)} Mo`,
+              },
               {
                 title: "Statut",
                 key: "status",
