@@ -3,12 +3,12 @@
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider } from "antd"
-import { Mail, Lock, ArrowRight } from "lucide-react"
+import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider, message } from "antd"
+import { Mail, Lock, ArrowRight, Send } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
-import { signIn } from "@/lib/auth-client"
+import { signIn, sendVerificationEmail } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
 import { getGetMeQueryKey } from "@/api/generated/lighthouse"
@@ -28,6 +28,8 @@ export default function SignInPage() {
   const { refetch } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [isUnverified, setIsUnverified] = useState(false)
+  const [resendPending, setResendPending] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -40,6 +42,7 @@ export default function SignInPage() {
     },
     onSubmit: async ({ value }) => {
       setError(null)
+      setIsUnverified(false)
       setIsPending(true)
 
       try {
@@ -50,7 +53,11 @@ export default function SignInPage() {
         })
 
         if (signInError) {
-          setError(signInError.message || "Email ou mot de passe incorrect.")
+          if (signInError.status === 403) {
+            setIsUnverified(true)
+          } else {
+            setError(signInError.message || "Email ou mot de passe incorrect.")
+          }
           setIsPending(false)
         } else {
           // Invalidate Orval/React-Query cache for the user profile
@@ -66,6 +73,27 @@ export default function SignInPage() {
     },
   })
 
+  const handleResendEmail = async () => {
+    setResendPending(true)
+    try {
+      const { error: resendError } = await sendVerificationEmail({
+        email: form.getFieldValue("email"),
+        callbackURL: "/",
+      })
+
+      if (resendError) {
+        message.error(resendError.message || "Erreur lors de l'envoi de l'email.")
+      } else {
+        message.success("Email de vérification envoyé avec succès !")
+      }
+    } catch (err) {
+      message.error("Une erreur est survenue.")
+      console.error(err)
+    } finally {
+      setResendPending(false)
+    }
+  }
+
   return (
     <Card className="shadow-lg">
       <div className="mb-6 text-center">
@@ -76,6 +104,32 @@ export default function SignInPage() {
       </div>
 
       {error && <Alert title="Erreur" description={error} type="error" showIcon className="mb-4" />}
+
+      {isUnverified && (
+        <Alert
+          message="Email non vérifié"
+          description={
+            <div className="flex flex-col gap-3">
+              <Text className="text-sm">
+                Votre adresse e-mail n'a pas encore été vérifiée. Veuillez consulter votre boîte de
+                réception ou cliquer sur le bouton ci-dessous pour renvoyer le lien.
+              </Text>
+              <Button
+                size="small"
+                icon={<Send size={14} />}
+                onClick={handleResendEmail}
+                loading={resendPending}
+                className="w-fit"
+              >
+                Renvoyer l'email
+              </Button>
+            </div>
+          }
+          type="warning"
+          showIcon
+          className="mb-4"
+        />
+      )}
 
       <Form
         layout="vertical"

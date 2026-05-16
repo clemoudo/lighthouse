@@ -5,6 +5,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
   BETTER_AUTH_SECRET: z.string().optional(),
   BETTER_AUTH_URL: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("onboarding@resend.dev"),
   API_PORT: z.string().default("3001"),
   ALLOWED_ORIGINS: z
     .string()
@@ -16,6 +18,7 @@ const serverSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL est requise"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET est requis"),
   BETTER_AUTH_URL: z.url("BETTER_AUTH_URL doit être une URL valide"),
+  RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY est requise"),
 })
 
 export type Env = z.infer<typeof envSchema>

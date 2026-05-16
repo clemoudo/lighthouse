@@ -1,9 +1,8 @@
 "use client"
 
 import React, { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Card, Input, Button, Alert, Typography, Form, Divider } from "antd"
+import { Card, Input, Button, Alert, Typography, Form, Divider, Result } from "antd"
 import { User, Mail, Lock, ArrowRight } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { useQueryClient } from "@tanstack/react-query"
@@ -23,11 +22,11 @@ const signUpSchema = z.object({
 })
 
 export default function SignUpPage() {
-  const router = useRouter()
   const queryClient = useQueryClient()
   const { refetch } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -54,11 +53,11 @@ export default function SignUpPage() {
           setError(signUpError.message || "Une erreur est survenue lors de l'inscription.")
           setIsPending(false)
         } else {
+          setIsSuccess(true)
           // Invalidate user profile query in React Query
           await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() })
           // Refresh Better-Auth context
           await refetch()
-          router.push("/")
         }
       } catch (err) {
         setError(`Une erreur inattendue est survenue : ${err}`)
@@ -66,6 +65,33 @@ export default function SignUpPage() {
       }
     },
   })
+
+  if (isSuccess) {
+    return (
+      <Card className="shadow-lg">
+        <Result
+          status="success"
+          title="Inscription réussie !"
+          subTitle={
+            <div className="flex flex-col gap-2">
+              <Text>
+                Un e-mail de vérification a été envoyé à l'adresse indiquée. Veuillez cliquer sur le
+                lien qu'il contient pour activer votre compte.
+              </Text>
+              <Text type="secondary" className="text-xs">
+                N'oubliez pas de vérifier vos courriers indésirables (spams).
+              </Text>
+            </div>
+          }
+          extra={[
+            <Link href="/sign-in" key="login">
+              <Button type="primary">Retour à la connexion</Button>
+            </Link>,
+          ]}
+        />
+      </Card>
+    )
+  }
 
   return (
     <Card className="shadow-lg">

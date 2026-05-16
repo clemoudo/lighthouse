@@ -12,7 +12,8 @@
 
 ## Critical Rules
 
-- **Access:** Reached via `http://lighthouse.local:3000`.
+- **Access:** Reached via `http://lighthouse.local`.
+- **API Routing:** All backend requests go through Traefik which STRIPS the `/api` prefix. For example, a request to `http://lighthouse.local/api/auth` reaches the backend as `/auth`.
 - **Hydration:** Always include `suppressHydrationWarning` on the `<html>` tag in `layout.tsx` to prevent mismatches from theme scripts or extensions.
 - **Ant Design Registry:** Ensure `AntdRegistry` from `@ant-design/nextjs-registry` wraps the application in `layout.tsx`.
 - **API Generation:** Use `pnpm generate-api` to update the API client from the backend's OpenAPI spec. Generated code is located in `@repo/api` but used via React Query hooks.
