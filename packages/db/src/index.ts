@@ -8,6 +8,13 @@ export * from "@prisma/client"
 const pool = new Pool({ connectionString: env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
+export interface ChunkSearchResult {
+  id: string
+  content: string
+  chapterId: string
+  similarity: number
+}
+
 /**
  * Extension Prisma pour gérer pgvector de manière élégante et sécurisée.
  */
@@ -41,9 +48,9 @@ const extendedPrisma = new PrismaClient({
       /**
        * Recherche par similarité cosinus.
        */
-      async search(embedding: number[], limit = 5) {
+      async search(embedding: number[], limit = 5): Promise<ChunkSearchResult[]> {
         const vectorStr = `[${embedding.join(",")}]`
-        return extendedPrisma.$queryRaw`
+        return extendedPrisma.$queryRaw<ChunkSearchResult[]>`
           SELECT id, content, "chapterId", 1 - (embedding <=> ${vectorStr}::vector) as similarity
           FROM chunk
           ORDER BY embedding <=> ${vectorStr}::vector

@@ -1,189 +1,153 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Send, User, Sparkles, FileText } from "lucide-react"
-import { Input, Button, Card, Tag, Avatar, Typography } from "antd"
-import { cn } from "@/lib/utils"
+import { useChat, type UIMessage } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
+import { Input, Button, Typography, Space } from "antd"
+import { Send, User, Bot, Sparkles, AlertCircle } from "lucide-react"
+import { PageHeader } from "@/components/page-header"
+import { env } from "@/env"
+import { useEffect, useRef, useState } from "react"
 
 const { Text } = Typography
 
-type Message = {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  sources?: { id: string; title: string; page: number }[]
-}
-
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content:
-      "Bonjour ! Je suis votre assistant pédagogique Lighthouse. Je peux vous aider à explorer le programme scolaire maternel et à planifier vos activités. Que souhaitez-vous savoir aujourd'hui ?",
-  },
-  {
-    id: "2",
-    role: "user",
-    content:
-      "Quelles sont les compétences liées à l'observation de la nature et du vivant en cycle 1 ?",
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content:
-      "Pour le cycle 1 (maternelle), les compétences liées à la nature et au vivant se trouvent principalement dans le domaine 'Explorer le monde'. Voici les points clés identifiés dans le référentiel :",
-    sources: [
-      {
-        id: "vivant-1",
-        title: "Reconnaître et classer les animaux selon leurs caractéristiques",
-        page: 85,
-      },
-      {
-        id: "vivant-2",
-        title: "Connaître les besoins essentiels de quelques animaux et végétaux",
-        page: 86,
-      },
-    ],
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content:
-      "Vous pouvez par exemple organiser des activités d'observation dans le jardin de l'école ou créer un petit potager pour travailler la compétence sur les besoins des végétaux.",
-  },
-]
-
 export default function AssistantPage() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [input, setInput] = useState("")
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({
+      api: `${env.NEXT_PUBLIC_API_URL}/chat`,
+      fetch: (url, options) => {
+        return fetch(url, {
+          ...options,
+          credentials: "include",
+        })
+      },
+    }),
+    messages: [
+      {
+        id: "welcome",
+        role: "assistant",
+        parts: [
+          {
+            type: "text",
+            text: "Bonjour ! Je suis votre assistant Lighthouse. Posez-moi vos questions sur le programme scolaire (Pacte pour un Enseignement d'excellence), je chercherai les réponses dans le référentiel officiel.",
+          },
+        ],
+      },
+    ] as UIMessage[],
+  })
 
-  // Mock user data
-  const user = {
-    name: "Utilisateur",
-    avatar: null,
+  const isLoading = status !== "ready"
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
+    scrollToBottom()
   }, [messages])
 
-  const handleSend = () => {
-    if (!input.trim()) return
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
+  const onFinish = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (input.trim() && !isLoading) {
+      sendMessage({ text: input })
+      setInput("")
     }
-
-    setMessages((prev) => [...prev, newMessage])
-    setInput("")
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content:
-          "C'est une excellente question. Je recherche dans le référentiel... En lien avec votre demande, le programme souligne l'importance de manipuler et d'expérimenter pour construire ces premières notions.",
-      }
-      setMessages((prev) => [...prev, aiResponse])
-    }, 1000)
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
-      {/* Chat Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-8">
-        <div className="mx-auto max-w-3xl space-y-6 pb-20">
-          {messages.map((message) => (
+    <div className="flex h-full flex-col p-6">
+      <PageHeader
+        title="Assistant IA"
+        description="Posez des questions pédagogiques basées sur le programme officiel."
+        icon={Sparkles}
+      />
+
+      <div className="flex-1 overflow-y-auto mb-6 pr-2">
+        <div className="space-y-4">
+          {messages.map((m) => (
             <div
-              key={message.id}
-              className={cn(
-                "flex gap-3 lg:gap-4",
-                message.role === "user" ? "flex-row-reverse" : "flex-row",
-              )}
+              key={m.id}
+              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              <Avatar
-                className={cn(
-                  "shrink-0",
-                  message.role === "assistant" ? "bg-transparent" : "bg-primary-soft",
-                )}
-                size={40}
-                icon={message.role === "assistant" ? null : <User size={20} />}
-                src={message.role === "assistant" ? "/albatross.png" : user.avatar}
-              />
-
               <div
-                className={cn(
-                  "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%]",
-                  message.role === "user" ? "items-end" : "items-start",
-                )}
+                className={`flex max-w-[80%] gap-3 p-4 rounded-2xl ${
+                  m.role === "user"
+                    ? "bg-primary text-white rounded-tr-none shadow-md"
+                    : "bg-white text-foreground rounded-tl-none border border-border shadow-sm"
+                }`}
               >
-                <Card
-                  variant="borderless"
-                  className={cn(
-                    "shadow-sm",
-                    message.role === "user"
-                      ? "bg-primary text-white rounded-tr-none"
-                      : "bg-background text-foreground rounded-tl-none border border-border",
+                <div className="shrink-0 mt-1">
+                  {m.role === "user" ? (
+                    <User size={18} />
+                  ) : (
+                    <Bot size={18} className="text-primary" />
                   )}
-                  styles={{ body: { padding: "12px 16px" } }}
-                >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap m-0">
-                    {message.content}
-                  </p>
-                </Card>
-
-                {message.sources && message.sources.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {message.sources.map((source) => (
-                      <Tag
-                        key={source.id}
-                        icon={<FileText size={12} className="mr-1" />}
-                        className="flex items-center bg-primary-soft text-primary-dark border-primary-soft px-2 py-1 rounded-full m-0"
-                      >
-                        <span className="text-[10px] font-bold uppercase mr-1">{source.title}</span>
-                        <span className="text-[10px] opacity-60">p.{source.page}</span>
-                      </Tag>
-                    ))}
+                </div>
+                <div className="flex flex-col gap-1 min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
+                    {m.role === "user" ? "Vous" : "Assistant Lighthouse"}
+                  </span>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {m.parts.map((part, i) =>
+                      part.type === "text" ? <span key={i}>{part.text}</span> : null,
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {isLoading && messages[messages.length - 1]?.role === "user" && (
+          <div className="flex justify-start mt-4">
+            <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
+              <Bot size={18} className="text-primary animate-pulse" />
+              <Text italic type="secondary" className="text-sm">
+                L'assistant réfléchit...
+              </Text>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex justify-center mt-4">
+            <Space className="bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 shadow-sm text-xs">
+              <AlertCircle size={14} />
+              <span>Désolé, une erreur est survenue : {error.message}</span>
+            </Space>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="sticky bottom-0 border-t border-border bg-background/80 backdrop-blur-md p-4 lg:p-6">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex gap-2">
-            <Input
-              size="large"
-              placeholder="Posez votre question sur le programme..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onPressEnter={handleSend}
-              suffix={<Sparkles size={16} className="text-primary opacity-40" />}
-              className="flex-1"
-            />
-            <Button
-              type="primary"
-              size="large"
-              icon={<Send size={18} />}
-              onClick={handleSend}
-              className="shrink-0 flex items-center justify-center"
-            />
-          </div>
-          <Text type="secondary" className="mt-2 text-[10px] text-center block w-full">
-            Lighthouse peut faire des erreurs. Vérifiez toujours les informations importantes dans
-            le référentiel officiel.
-          </Text>
-        </div>
+      <div className="sticky bottom-0 bg-surface-secondary pt-2">
+        <form onSubmit={onFinish} className="relative">
+          <Input.TextArea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Posez votre question sur l'autonomie, les domaines d'apprentissage..."
+            autoSize={{ minRows: 1, maxRows: 6 }}
+            className="pr-12 py-3 rounded-xl shadow-lg border-primary/20 focus:border-primary transition-all resize-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                onFinish()
+              }
+            }}
+          />
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<Send size={18} />}
+            disabled={!input.trim() || isLoading}
+            className="absolute right-2 bottom-2 h-10 w-10 flex items-center justify-center rounded-lg shadow-md"
+          />
+        </form>
+        <p className="text-[10px] text-center mt-3 text-muted-foreground opacity-70">
+          L'IA peut faire des erreurs. Vérifiez toujours les informations importantes dans le
+          référentiel officiel.
+        </p>
       </div>
     </div>
   )

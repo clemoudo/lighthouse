@@ -179,6 +179,46 @@
           "documents"
         ]
       },
+      "ChatResponse": {
+        "type": "string"
+      },
+      "ChatRequest": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant",
+                    "system"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            },
+            "example": [
+              {
+                "role": "user",
+                "content": "Comment favoriser l'autonomie en classe ?"
+              }
+            ]
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      },
       "CreateDocumentResponse": {
         "type": "object",
         "properties": {
@@ -321,6 +361,35 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListDocumentsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "summary": "RAG Chat endpoint (Streaming)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Streaming text response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
                 }
               }
             }

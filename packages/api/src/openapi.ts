@@ -2,6 +2,7 @@ import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-open
 import { z } from "zod"
 import { AuthSessionSchema, UserSchema } from "./schemas/auth"
 import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema, ListDocumentsResponseSchema, IngestDocumentResponseSchema } from "./schemas/document"
+import { ChatRequestSchema, ChatResponseSchema } from "./schemas/chat"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
@@ -76,6 +77,32 @@ registry.registerPath({
     401: {
       description: "Unauthorized",
     },
+  },
+})
+
+registry.registerPath({
+  method: "post",
+  path: "/chat",
+  summary: "RAG Chat endpoint (Streaming)",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: ChatRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Streaming text response",
+      content: {
+        "text/plain": {
+          schema: ChatResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
   },
 })
 

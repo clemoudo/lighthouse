@@ -22,6 +22,8 @@ import type {
 } from "@tanstack/react-query"
 
 import type {
+  ChatRequest,
+  ChatResponse,
   CreateDocumentRequest,
   CreateDocumentResponse,
   GetAuthCheck200,
@@ -379,6 +381,104 @@ export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>
   }
 
   return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type postChatResponse200 = {
+  data: ChatResponse
+  status: 200
+}
+
+export type postChatResponse401 = {
+  data: void
+  status: 401
+}
+
+export type postChatResponseSuccess = postChatResponse200 & {
+  headers: Headers
+}
+export type postChatResponseError = postChatResponse401 & {
+  headers: Headers
+}
+
+export type postChatResponse = postChatResponseSuccess | postChatResponseError
+
+export const getPostChatUrl = () => {
+  return `/chat`
+}
+
+/**
+ * @summary RAG Chat endpoint (Streaming)
+ */
+export const postChat = async (
+  chatRequest?: ChatRequest,
+  options?: RequestInit,
+): Promise<postChatResponse> => {
+  return customFetch<postChatResponse>(getPostChatUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(chatRequest),
+  })
+}
+
+export const getPostChatMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postChat>>,
+    TError,
+    { data?: ChatRequest },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postChat>>,
+  TError,
+  { data?: ChatRequest },
+  TContext
+> => {
+  const mutationKey = ["postChat"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postChat>>,
+    { data?: ChatRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return postChat(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PostChatMutationResult = NonNullable<Awaited<ReturnType<typeof postChat>>>
+export type PostChatMutationBody = ChatRequest | undefined
+export type PostChatMutationError = void
+
+/**
+ * @summary RAG Chat endpoint (Streaming)
+ */
+export const usePostChat = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postChat>>,
+      TError,
+      { data?: ChatRequest },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postChat>>,
+  TError,
+  { data?: ChatRequest },
+  TContext
+> => {
+  return useMutation(getPostChatMutationOptions(options), queryClient)
 }
 
 export type postAdminDocumentsResponse201 = {

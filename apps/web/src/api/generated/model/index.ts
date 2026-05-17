@@ -7,6 +7,10 @@
  */
 
 export * from "./authSession"
+export * from "./chatRequest"
+export * from "./chatRequestMessagesItem"
+export * from "./chatRequestMessagesItemRole"
+export * from "./chatResponse"
 export * from "./createDocumentRequest"
 export * from "./createDocumentResponse"
 export * from "./document"
