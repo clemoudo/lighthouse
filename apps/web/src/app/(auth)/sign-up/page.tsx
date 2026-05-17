@@ -10,11 +10,10 @@ import { z } from "zod"
 import { signUp } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
-import { getGetMeQueryKey } from "@/api/generated/lighthouse"
+import { getGetAuthProfileQueryKey } from "@/api/generated/lighthouse"
 
 const { Title, Text } = Typography
 
-// Zod 4 Schema for Registration
 const signUpSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   email: z.string().min(1, "L'email est requis").email("Veuillez saisir un email valide"),
@@ -54,9 +53,9 @@ export default function SignUpPage() {
           setIsPending(false)
         } else {
           setIsSuccess(true)
-          // Invalidate user profile query in React Query
-          await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() })
-          // Refresh Better-Auth context
+          // Invalidate Orval/React-Query cache for the user profile
+          await queryClient.invalidateQueries({ queryKey: getGetAuthProfileQueryKey() })
+          // Refetch Better-Auth session context
           await refetch()
         }
       } catch (err) {

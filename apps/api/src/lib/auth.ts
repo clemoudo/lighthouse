@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth"
 import { admin } from "better-auth/plugins"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@repo/db"
-import { sendEmail } from "./email"
+import { sendEmail } from "../services/email.service"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {

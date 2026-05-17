@@ -11,7 +11,7 @@ import { z } from "zod"
 import { signIn, sendVerificationEmail } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
-import { getGetMeQueryKey } from "@/api/generated/lighthouse"
+import { getGetAuthProfileQueryKey } from "@/api/generated/lighthouse"
 
 const { Title, Text } = Typography
 
@@ -61,7 +61,7 @@ export default function SignInPage() {
           setIsPending(false)
         } else {
           // Invalidate Orval/React-Query cache for the user profile
-          await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() })
+          await queryClient.invalidateQueries({ queryKey: getGetAuthProfileQueryKey() })
           // Refetch Better-Auth session context
           await refetch()
           router.push("/")

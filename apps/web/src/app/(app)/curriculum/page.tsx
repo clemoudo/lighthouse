@@ -34,7 +34,7 @@ export default function CurriculumPage() {
               <Card
                 hoverable
                 className="shadow-sm overflow-hidden h-full flex flex-col"
-                bodyStyle={{ flex: 1, display: "flex", flexDirection: "column" }}
+                styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="p-3 rounded-lg bg-primary/10 text-primary">

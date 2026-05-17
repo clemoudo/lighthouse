@@ -27,8 +27,8 @@ import type {
   CreateDocumentRequest,
   CreateDocumentResponse,
   GetAuthCheck200,
-  GetMe200,
-  GetMe401,
+  GetAuthProfile200,
+  GetAuthProfile401,
   GetStatus200,
   GetStatus503,
   IngestDocumentResponse,
@@ -49,7 +49,7 @@ export type getAuthCheckResponseSuccess = getAuthCheckResponse200 & {
 export type getAuthCheckResponse = getAuthCheckResponseSuccess
 
 export const getGetAuthCheckUrl = () => {
-  return `/auth-check`
+  return `/auth/check`
 }
 
 /**
@@ -63,7 +63,7 @@ export const getAuthCheck = async (options?: RequestInit): Promise<getAuthCheckR
 }
 
 export const getGetAuthCheckQueryKey = () => {
-  return [`/auth-check`] as const
+  return [`/auth/check`] as const
 }
 
 export const getGetAuthCheckQueryOptions = <
@@ -147,75 +147,78 @@ export function useGetAuthCheck<TData = Awaited<ReturnType<typeof getAuthCheck>>
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
-export type getMeResponse200 = {
-  data: GetMe200
+export type getAuthProfileResponse200 = {
+  data: GetAuthProfile200
   status: 200
 }
 
-export type getMeResponse401 = {
-  data: GetMe401
+export type getAuthProfileResponse401 = {
+  data: GetAuthProfile401
   status: 401
 }
 
-export type getMeResponseSuccess = getMeResponse200 & {
+export type getAuthProfileResponseSuccess = getAuthProfileResponse200 & {
   headers: Headers
 }
-export type getMeResponseError = getMeResponse401 & {
+export type getAuthProfileResponseError = getAuthProfileResponse401 & {
   headers: Headers
 }
 
-export type getMeResponse = getMeResponseSuccess | getMeResponseError
+export type getAuthProfileResponse = getAuthProfileResponseSuccess | getAuthProfileResponseError
 
-export const getGetMeUrl = () => {
-  return `/me`
+export const getGetAuthProfileUrl = () => {
+  return `/auth/profile`
 }
 
 /**
  * @summary Get current user profile
  */
-export const getMe = async (options?: RequestInit): Promise<getMeResponse> => {
-  return customFetch<getMeResponse>(getGetMeUrl(), {
+export const getAuthProfile = async (options?: RequestInit): Promise<getAuthProfileResponse> => {
+  return customFetch<getAuthProfileResponse>(getGetAuthProfileUrl(), {
     ...options,
     method: "GET",
   })
 }
 
-export const getGetMeQueryKey = () => {
-  return [`/me`] as const
+export const getGetAuthProfileQueryKey = () => {
+  return [`/auth/profile`] as const
 }
 
-export const getGetMeQueryOptions = <
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401,
+export const getGetAuthProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAuthProfile>>,
+  TError = GetAuthProfile401,
 >(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthProfile>>, TError, TData>>
   request?: SecondParameter<typeof customFetch>
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetMeQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getGetAuthProfileQueryKey()
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMe>>> = ({ signal }) =>
-    getMe({ signal, ...requestOptions })
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthProfile>>> = ({ signal }) =>
+    getAuthProfile({ signal, ...requestOptions })
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getMe>>,
+    Awaited<ReturnType<typeof getAuthProfile>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetMeQueryResult = NonNullable<Awaited<ReturnType<typeof getMe>>>
-export type GetMeQueryError = GetMe401
+export type GetAuthProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthProfile>>>
+export type GetAuthProfileQueryError = GetAuthProfile401
 
-export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = GetMe401>(
+export function useGetAuthProfile<
+  TData = Awaited<ReturnType<typeof getAuthProfile>>,
+  TError = GetAuthProfile401,
+>(
   options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>> &
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthProfile>>, TError, TData>> &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMe>>,
+          Awaited<ReturnType<typeof getAuthProfile>>,
           TError,
-          Awaited<ReturnType<typeof getMe>>
+          Awaited<ReturnType<typeof getAuthProfile>>
         >,
         "initialData"
       >
@@ -223,14 +226,17 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Get
   },
   queryClient?: QueryClient,
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = GetMe401>(
+export function useGetAuthProfile<
+  TData = Awaited<ReturnType<typeof getAuthProfile>>,
+  TError = GetAuthProfile401,
+>(
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>> &
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthProfile>>, TError, TData>> &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMe>>,
+          Awaited<ReturnType<typeof getAuthProfile>>,
           TError,
-          Awaited<ReturnType<typeof getMe>>
+          Awaited<ReturnType<typeof getAuthProfile>>
         >,
         "initialData"
       >
@@ -238,9 +244,12 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Get
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = GetMe401>(
+export function useGetAuthProfile<
+  TData = Awaited<ReturnType<typeof getAuthProfile>>,
+  TError = GetAuthProfile401,
+>(
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthProfile>>, TError, TData>>
     request?: SecondParameter<typeof customFetch>
   },
   queryClient?: QueryClient,
@@ -249,14 +258,17 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Get
  * @summary Get current user profile
  */
 
-export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = GetMe401>(
+export function useGetAuthProfile<
+  TData = Awaited<ReturnType<typeof getAuthProfile>>,
+  TError = GetAuthProfile401,
+>(
   options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthProfile>>, TError, TData>>
     request?: SecondParameter<typeof customFetch>
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetMeQueryOptions(options)
+  const queryOptions = getGetAuthProfileQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>
@@ -383,6 +395,246 @@ export function useGetDocuments<TData = Awaited<ReturnType<typeof getDocuments>>
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
+export type postDocumentsUploadResponse201 = {
+  data: CreateDocumentResponse
+  status: 201
+}
+
+export type postDocumentsUploadResponse400 = {
+  data: void
+  status: 400
+}
+
+export type postDocumentsUploadResponse401 = {
+  data: void
+  status: 401
+}
+
+export type postDocumentsUploadResponse403 = {
+  data: void
+  status: 403
+}
+
+export type postDocumentsUploadResponseSuccess = postDocumentsUploadResponse201 & {
+  headers: Headers
+}
+export type postDocumentsUploadResponseError = (
+  | postDocumentsUploadResponse400
+  | postDocumentsUploadResponse401
+  | postDocumentsUploadResponse403
+) & {
+  headers: Headers
+}
+
+export type postDocumentsUploadResponse =
+  | postDocumentsUploadResponseSuccess
+  | postDocumentsUploadResponseError
+
+export const getPostDocumentsUploadUrl = () => {
+  return `/documents/upload`
+}
+
+/**
+ * @summary Upload a new document (Admin only)
+ */
+export const postDocumentsUpload = async (
+  createDocumentRequest?: CreateDocumentRequest,
+  options?: RequestInit,
+): Promise<postDocumentsUploadResponse> => {
+  const formData = new FormData()
+  if (createDocumentRequest?.title !== undefined) {
+    formData.append(`title`, createDocumentRequest.title)
+  }
+  if (createDocumentRequest?.file !== undefined) {
+    formData.append(`file`, createDocumentRequest.file)
+  }
+
+  return customFetch<postDocumentsUploadResponse>(getPostDocumentsUploadUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  })
+}
+
+export const getPostDocumentsUploadMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postDocumentsUpload>>,
+    TError,
+    { data?: CreateDocumentRequest },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postDocumentsUpload>>,
+  TError,
+  { data?: CreateDocumentRequest },
+  TContext
+> => {
+  const mutationKey = ["postDocumentsUpload"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postDocumentsUpload>>,
+    { data?: CreateDocumentRequest }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return postDocumentsUpload(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PostDocumentsUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postDocumentsUpload>>
+>
+export type PostDocumentsUploadMutationBody = CreateDocumentRequest | undefined
+export type PostDocumentsUploadMutationError = void
+
+/**
+ * @summary Upload a new document (Admin only)
+ */
+export const usePostDocumentsUpload = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postDocumentsUpload>>,
+      TError,
+      { data?: CreateDocumentRequest },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postDocumentsUpload>>,
+  TError,
+  { data?: CreateDocumentRequest },
+  TContext
+> => {
+  return useMutation(getPostDocumentsUploadMutationOptions(options), queryClient)
+}
+
+export type postDocumentsIdIngestResponse200 = {
+  data: IngestDocumentResponse
+  status: 200
+}
+
+export type postDocumentsIdIngestResponse401 = {
+  data: void
+  status: 401
+}
+
+export type postDocumentsIdIngestResponse403 = {
+  data: void
+  status: 403
+}
+
+export type postDocumentsIdIngestResponse404 = {
+  data: void
+  status: 404
+}
+
+export type postDocumentsIdIngestResponseSuccess = postDocumentsIdIngestResponse200 & {
+  headers: Headers
+}
+export type postDocumentsIdIngestResponseError = (
+  | postDocumentsIdIngestResponse401
+  | postDocumentsIdIngestResponse403
+  | postDocumentsIdIngestResponse404
+) & {
+  headers: Headers
+}
+
+export type postDocumentsIdIngestResponse =
+  | postDocumentsIdIngestResponseSuccess
+  | postDocumentsIdIngestResponseError
+
+export const getPostDocumentsIdIngestUrl = (id: string) => {
+  return `/documents/${id}/ingest`
+}
+
+/**
+ * @summary Trigger AI ingestion for a document (Admin only)
+ */
+export const postDocumentsIdIngest = async (
+  id: string,
+  options?: RequestInit,
+): Promise<postDocumentsIdIngestResponse> => {
+  return customFetch<postDocumentsIdIngestResponse>(getPostDocumentsIdIngestUrl(id), {
+    ...options,
+    method: "POST",
+  })
+}
+
+export const getPostDocumentsIdIngestMutationOptions = <
+  TError = void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postDocumentsIdIngest>>,
+    TError,
+    { id: string },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postDocumentsIdIngest>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["postDocumentsIdIngest"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postDocumentsIdIngest>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {}
+
+    return postDocumentsIdIngest(id, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type PostDocumentsIdIngestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postDocumentsIdIngest>>
+>
+
+export type PostDocumentsIdIngestMutationError = void
+
+/**
+ * @summary Trigger AI ingestion for a document (Admin only)
+ */
+export const usePostDocumentsIdIngest = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postDocumentsIdIngest>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postDocumentsIdIngest>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getPostDocumentsIdIngestMutationOptions(options), queryClient)
+}
+
 export type postChatResponse200 = {
   data: ChatResponse
   status: 200
@@ -479,246 +731,6 @@ export const usePostChat = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getPostChatMutationOptions(options), queryClient)
-}
-
-export type postAdminDocumentsResponse201 = {
-  data: CreateDocumentResponse
-  status: 201
-}
-
-export type postAdminDocumentsResponse400 = {
-  data: void
-  status: 400
-}
-
-export type postAdminDocumentsResponse401 = {
-  data: void
-  status: 401
-}
-
-export type postAdminDocumentsResponse403 = {
-  data: void
-  status: 403
-}
-
-export type postAdminDocumentsResponseSuccess = postAdminDocumentsResponse201 & {
-  headers: Headers
-}
-export type postAdminDocumentsResponseError = (
-  | postAdminDocumentsResponse400
-  | postAdminDocumentsResponse401
-  | postAdminDocumentsResponse403
-) & {
-  headers: Headers
-}
-
-export type postAdminDocumentsResponse =
-  | postAdminDocumentsResponseSuccess
-  | postAdminDocumentsResponseError
-
-export const getPostAdminDocumentsUrl = () => {
-  return `/admin/documents`
-}
-
-/**
- * @summary Upload a new document (Admin only)
- */
-export const postAdminDocuments = async (
-  createDocumentRequest?: CreateDocumentRequest,
-  options?: RequestInit,
-): Promise<postAdminDocumentsResponse> => {
-  const formData = new FormData()
-  if (createDocumentRequest?.title !== undefined) {
-    formData.append(`title`, createDocumentRequest.title)
-  }
-  if (createDocumentRequest?.file !== undefined) {
-    formData.append(`file`, createDocumentRequest.file)
-  }
-
-  return customFetch<postAdminDocumentsResponse>(getPostAdminDocumentsUrl(), {
-    ...options,
-    method: "POST",
-    body: formData,
-  })
-}
-
-export const getPostAdminDocumentsMutationOptions = <TError = void, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof postAdminDocuments>>,
-    TError,
-    { data?: CreateDocumentRequest },
-    TContext
-  >
-  request?: SecondParameter<typeof customFetch>
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof postAdminDocuments>>,
-  TError,
-  { data?: CreateDocumentRequest },
-  TContext
-> => {
-  const mutationKey = ["postAdminDocuments"]
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof postAdminDocuments>>,
-    { data?: CreateDocumentRequest }
-  > = (props) => {
-    const { data } = props ?? {}
-
-    return postAdminDocuments(data, requestOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PostAdminDocumentsMutationResult = NonNullable<
-  Awaited<ReturnType<typeof postAdminDocuments>>
->
-export type PostAdminDocumentsMutationBody = CreateDocumentRequest | undefined
-export type PostAdminDocumentsMutationError = void
-
-/**
- * @summary Upload a new document (Admin only)
- */
-export const usePostAdminDocuments = <TError = void, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof postAdminDocuments>>,
-      TError,
-      { data?: CreateDocumentRequest },
-      TContext
-    >
-    request?: SecondParameter<typeof customFetch>
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof postAdminDocuments>>,
-  TError,
-  { data?: CreateDocumentRequest },
-  TContext
-> => {
-  return useMutation(getPostAdminDocumentsMutationOptions(options), queryClient)
-}
-
-export type postAdminDocumentsIdIngestResponse200 = {
-  data: IngestDocumentResponse
-  status: 200
-}
-
-export type postAdminDocumentsIdIngestResponse401 = {
-  data: void
-  status: 401
-}
-
-export type postAdminDocumentsIdIngestResponse403 = {
-  data: void
-  status: 403
-}
-
-export type postAdminDocumentsIdIngestResponse404 = {
-  data: void
-  status: 404
-}
-
-export type postAdminDocumentsIdIngestResponseSuccess = postAdminDocumentsIdIngestResponse200 & {
-  headers: Headers
-}
-export type postAdminDocumentsIdIngestResponseError = (
-  | postAdminDocumentsIdIngestResponse401
-  | postAdminDocumentsIdIngestResponse403
-  | postAdminDocumentsIdIngestResponse404
-) & {
-  headers: Headers
-}
-
-export type postAdminDocumentsIdIngestResponse =
-  | postAdminDocumentsIdIngestResponseSuccess
-  | postAdminDocumentsIdIngestResponseError
-
-export const getPostAdminDocumentsIdIngestUrl = (id: string) => {
-  return `/admin/documents/${id}/ingest`
-}
-
-/**
- * @summary Trigger AI ingestion for a document (Admin only)
- */
-export const postAdminDocumentsIdIngest = async (
-  id: string,
-  options?: RequestInit,
-): Promise<postAdminDocumentsIdIngestResponse> => {
-  return customFetch<postAdminDocumentsIdIngestResponse>(getPostAdminDocumentsIdIngestUrl(id), {
-    ...options,
-    method: "POST",
-  })
-}
-
-export const getPostAdminDocumentsIdIngestMutationOptions = <
-  TError = void,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
-    TError,
-    { id: string },
-    TContext
-  >
-  request?: SecondParameter<typeof customFetch>
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  const mutationKey = ["postAdminDocumentsIdIngest"]
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined }
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
-    { id: string }
-  > = (props) => {
-    const { id } = props ?? {}
-
-    return postAdminDocumentsIdIngest(id, requestOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type PostAdminDocumentsIdIngestMutationResult = NonNullable<
-  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>
->
-
-export type PostAdminDocumentsIdIngestMutationError = void
-
-/**
- * @summary Trigger AI ingestion for a document (Admin only)
- */
-export const usePostAdminDocumentsIdIngest = <TError = void, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
-      TError,
-      { id: string },
-      TContext
-    >
-    request?: SecondParameter<typeof customFetch>
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof postAdminDocumentsIdIngest>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  return useMutation(getPostAdminDocumentsIdIngestMutationOptions(options), queryClient)
 }
 
 export type getStatusResponse200 = {

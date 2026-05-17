@@ -44,7 +44,7 @@ export default function AdminDocumentsPage() {
     setUploading(true)
 
     try {
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/admin/documents`, {
+      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/upload`, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -76,7 +76,7 @@ export default function AdminDocumentsPage() {
   const handleIngest = async (id: string) => {
     setIngestingId(id)
     try {
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/admin/documents/${id}/ingest`, {
+      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/${id}/ingest`, {
         method: "POST",
         credentials: "include",
       })

@@ -179,46 +179,6 @@
           "documents"
         ]
       },
-      "ChatResponse": {
-        "type": "string"
-      },
-      "ChatRequest": {
-        "type": "object",
-        "properties": {
-          "messages": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "role": {
-                  "type": "string",
-                  "enum": [
-                    "user",
-                    "assistant",
-                    "system"
-                  ]
-                },
-                "content": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "role",
-                "content"
-              ]
-            },
-            "example": [
-              {
-                "role": "user",
-                "content": "Comment favoriser l'autonomie en classe ?"
-              }
-            ]
-          }
-        },
-        "required": [
-          "messages"
-        ]
-      },
       "CreateDocumentResponse": {
         "type": "object",
         "properties": {
@@ -270,12 +230,52 @@
           "chaptersCount",
           "chunksCount"
         ]
+      },
+      "ChatResponse": {
+        "type": "string"
+      },
+      "ChatRequest": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant",
+                    "system"
+                  ]
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            },
+            "example": [
+              {
+                "role": "user",
+                "content": "Comment favoriser l'autonomie en classe ?"
+              }
+            ]
+          }
+        },
+        "required": [
+          "messages"
+        ]
       }
     },
     "parameters": {}
   },
   "paths": {
-    "/auth-check": {
+    "/auth/check": {
       "get": {
         "summary": "Check authentication status",
         "responses": {
@@ -304,7 +304,7 @@
         }
       }
     },
-    "/me": {
+    "/auth/profile": {
       "get": {
         "summary": "Get current user profile",
         "responses": {
@@ -371,36 +371,7 @@
         }
       }
     },
-    "/chat": {
-      "post": {
-        "summary": "RAG Chat endpoint (Streaming)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Streaming text response",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/admin/documents": {
+    "/documents/upload": {
       "post": {
         "summary": "Upload a new document (Admin only)",
         "requestBody": {
@@ -435,7 +406,7 @@
         }
       }
     },
-    "/admin/documents/{id}/ingest": {
+    "/documents/{id}/ingest": {
       "post": {
         "summary": "Trigger AI ingestion for a document (Admin only)",
         "parameters": [
@@ -468,6 +439,35 @@
           },
           "404": {
             "description": "Document not found"
+          }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "summary": "RAG Chat endpoint (Streaming)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Streaming text response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

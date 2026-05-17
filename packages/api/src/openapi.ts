@@ -12,10 +12,10 @@ registry.register("User", UserSchema)
 registry.register("AuthSession", AuthSessionSchema)
 registry.register("Document", DocumentSchema)
 
-// Define routes
+// --- Auth Routes ---
 registry.registerPath({
   method: "get",
-  path: "/auth-check",
+  path: "/auth/check",
   summary: "Check authentication status",
   responses: {
     200: {
@@ -34,7 +34,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/me",
+  path: "/auth/profile",
   summary: "Get current user profile",
   responses: {
     200: {
@@ -61,6 +61,7 @@ registry.registerPath({
   },
 })
 
+// --- Document Routes ---
 registry.registerPath({
   method: "get",
   path: "/documents",
@@ -82,33 +83,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/chat",
-  summary: "RAG Chat endpoint (Streaming)",
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: ChatRequestSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: "Streaming text response",
-      content: {
-        "text/plain": {
-          schema: ChatResponseSchema,
-        },
-      },
-    },
-    401: { description: "Unauthorized" },
-  },
-})
-
-registry.registerPath({
-  method: "post",
-  path: "/admin/documents",
+  path: "/documents/upload",
   summary: "Upload a new document (Admin only)",
   request: {
     body: {
@@ -142,7 +117,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/admin/documents/{id}/ingest",
+  path: "/documents/{id}/ingest",
   summary: "Trigger AI ingestion for a document (Admin only)",
   parameters: [
     {
@@ -164,6 +139,33 @@ registry.registerPath({
     401: { description: "Unauthorized" },
     403: { description: "Forbidden" },
     404: { description: "Document not found" },
+  },
+})
+
+// --- Chat Route ---
+registry.registerPath({
+  method: "post",
+  path: "/chat",
+  summary: "RAG Chat endpoint (Streaming)",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: ChatRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Streaming text response",
+      content: {
+        "text/plain": {
+          schema: ChatResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
   },
 })
 
