@@ -45,6 +45,7 @@ model Chapter {
   title      String
   order      Int
   content    String?   @db.Text
+  metadata   Json?
   documentId String    @db.Uuid
   document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
   chunks     Chunk[]
@@ -58,6 +59,7 @@ model Chunk {
   id        String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
   content   String                      @db.Text
   embedding Unsupported("vector(1024)")?
+  metadata  Json?
   chapterId String                      @db.Uuid
   chapter   Chapter                     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   createdAt DateTime                    @default(now())

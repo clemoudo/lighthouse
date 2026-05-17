@@ -13,6 +13,7 @@ export interface ChunkSearchResult {
   content: string
   chapterId: string
   similarity: number
+  metadata: any
 }
 
 /**
@@ -28,19 +29,20 @@ const extendedPrisma = new PrismaClient({
        * Insertion massive de chunks avec embeddings.
        */
       async createManyWithVectors(
-        chunks: { content: string; embedding: number[]; chapterId: string }[]
+        chunks: { content: string; embedding: number[]; chapterId: string; metadata?: any }[]
       ) {
         if (chunks.length === 0) return
 
         // On crée un tableau de valeurs SQL pour une seule requête bulk insert très performante
         const values = chunks.map((chunk) => {
           const vectorStr = `[${chunk.embedding.join(",")}]`
-          return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, NOW(), NOW())`
+          const metadataJson = chunk.metadata ? JSON.stringify(chunk.metadata) : null
+          return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
         })
 
         // On utilise extendedPrisma.$executeRaw avec Prisma.join pour garantir la sécurité
         return extendedPrisma.$executeRaw`
-          INSERT INTO chunk (id, content, embedding, "chapterId", "createdAt", "updatedAt")
+          INSERT INTO chunk (id, content, embedding, "chapterId", metadata, "createdAt", "updatedAt")
           VALUES ${Prisma.join(values)}
         `
       },
@@ -51,7 +53,7 @@ const extendedPrisma = new PrismaClient({
       async search(embedding: number[], limit = 5): Promise<ChunkSearchResult[]> {
         const vectorStr = `[${embedding.join(",")}]`
         return extendedPrisma.$queryRaw<ChunkSearchResult[]>`
-          SELECT id, content, "chapterId", 1 - (embedding <=> ${vectorStr}::vector) as similarity
+          SELECT id, content, "chapterId", metadata, 1 - (embedding <=> ${vectorStr}::vector) as similarity
           FROM chunk
           ORDER BY embedding <=> ${vectorStr}::vector
           LIMIT ${limit}

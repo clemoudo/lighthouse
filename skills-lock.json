@@ -22,6 +22,12 @@
       "sourceType": "github",
       "computedHash": "747d7f73bd9e2ec5317b8ef88dc70f97df716d00e3d02de4051feebaa48b062d"
     },
+    "llamaparse": {
+      "source": "run-llama/llamaparse-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/llamaparse/SKILL.md",
+      "computedHash": "43e155be048b413a47c4f9966da586c2c1ef09b068146dc5dd0ccda966410ca4"
+    },
     "two-factor-authentication-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
