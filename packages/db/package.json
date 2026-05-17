@@ -6,6 +6,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "db:generate": "prisma generate",
+    "db:generate-watch": "prisma generate --watch",
     "db:push": "prisma db push",
     "db:reset": "prisma migrate reset",
     "db:migrate": "prisma migrate dev",
@@ -20,6 +21,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "@types/node": "^25.8.0",
     "@types/pg": "^8.20.0"
   }

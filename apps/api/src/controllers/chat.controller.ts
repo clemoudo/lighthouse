@@ -1,16 +1,20 @@
 import type { Request, Response } from "express"
-import { streamText, embed, convertToModelMessages } from "ai"
+import { streamText, convertToModelMessages } from "ai"
 import { mistral } from "@ai-sdk/mistral"
 import { logger } from "@repo/logger"
-import { prisma, type ChunkSearchResult } from "@repo/db"
+import { vectorService } from "../services/vector.service"
+import { storageService } from "../services/storage.service"
 
+/**
+ * Controller to handle RAG-based chat interactions.
+ */
 export const handleChat = async (req: Request, res: Response) => {
   try {
     const { messages } = req.body
 
-    logger.info(`[CHAT] Requête reçue avec ${messages?.length} messages`)
+    logger.info(`[CHAT] Request received with ${messages?.length} messages.`)
 
-    // 1. Convertir les messages UI en messages modèles
+    // 1. Convert UI messages to model messages
     const modelMessages = await convertToModelMessages(messages)
     const lastUserMessage = [...modelMessages].reverse().find((m) => m.role === "user")
 
@@ -26,19 +30,18 @@ export const handleChat = async (req: Request, res: Response) => {
       }
     }
 
-    // 2. RAG : Recherche de contexte
+    // 2. RAG Retrieval Phase
     let context = ""
     if (query) {
-      logger.info(`[RAG] Recherche pour la question : "${query}"`)
+      logger.info(`[RAG] Searching context for: "${query}"`)
 
-      const { embedding } = await embed({
-        model: mistral.embedding("mistral-embed"),
-        value: query,
-      })
+      // Generate query embedding
+      const embedding = await vectorService.generateEmbedding(query)
 
-      const relevantChunks: ChunkSearchResult[] = await prisma.chunk.search(embedding, 5)
+      // Search for relevant chunks in PostgreSQL
+      const relevantChunks = await storageService.searchSimilarChunks(embedding, 5)
 
-      logger.info(`[RAG] ${relevantChunks.length} chunks trouvés`)
+      logger.info(`[RAG] Found ${relevantChunks.length} chunks.`)
       relevantChunks.forEach((chunk, i) => {
         logger.info(
           `  #${i + 1} [Sim: ${chunk.similarity.toFixed(4)}] : ${chunk.content.substring(0, 150).replace(/\n/g, " ")}...`,
@@ -46,9 +49,11 @@ export const handleChat = async (req: Request, res: Response) => {
       })
 
       context = relevantChunks.map((c) => c.content).join("\n\n---\n\n")
+    } else {
+      logger.warn("[RAG] No user query found in history.")
     }
 
-    // 3. Streaming de la réponse via Vercel AI SDK
+    // 3. AI Generation Phase (Streaming)
     const result = await streamText({
       model: mistral("mistral-large-latest"),
       system: `Tu es l'assistant Lighthouse, expert du programme scolaire belge (Pacte pour un Enseignement d'excellence). 

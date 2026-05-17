@@ -5,7 +5,7 @@
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --external:express --external:cors --external:helmet --external:@prisma/client",
     "clean": "rm -rf dist",
-    "dev": "concurrently --restart-tries -1 --restart-after 3000 --color -n \"Build,TSC,API,OAS\" -c \"bgBlue.bold,bgCyan.bold,bgGreen.bold,bgYellow.bold\" \"pnpm build --watch\" \"tsc --noEmit --watch\" \"node --watch dist/index.js\" \"pnpm --filter @repo/api generate-openapi-watch\"",
+    "dev": "concurrently --restart-tries -1 --restart-after 3000 --color -n \"DB,Build,TSC,API,OAS\" -c \"magenta.bold,bgBlue.bold,bgCyan.bold,bgGreen.bold,bgYellow.bold\" \"pnpm --filter @repo/db db:generate-watch\" \"pnpm build --watch\" \"tsc --noEmit --watch\" \"nodemon --watch dist/index.js --delay 0.5 dist/index.js\" \"pnpm --filter @repo/api generate-openapi-watch\"",
     "lint": "eslint \"src/**/*.ts*\" --max-warnings 0",
     "lint:fix": "eslint \"src/**/*.ts*\" --fix",
     "start": "node dist/index.js",
@@ -44,6 +44,7 @@
     "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "typescript": "5.9.3"
   }
