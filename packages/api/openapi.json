@@ -143,6 +143,21 @@
             "type": "string",
             "example": "application/pdf"
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "COMPLETED",
+              "FAILED"
+            ],
+            "example": "PENDING"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -161,6 +176,8 @@
           "filePath",
           "fileSize",
           "mimeType",
+          "status",
+          "error",
           "createdAt",
           "updatedAt"
         ]
@@ -215,20 +232,10 @@
           "message": {
             "type": "string",
             "example": "Ingestion démarrée avec succès"
-          },
-          "chaptersCount": {
-            "type": "number",
-            "example": 5
-          },
-          "chunksCount": {
-            "type": "number",
-            "example": 120
           }
         },
         "required": [
-          "message",
-          "chaptersCount",
-          "chunksCount"
+          "message"
         ]
       },
       "ChatResponse": {

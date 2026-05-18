@@ -3,6 +3,8 @@ import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi"
 
 extendZodWithOpenApi(z)
 
+export const IngestionStatusSchema = z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED"])
+
 export const DocumentSchema = z
   .object({
     id: z.uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
@@ -11,6 +13,8 @@ export const DocumentSchema = z
     filePath: z.string().openapi({ example: "uploads/programme_v1.pdf" }),
     fileSize: z.number().openapi({ example: 1024567 }),
     mimeType: z.string().openapi({ example: "application/pdf" }),
+    status: IngestionStatusSchema.openapi({ example: "PENDING" }),
+    error: z.string().nullable().openapi({ example: null }),
     createdAt: z.iso.datetime().openapi({ example: "2024-03-20T10:00:00Z" }),
     updatedAt: z.iso.datetime().openapi({ example: "2024-03-20T10:00:00Z" }),
   })
@@ -39,7 +43,5 @@ export const ListDocumentsResponseSchema = z
 export const IngestDocumentResponseSchema = z
   .object({
     message: z.string().openapi({ example: "Ingestion démarrée avec succès" }),
-    chaptersCount: z.number().openapi({ example: 5 }),
-    chunksCount: z.number().openapi({ example: 120 }),
   })
   .openapi("IngestDocumentResponse")

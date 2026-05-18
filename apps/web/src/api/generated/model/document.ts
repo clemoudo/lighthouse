@@ -5,6 +5,7 @@
  * API for the Lighthouse project
  * OpenAPI spec version: 1.0.0
  */
+import type { DocumentStatus } from "./documentStatus"
 
 export interface Document {
   id: string
@@ -13,6 +14,9 @@ export interface Document {
   filePath: string
   fileSize: number
   mimeType: string
+  status: DocumentStatus
+  /** @nullable */
+  error: string | null
   createdAt: string
   updatedAt: string
 }

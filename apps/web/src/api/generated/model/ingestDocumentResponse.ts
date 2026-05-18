@@ -8,6 +8,4 @@
 
 export interface IngestDocumentResponse {
   message: string
-  chaptersCount: number
-  chunksCount: number
 }

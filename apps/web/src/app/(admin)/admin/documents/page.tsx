@@ -1,8 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Upload, Button, Card, Table, message, Space, Tag, Tooltip, Popconfirm } from "antd"
-import { Upload as UploadIcon, FileText, Trash2, LayoutDashboard, BrainCircuit } from "lucide-react"
+import {
+  Upload as UploadIcon,
+  FileText,
+  Trash2,
+  LayoutDashboard,
+  BrainCircuit,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
@@ -11,6 +20,8 @@ import { env } from "@/env"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import { useQueryClient } from "@tanstack/react-query"
 import { getGetDocumentsQueryKey } from "@/api/generated/lighthouse"
+import type { Document } from "@/api/generated/model/document"
+import type { DocumentStatus } from "@/api/generated/model/documentStatus"
 
 export default function AdminDocumentsPage() {
   const { data: session, isPending } = useSession()
@@ -20,9 +31,21 @@ export default function AdminDocumentsPage() {
   const [uploading, setUploading] = useState(false)
   const [ingestingId, setIngestingId] = useState<string | null>(null)
 
-  // Récupération des documents
-  const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments()
-  const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
+  // Récupération des documents avec polling si nécessaire
+  const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments({
+    query: {
+      refetchInterval: (query) => {
+        const data = query.state.data
+        const docs = data?.data?.documents
+        return docs?.some((d) => d.status === "PROCESSING") ? 3000 : false
+      },
+    },
+  })
+
+  const documents = useMemo(
+    () => (documentsResponse?.status === 200 ? documentsResponse.data.documents : []),
+    [documentsResponse],
+  )
 
   // Verification simple du rôle
   if (!isPending && session?.user.role !== "admin") {
@@ -87,13 +110,13 @@ export default function AdminDocumentsPage() {
         throw new Error(result.message || result.error || "Échec de l'ingestion")
       }
 
-      message.success(
-        `Ingestion réussie : ${result.chaptersCount} chapitres, ${result.chunksCount} chunks indexés.`,
-      )
+      message.info("L'ingestion a démarré en arrière-plan.")
       await queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
     } catch (error) {
       console.error("[INGEST_ERROR]", error)
-      message.error(error instanceof Error ? error.message : "Erreur lors de l'ingestion IA")
+      message.error(
+        error instanceof Error ? error.message : "Erreur lors du lancement de l'ingestion",
+      )
     } finally {
       setIngestingId(null)
     }
@@ -116,6 +139,35 @@ export default function AdminDocumentsPage() {
       return false
     },
     fileList,
+  }
+
+  const getStatusTag = (status: DocumentStatus, error?: string | null) => {
+    switch (status) {
+      case "PENDING":
+        return <Tag color="default">En attente</Tag>
+      case "PROCESSING":
+        return (
+          <Tag icon={<Loader2 className="animate-spin" size={12} />} color="processing">
+            Traitement IA...
+          </Tag>
+        )
+      case "COMPLETED":
+        return (
+          <Tag icon={<CheckCircle2 size={12} />} color="success">
+            Indexé
+          </Tag>
+        )
+      case "FAILED":
+        return (
+          <Tooltip title={error || "Erreur inconnue"}>
+            <Tag icon={<AlertCircle size={12} />} color="error">
+              Échec
+            </Tag>
+          </Tooltip>
+        )
+      default:
+        return <Tag>{status}</Tag>
+    }
   }
 
   return (
@@ -157,7 +209,7 @@ export default function AdminDocumentsPage() {
 
         {/* Colonne Liste */}
         <Card title="Documents indexés" className="lg:col-span-2 shadow-sm">
-          <Table
+          <Table<Document>
             dataSource={documents}
             loading={isLoadingDocuments}
             rowKey="id"
@@ -182,7 +234,7 @@ export default function AdminDocumentsPage() {
               {
                 title: "Statut",
                 key: "status",
-                render: () => <Tag color="blue">Prêt</Tag>,
+                render: (_, record) => getStatusTag(record.status, record.error),
               },
               {
                 title: "Actions",
@@ -196,11 +248,13 @@ export default function AdminDocumentsPage() {
                         onConfirm={() => handleIngest(record.id)}
                         okText="Oui"
                         cancelText="Non"
+                        disabled={record.status === "PROCESSING"}
                       >
                         <Button
                           type="primary"
                           icon={<BrainCircuit size={16} />}
                           loading={ingestingId === record.id}
+                          disabled={record.status === "PROCESSING"}
                         >
                           Ingérer
                         </Button>
