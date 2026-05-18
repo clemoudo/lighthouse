@@ -32,6 +32,28 @@ export class StorageService {
   }
 
   /**
+   * Remove all chapters and chunks associated with a document.
+   * Useful for re-ingestion.
+   */
+  async deleteDocumentData(documentId: string) {
+    logger.info(`[STORAGE] Cleaning existing RAG data for document: ${documentId}`)
+    return prisma.chapter.deleteMany({
+      where: { documentId },
+    })
+  }
+
+  /**
+   * Delete a document record from the database.
+   * Cascade will handle chapters and chunks.
+   */
+  async deleteDocument(documentId: string) {
+    logger.info(`[STORAGE] Deleting document record: ${documentId}`)
+    return prisma.document.delete({
+      where: { id: documentId },
+    })
+  }
+
+  /**
    * Search for relevant chunks using vector similarity.
    */
   async searchSimilarChunks(embedding: number[], limit = 5): Promise<ChunkSearchResult[]> {

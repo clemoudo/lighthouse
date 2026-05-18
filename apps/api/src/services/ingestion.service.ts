@@ -23,7 +23,10 @@ export const ingestDocument = async (documentId: string) => {
 
     logger.info(`[INGESTION] Starting asynchronous pipeline for: ${document.title}`)
 
-    // 2. Parsing Phase (LlamaParse)
+    // 2. Clean existing data (re-ingestion support)
+    await storageService.deleteDocumentData(document.id)
+
+    // 3. Parsing Phase (LlamaParse)
     const pages = await parsingService.parseDocument(document.filePath)
     logger.info(`[INGESTION] Successfully parsed ${pages.length} pages.`)
 

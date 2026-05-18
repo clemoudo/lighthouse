@@ -1,7 +1,9 @@
 import type { Request, Response } from "express"
+import fs from "node:fs/promises"
 import { prisma, IngestionStatus } from "@repo/db"
 import { logger } from "@repo/logger"
 import { ingestDocument } from "../services/ingestion.service"
+import { storageService } from "../services/storage.service"
 
 export const listDocuments = async (_req: Request, res: Response) => {
   try {
@@ -43,6 +45,40 @@ export const uploadDocument = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error("Erreur lors de l'upload du document:", error)
     res.status(500).json({ error: "Erreur interne lors de l'enregistrement du document" })
+  }
+}
+
+/**
+ * Delete a document and its associated data (DB + Filesystem).
+ */
+export const deleteDocument = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string }
+
+    const document = await prisma.document.findUnique({
+      where: { id },
+    })
+
+    if (!document) {
+      return res.status(404).json({ error: "Document introuvable" })
+    }
+
+    // 1. Delete from DB (Cascade will handle chapters/chunks)
+    await storageService.deleteDocument(id)
+
+    // 2. Delete physical file
+    try {
+      await fs.unlink(document.filePath)
+      logger.info(`[ADMIN] Deleted physical file: ${document.filePath}`)
+    } catch (err) {
+      // We log but don't fail the request if file is already gone
+      logger.error(`[ADMIN] Could not delete physical file: ${document.filePath}`, err)
+    }
+
+    res.json({ message: "Document supprimé avec succès" })
+  } catch (error) {
+    logger.error("Erreur lors de la suppression du document:", error)
+    res.status(500).json({ error: "Erreur interne lors de la suppression" })
   }
 }
 

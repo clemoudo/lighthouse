@@ -26,6 +26,7 @@ import type {
   ChatResponse,
   CreateDocumentRequest,
   CreateDocumentResponse,
+  DeleteDocumentsId200,
   GetAuthCheck200,
   GetAuthProfile200,
   GetAuthProfile401,
@@ -633,6 +634,120 @@ export const usePostDocumentsIdIngest = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getPostDocumentsIdIngestMutationOptions(options), queryClient)
+}
+
+export type deleteDocumentsIdResponse200 = {
+  data: DeleteDocumentsId200
+  status: 200
+}
+
+export type deleteDocumentsIdResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteDocumentsIdResponse403 = {
+  data: void
+  status: 403
+}
+
+export type deleteDocumentsIdResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteDocumentsIdResponseSuccess = deleteDocumentsIdResponse200 & {
+  headers: Headers
+}
+export type deleteDocumentsIdResponseError = (
+  | deleteDocumentsIdResponse401
+  | deleteDocumentsIdResponse403
+  | deleteDocumentsIdResponse404
+) & {
+  headers: Headers
+}
+
+export type deleteDocumentsIdResponse =
+  | deleteDocumentsIdResponseSuccess
+  | deleteDocumentsIdResponseError
+
+export const getDeleteDocumentsIdUrl = (id: string) => {
+  return `/documents/${id}`
+}
+
+/**
+ * @summary Delete a document (Admin only)
+ */
+export const deleteDocumentsId = async (
+  id: string,
+  options?: RequestInit,
+): Promise<deleteDocumentsIdResponse> => {
+  return customFetch<deleteDocumentsIdResponse>(getDeleteDocumentsIdUrl(id), {
+    ...options,
+    method: "DELETE",
+  })
+}
+
+export const getDeleteDocumentsIdMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDocumentsId>>,
+    TError,
+    { id: string },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteDocumentsId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteDocumentsId"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteDocumentsId>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {}
+
+    return deleteDocumentsId(id, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteDocumentsIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteDocumentsId>>
+>
+
+export type DeleteDocumentsIdMutationError = void
+
+/**
+ * @summary Delete a document (Admin only)
+ */
+export const useDeleteDocumentsId = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteDocumentsId>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteDocumentsId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteDocumentsIdMutationOptions(options), queryClient)
 }
 
 export type postChatResponse200 = {

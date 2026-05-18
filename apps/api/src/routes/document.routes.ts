@@ -1,5 +1,10 @@
 import { Router } from "express"
-import { listDocuments, uploadDocument, runIngestion } from "../controllers/document.controller"
+import {
+  listDocuments,
+  uploadDocument,
+  runIngestion,
+  deleteDocument,
+} from "../controllers/document.controller"
 import { requireAuth, requireAdmin } from "../middlewares/auth"
 import { upload } from "../lib/multer"
 
@@ -11,5 +16,7 @@ router.get("/", requireAuth, listDocuments)
 router.post("/upload", requireAdmin, upload.single("file"), uploadDocument)
 
 router.post("/:id/ingest", requireAdmin, runIngestion)
+
+router.delete("/:id", requireAdmin, deleteDocument)
 
 export default router

@@ -142,6 +142,35 @@ registry.registerPath({
   },
 })
 
+registry.registerPath({
+  method: "delete",
+  path: "/documents/{id}",
+  summary: "Delete a document (Admin only)",
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string", format: "uuid" },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Document deleted successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    403: { description: "Forbidden" },
+    404: { description: "Document not found" },
+  },
+})
+
 // --- Chat Route ---
 registry.registerPath({
   method: "post",

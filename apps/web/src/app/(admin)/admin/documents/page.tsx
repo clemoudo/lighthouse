@@ -11,6 +11,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
@@ -21,7 +22,7 @@ import { useGetDocuments } from "@/api/generated/lighthouse"
 import { useQueryClient } from "@tanstack/react-query"
 import { getGetDocumentsQueryKey } from "@/api/generated/lighthouse"
 import type { Document } from "@/api/generated/model/document"
-import type { DocumentStatus } from "@/api/generated/model/documentStatus"
+import { DocumentStatus } from "@/api/generated/model/documentStatus"
 
 export default function AdminDocumentsPage() {
   const { data: session, isPending } = useSession()
@@ -30,6 +31,7 @@ export default function AdminDocumentsPage() {
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [ingestingId, setIngestingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   // Récupération des documents avec polling si nécessaire
   const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments({
@@ -119,6 +121,30 @@ export default function AdminDocumentsPage() {
       )
     } finally {
       setIngestingId(null)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    try {
+      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || result.error || "Échec de la suppression")
+      }
+
+      message.success("Document supprimé avec succès")
+      await queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
+    } catch (error) {
+      console.error("[DELETE_ERROR]", error)
+      message.error(error instanceof Error ? error.message : "Erreur lors de la suppression")
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -239,30 +265,68 @@ export default function AdminDocumentsPage() {
               {
                 title: "Actions",
                 key: "actions",
-                render: (_, record) => (
-                  <Space>
-                    <Tooltip title="Lancer l'ingestion IA (Parsing + Vectorisation)">
+                render: (_, record) => {
+                  const isIndexed = record.status === DocumentStatus.COMPLETED
+                  const isProcessing = record.status === DocumentStatus.PROCESSING
+
+                  return (
+                    <Space>
+                      <Tooltip
+                        title={
+                          isIndexed
+                            ? "Mettre à jour l'indexation (remplace les données existantes)"
+                            : "Lancer l'ingestion IA (Parsing + Vectorisation)"
+                        }
+                      >
+                        <Popconfirm
+                          title={isIndexed ? "Ré-ingérer le document ?" : "Lancer l'ingestion ?"}
+                          description={
+                            isIndexed
+                              ? "Les anciennes données d'IA pour ce document seront supprimées et remplacées."
+                              : "Cela va consommer des crédits API pour le parsing et les embeddings."
+                          }
+                          onConfirm={() => handleIngest(record.id)}
+                          okText="Oui"
+                          cancelText="Non"
+                          disabled={isProcessing}
+                        >
+                          <Button
+                            type={isIndexed ? "default" : "primary"}
+                            icon={
+                              isProcessing ? (
+                                <Loader2 className="animate-spin" size={16} />
+                              ) : isIndexed ? (
+                                <RefreshCw size={16} />
+                              ) : (
+                                <BrainCircuit size={16} />
+                              )
+                            }
+                            loading={ingestingId === record.id}
+                            disabled={isProcessing}
+                          >
+                            {isIndexed ? "Ré-ingérer" : "Ingérer"}
+                          </Button>
+                        </Popconfirm>
+                      </Tooltip>
+
                       <Popconfirm
-                        title="Lancer l'ingestion ?"
-                        description="Cela va consommer des crédits API pour le parsing et les embeddings."
-                        onConfirm={() => handleIngest(record.id)}
-                        okText="Oui"
-                        cancelText="Non"
-                        disabled={record.status === "PROCESSING"}
+                        title="Supprimer ce document ?"
+                        description="Cette action est irréversible et supprimera également toutes les données d'IA associées."
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Supprimer"
+                        okButtonProps={{ danger: true }}
+                        cancelText="Annuler"
                       >
                         <Button
-                          type="primary"
-                          icon={<BrainCircuit size={16} />}
-                          loading={ingestingId === record.id}
-                          disabled={record.status === "PROCESSING"}
-                        >
-                          Ingérer
-                        </Button>
+                          type="text"
+                          danger
+                          icon={<Trash2 size={16} />}
+                          loading={deletingId === record.id}
+                        />
                       </Popconfirm>
-                    </Tooltip>
-                    <Button type="text" danger icon={<Trash2 size={16} />} />
-                  </Space>
-                ),
+                    </Space>
+                  )
+                },
               },
             ]}
             locale={{ emptyText: "Aucun document pour le moment." }}
