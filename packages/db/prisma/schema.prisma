@@ -35,7 +35,7 @@ enum IngestionStatus {
 
 model Document {
   id            String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  title         String
+  title         String          @unique
   filename      String
   filePath      String
   fileSize      Int

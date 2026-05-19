@@ -5,6 +5,7 @@ import { logger } from "@repo/logger"
 import { mistral } from "@ai-sdk/mistral"
 import { generateText, Output } from "ai"
 import { z } from "zod"
+import { type ParsedPage, type TableOfContentsEntry } from "@repo/db"
 
 const PARSING_PROMPT = `Convertis ce document PDF en Markdown structuré. 
 
@@ -38,19 +39,6 @@ const TOC_PROMPT = (
       
       Texte du sommaire :
       ${tocMarkdown}`
-
-export interface ParsedPage {
-  markdown: string
-  pageNumber: number
-  printedPageNumber?: string
-}
-
-export interface TableOfContentsEntry {
-  title: string
-  startPage: number
-  endPage: number
-  subSections?: TableOfContentsEntry[]
-}
 
 export class ParsingService {
   private client: LlamaCloud

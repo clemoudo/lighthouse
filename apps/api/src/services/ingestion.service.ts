@@ -1,6 +1,6 @@
-import { prisma, IngestionStatus } from "@repo/db"
+import { prisma, IngestionStatus, type ParsedPage } from "@repo/db"
 import { logger } from "@repo/logger"
-import { parsingService, type ParsedPage } from "./parsing.service"
+import { parsingService } from "./parsing.service"
 import { vectorService } from "./vector.service"
 import { storageService, type SaveChunksParams } from "./storage.service"
 
@@ -35,7 +35,7 @@ export const ingestDocument = async (documentId: string) => {
 
     if (USE_CACHED_PARSING && document.parsedContent) {
       logger.info("[INGESTION] Using cached LlamaParse results from database.")
-      pages = document.parsedContent as unknown as ParsedPage[]
+      pages = document.parsedContent
     } else {
       logger.info("[INGESTION] Calling LlamaParse API...")
       pages = await parsingService.parseDocument(document.filePath)

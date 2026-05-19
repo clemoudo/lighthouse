@@ -2,8 +2,17 @@ import { PrismaClient, Prisma } from "@prisma/client"
 import { Pool } from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { env } from "./env"
+import { 
+  ParsedContentSchema, 
+  ChapterMetadataSchema, 
+  ChunkMetadataSchema,
+  type ParsedContent,
+  type ChapterMetadata,
+  type ChunkMetadata
+} from "./types"
 
 export * from "@prisma/client"
+export * from "./types"
 
 const pool = new Pool({ connectionString: env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
@@ -13,16 +22,45 @@ export interface ChunkSearchResult {
   content: string
   chapterId: string
   similarity: number
-  metadata: any
+  metadata: ChunkMetadata
 }
 
 /**
- * Extension Prisma pour gérer pgvector de manière élégante et sécurisée.
+ * Extension Prisma pour gérer pgvector et le typage fort des colonnes JSON.
  */
 const extendedPrisma = new PrismaClient({
   adapter,
   log: env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
 }).$extends({
+  result: {
+    document: {
+      parsedContent: {
+        needs: { parsedContent: true },
+        compute(doc) {
+          if (!doc.parsedContent) return null
+          return ParsedContentSchema.parse(doc.parsedContent) as ParsedContent
+        },
+      },
+    },
+    chapter: {
+      metadata: {
+        needs: { metadata: true },
+        compute(chapter) {
+          if (!chapter.metadata) return null
+          return ChapterMetadataSchema.parse(chapter.metadata) as ChapterMetadata
+        },
+      },
+    },
+    chunk: {
+      metadata: {
+        needs: { metadata: true },
+        compute(chunk) {
+          if (!chunk.metadata) return null
+          return ChunkMetadataSchema.parse(chunk.metadata) as ChunkMetadata
+        },
+      },
+    },
+  },
   model: {
     chunk: {
       /**
@@ -33,7 +71,7 @@ const extendedPrisma = new PrismaClient({
           content: string | null
           embedding: number[] | null
           chapterId: string
-          metadata?: Record<string, unknown>
+          metadata?: ChunkMetadata
         }[],
       ) {
         if (chunks.length === 0) return

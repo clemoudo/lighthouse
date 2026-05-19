@@ -1,26 +1,26 @@
-import { prisma, type ChunkSearchResult } from "@repo/db"
+import { prisma, type ChunkSearchResult, type ChunkMetadata, type ChapterMetadata } from "@repo/db"
 import { logger } from "@repo/logger"
 
 export interface SaveChunksParams {
   content: string | null
   embedding: number[] | null
   chapterId: string
-  metadata?: Record<string, unknown>
+  metadata?: ChunkMetadata
 }
 
-export interface CreateChapiterParams {
+export interface CreateChapterParams {
   documentId: string
   title: string
   order: number
   parentId?: string
-  metadata?: Record<string, unknown>
+  metadata?: ChapterMetadata
 }
 
 export class StorageService {
   /**
    * Create a chapter for a document.
    */
-  async createChapter({ documentId, title, order, parentId, metadata }: CreateChapiterParams) {
+  async createChapter({ documentId, title, order, parentId, metadata }: CreateChapterParams) {
     return prisma.chapter.create({
       data: {
         title,
