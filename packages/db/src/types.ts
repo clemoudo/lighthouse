@@ -43,13 +43,18 @@ export type ChunkMetadata = z.infer<typeof ChunkMetadataSchema>;
  * Schema for Table of Contents extraction.
  * Used by the AI service and ToC extraction logic.
  */
-export const TableOfContentsEntrySchema: z.ZodType<any> = z.lazy(() =>
+export interface TableOfContentsEntry {
+  title: string
+  startPage: number
+  endPage: number
+  subSections?: TableOfContentsEntry[]
+}
+
+export const TableOfContentsEntrySchema: z.ZodType<TableOfContentsEntry> = z.lazy(() =>
   z.object({
     title: z.string(),
     startPage: z.number(),
     endPage: z.number(),
     subSections: z.array(TableOfContentsEntrySchema).optional(),
-  })
-);
-
-export type TableOfContentsEntry = z.infer<typeof TableOfContentsEntrySchema>;
+  }),
+)

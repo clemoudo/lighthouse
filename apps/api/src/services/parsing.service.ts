@@ -5,7 +5,7 @@ import { logger } from "@repo/logger"
 import { mistral } from "@ai-sdk/mistral"
 import { generateText, Output } from "ai"
 import { z } from "zod"
-import { type ParsedPage, type TableOfContentsEntry } from "@repo/db"
+import { type ParsedPage, type TableOfContentsEntry, TableOfContentsEntrySchema } from "@repo/db"
 
 const PARSING_PROMPT = `Convertis ce document PDF en Markdown structuré. 
 
@@ -124,24 +124,7 @@ export class ParsingService {
       model: mistral.chat("mistral-large-latest"),
       output: Output.object({
         schema: z.object({
-          chapters: z.array(
-            z.object({
-              title: z.string().describe("Le titre complet du chapitre (ex: '1. INTRODUCTION')"),
-              startPage: z.number().describe("Le numéro de la page de début"),
-              endPage: z.number().describe("Le numéro de la page de fin"),
-              subSections: z
-                .array(
-                  z.object({
-                    title: z
-                      .string()
-                      .describe("Le titre complet de la sous-section (ex: '1.1. Objectifs')"),
-                    startPage: z.number(),
-                    endPage: z.number(),
-                  }),
-                )
-                .optional(),
-            }),
-          ),
+          chapters: z.array(TableOfContentsEntrySchema),
         }),
       }),
       prompt: TOC_PROMPT(tocMarkdown),
