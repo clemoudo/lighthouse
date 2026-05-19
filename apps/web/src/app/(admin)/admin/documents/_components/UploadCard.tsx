@@ -17,7 +17,15 @@ export const UploadCard = () => {
       return
     }
 
-    const actualFile = file.originFileObj as File
+    // Ant Design wraps the file in an UploadFile object.
+    // The actual File object is in originFileObj, but if set directly in beforeUpload it might be the file itself.
+    const actualFile = (file.originFileObj as File) || (file as unknown as File)
+
+    if (!actualFile) {
+      message.error("Impossible de récupérer le fichier")
+      return
+    }
+
     upload(actualFile, {
       onSuccess: () => {
         setFileList([])
@@ -46,7 +54,7 @@ export const UploadCard = () => {
 
   return (
     <Card title="Importer un nouveau programme" className="shadow-sm">
-      <Space direction="vertical" className="w-full" size="large">
+      <Space orientation="vertical" className="w-full" size="large">
         <Upload.Dragger {...props} maxCount={1} accept=".pdf">
           <p className="ant-upload-drag-icon flex justify-center py-4">
             <FileText size={48} color="var(--color-primary)" />

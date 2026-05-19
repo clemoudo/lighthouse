@@ -34,17 +34,18 @@ enum IngestionStatus {
 }
 
 model Document {
-  id        String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  title     String
-  filename  String
-  filePath  String
-  fileSize  Int
-  mimeType  String
-  status    IngestionStatus @default(PENDING)
-  error     String?         @db.Text
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  chapters  Chapter[]
+  id            String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title         String
+  filename      String
+  filePath      String
+  fileSize      Int
+  mimeType      String
+  status        IngestionStatus @default(PENDING)
+  parsedContent Json?           // Cache for LlamaParse results
+  error         String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  chapters      Chapter[]
 
   @@map("document")
 }
@@ -53,10 +54,14 @@ model Chapter {
   id         String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   title      String
   order      Int
-  content    String?   @db.Text
-  metadata   Json?
+  metadata   Json?     // Will store startPage and endPage
   documentId String    @db.Uuid
   document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  parentId   String?   @db.Uuid
+  parent     Chapter?  @relation("ChapterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subSections Chapter[] @relation("ChapterHierarchy")
+
   chunks     Chunk[]
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -66,7 +71,7 @@ model Chapter {
 
 model Chunk {
   id        String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  content   String                      @db.Text
+  content   String?                     @db.Text
   embedding Unsupported("vector(1024)")?
   metadata  Json?
   chapterId String                      @db.Uuid

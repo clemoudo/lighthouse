@@ -2,22 +2,54 @@ import { LlamaCloud } from "@llamaindex/llama-cloud"
 import fs from "node:fs"
 import { env } from "../env"
 import { logger } from "@repo/logger"
+import { mistral } from "@ai-sdk/mistral"
+import { generateText, Output } from "ai"
+import { z } from "zod"
 
-const CUSTOM_PROMPT = `Tu es un expert en extraction de documents pédagogiques complexes. 
-Ta mission est de convertir ce document en un format structuré mêlant Markdown et HTML.
+const PARSING_PROMPT = `Convertis ce document PDF en Markdown structuré. 
 
-LOGIQUE DE MISE EN PAGE :
-- SI la page contient les colonnes "OBJECTIFS" et "ÊTRE PROGRESSIVEMENT CAPABLE DE..." : 
-  Utilise impérativement une table HTML (<table>) pour préserver le lien entre les objectifs (gauche) et les capacités (droite).
-- SINON (postures, balises, rituels, outils) : 
-  Utilise un Markdown standard avec des listes à puces. Respecte scrupuleusement la hiérarchie des titres.
+RÈGLE MAJEURE : TOUS les tableaux doivent être générés en HTML pur (<table>, <tr>, <th>, <td>). N'utilise JAMAIS le formatage de tableau Markdown.
 
-Ne génère aucun texte d'introduction, renvoie uniquement le contenu structuré.`
+Respecte strictement ces 5 règles pour le rendu :
+
+1. FORMATAGE DES CELLULES : Si une cellule contient plusieurs éléments, utilise les balises <ul> et <li> pour créer une liste propre au lieu de tout coller sur une seule ligne. Conserve les numérotations (ex: 1.1.1).
+
+2. FUSIONS (COLSPAN / ROWSPAN) : 
+- Utilise "colspan" pour les en-têtes qui surplombent plusieurs colonnes (ex: "REPÈRES" au-dessus de "ÉCOUTER" et "PARLER").
+- Utilise "rowspan" pour le texte orienté verticalement qui couvre plusieurs lignes (ex: "VIVRE DES EXPÉRIENCES...").
+
+3. POINTS VISUELS (MATRICES) : Dans les tableaux à double entrée, si tu vois un point de couleur ou une coche dans une case, écris simplement "X" dans la balise <td> correspondante. Laisse la balise vide s'il n'y a rien.
+
+4. ENCADRÉS HORS TABLEAUX : Les blocs de couleur en bas de page (ex: "Liens possibles vers EPC...") NE SONT PAS dans le tableau. Ferme la balise </table> avant, et formate ce texte en citation Markdown (avec le préfixe "> ").
+
+5. NETTOYAGE DES ICÔNES : Ignore les icônes décoratives (mains, flèches colorées). Si elles servent de puces, remplace-les par un simple tiret ou une balise <li>.`
+
+const TOC_PROMPT = (
+  tocMarkdown: string,
+) => `Analyse le texte suivant extrait du sommaire d'un programme scolaire et extrais les chapitres de manière hiérarchique.
+      
+      Règles :
+      - Les chapitres "ROOT" (principaux) sont généralement en MAJUSCULES.
+      - Les sous-sections sont rattachées à leur chapitre parent.
+      - Conserve IMPÉRATIVEMENT la numérotation originale dans le titre (ex: "1.", "1.1.", "A.", etc.).
+      - Les numéros de pages réels et imprimés sont identiques.
+      - Si une section n'a qu'une seule page, startPage et endPage sont identiques.
+      - Assure-toi que les plages se suivent logiquement.
+      
+      Texte du sommaire :
+      ${tocMarkdown}`
 
 export interface ParsedPage {
   markdown: string
   pageNumber: number
   printedPageNumber?: string
+}
+
+export interface TableOfContentsEntry {
+  title: string
+  startPage: number
+  endPage: number
+  subSections?: TableOfContentsEntry[]
 }
 
 export class ParsingService {
@@ -49,8 +81,7 @@ export class ParsingService {
       version: "latest",
       disable_cache: true,
       crop_box: {
-        top: 0.06,
-        bottom: 0.08,
+        top: 0.075,
       },
       output_options: {
         markdown: {
@@ -61,7 +92,7 @@ export class ParsingService {
         extract_printed_page_number: true,
       },
       agentic_options: {
-        custom_prompt: CUSTOM_PROMPT,
+        custom_prompt: PARSING_PROMPT,
       },
       processing_options: {
         ocr_parameters: {
@@ -93,6 +124,42 @@ export class ParsingService {
         printedPageNumber: meta?.printed_page_number ? String(meta.printed_page_number) : undefined,
       }
     })
+  }
+
+  /**
+   * Extract a structured hierarchical table of contents from the markdown of the ToC page.
+   */
+  async extractTableOfContents(tocMarkdown: string): Promise<TableOfContentsEntry[]> {
+    logger.info("[PARSING] Extracting structured hierarchical ToC using Mistral")
+
+    const { output } = await generateText({
+      model: mistral.chat("mistral-large-latest"),
+      output: Output.object({
+        schema: z.object({
+          chapters: z.array(
+            z.object({
+              title: z.string().describe("Le titre complet du chapitre (ex: '1. INTRODUCTION')"),
+              startPage: z.number().describe("Le numéro de la page de début"),
+              endPage: z.number().describe("Le numéro de la page de fin"),
+              subSections: z
+                .array(
+                  z.object({
+                    title: z
+                      .string()
+                      .describe("Le titre complet de la sous-section (ex: '1.1. Objectifs')"),
+                    startPage: z.number(),
+                    endPage: z.number(),
+                  }),
+                )
+                .optional(),
+            }),
+          ),
+        }),
+      }),
+      prompt: TOC_PROMPT(tocMarkdown),
+    })
+
+    return output.chapters
   }
 }
 

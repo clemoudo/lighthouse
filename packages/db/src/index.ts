@@ -29,15 +29,25 @@ const extendedPrisma = new PrismaClient({
        * Insertion massive de chunks avec embeddings.
        */
       async createManyWithVectors(
-        chunks: { content: string; embedding: number[]; chapterId: string; metadata?: any }[]
+        chunks: {
+          content: string | null
+          embedding: number[] | null
+          chapterId: string
+          metadata?: Record<string, unknown>
+        }[],
       ) {
         if (chunks.length === 0) return
 
         // On crée un tableau de valeurs SQL pour une seule requête bulk insert très performante
         const values = chunks.map((chunk) => {
-          const vectorStr = `[${chunk.embedding.join(",")}]`
+          const vectorStr = chunk.embedding ? `[${chunk.embedding.join(",")}]` : null
           const metadataJson = chunk.metadata ? JSON.stringify(chunk.metadata) : null
-          return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
+
+          if (vectorStr) {
+            return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
+          }
+
+          return Prisma.sql`(uuidv7(), ${chunk.content}, NULL, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
         })
 
         // On utilise extendedPrisma.$executeRaw avec Prisma.join pour garantir la sécurité

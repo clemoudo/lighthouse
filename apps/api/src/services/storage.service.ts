@@ -2,9 +2,17 @@ import { prisma, type ChunkSearchResult } from "@repo/db"
 import { logger } from "@repo/logger"
 
 export interface SaveChunksParams {
-  content: string
-  embedding: number[]
+  content: string | null
+  embedding: number[] | null
   chapterId: string
+  metadata?: Record<string, unknown>
+}
+
+export interface CreateChapiterParams {
+  documentId: string
+  title: string
+  order: number
+  parentId?: string
   metadata?: Record<string, unknown>
 }
 
@@ -12,13 +20,14 @@ export class StorageService {
   /**
    * Create a chapter for a document.
    */
-  async createChapter(documentId: string, title: string, order: number, content: string) {
+  async createChapter({ documentId, title, order, parentId, metadata }: CreateChapiterParams) {
     return prisma.chapter.create({
       data: {
         title,
         order,
-        content,
         documentId,
+        parentId,
+        metadata,
       },
     })
   }
