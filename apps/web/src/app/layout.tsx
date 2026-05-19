@@ -34,7 +34,9 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AntdRegistry>
-          <Providers>{children}</Providers>
+          <Providers>
+            <div className="min-h-screen bg-layout text-text">{children}</div>
+          </Providers>
         </AntdRegistry>
       </body>
     </html>

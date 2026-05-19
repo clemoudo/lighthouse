@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Button, Card, message, Space } from "antd"
+import { Upload, Button, Card, App, Space } from "antd"
 import { Upload as UploadIcon, FileText } from "lucide-react"
 import type { UploadFile } from "antd/es/upload/interface"
 import { useUploadDocument } from "../_hooks/use-document-mutations"
 
-export const UploadCard = () => {
+const UploadCard = () => {
+  const { message } = App.useApp()
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const { mutate: upload, isPending: uploading } = useUploadDocument()
 
@@ -81,3 +82,5 @@ export const UploadCard = () => {
     </Card>
   )
 }
+
+export default UploadCard

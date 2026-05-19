@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider, message } from "antd"
+import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider, App } from "antd"
 import { Mail, Lock, ArrowRight, Send } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
@@ -21,6 +21,7 @@ const signInSchema = z.object({
 })
 
 export default function SignInPage() {
+  const { message } = App.useApp()
   const router = useRouter()
   const { refetch } = useAuth()
   const [error, setError] = useState<string | null>(null)

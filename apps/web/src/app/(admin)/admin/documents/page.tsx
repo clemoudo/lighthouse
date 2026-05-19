@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { useGetDocuments } from "@/api/generated/lighthouse"
-import { UploadCard } from "./_components/UploadCard"
+import UploadCard from "./_components/UploadCard"
 import { DocumentsTable } from "./_components/DocumentsTable"
 
 export default function AdminDocumentsPage() {

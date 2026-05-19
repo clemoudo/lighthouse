@@ -12,8 +12,8 @@ import {
   Typography,
   Tooltip,
   Popconfirm,
-  message,
   Avatar,
+  App,
 } from "antd"
 import {
   User as UserIcon,
@@ -34,6 +34,7 @@ import type { ColumnsType } from "antd/es/table"
 const { Text } = Typography
 
 export default function AdminUsersPage() {
+  const { message } = App.useApp()
   const { data: session } = useSession()
 
   // Pagination & Search States

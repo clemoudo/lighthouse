@@ -134,7 +134,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const isAdmin = session?.user.role === "admin"
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-primary">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6">
         <Image src="/lighthouse.png" alt="Lighthouse" width={48} height={48} className="shrink-0" />
@@ -213,19 +213,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-surface-secondary">
+    <div className="flex min-h-screen bg-layout">
       {/* Desktop Sidebar */}
-      <aside
-        className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block"
-        style={{ background: "var(--color-sidebar-bg)" }}
-      >
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">
         <NavContent />
       </aside>
 
       {/* Mobile Header + Content */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background px-4 lg:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-container px-4 lg:hidden">
           <Button
             type="text"
             onClick={() => setOpen(true)}
@@ -236,7 +233,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Button>
           <div className="flex items-center gap-2">
             <Image src="/lighthouse.png" alt="Lighthouse" width={32} height={32} />
-            <span className="font-semibold text-foreground">Lighthouse</span>
+            <span className="font-semibold text-text">Lighthouse</span>
           </div>
         </header>
 
@@ -246,7 +243,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClose={() => setOpen(false)}
           open={open}
           closable={false}
-          styles={{ body: { padding: 0, background: "var(--color-sidebar-bg)" } }}
+          styles={{ body: { padding: 0 } }}
           size={256}
         >
           <NavContent onNavigate={() => setOpen(false)} />

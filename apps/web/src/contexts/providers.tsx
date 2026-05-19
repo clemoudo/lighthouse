@@ -25,10 +25,14 @@ function AntdThemeProvider({ children }: { children: ReactNode }) {
           algorithm:
             mounted && resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: "#003f71", // Equivalent hex of oklch(0.35 0.12 240) for better tool support
-            colorSuccess: "#299236", // Equivalent of oklch(0.58 0.16 145)
-            colorWarning: "#d6810c", // Equivalent of oklch(0.68 0.15 65)
-            colorError: "#c90019", // Equivalent of oklch(0.52 0.22 25)
+            // Seed Colors - These will generate the entire palette automatically
+            colorPrimary: "#003f71",
+            colorInfo: "#3c91e6",
+            colorSuccess: "#4fba5a",
+            colorWarning: "#ea890b",
+            colorError: "#d13523",
+
+            // Layout & Typography
             borderRadius: 12,
             fontFamily: "var(--font-inter)",
           },

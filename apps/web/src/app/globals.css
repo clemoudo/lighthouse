@@ -2,31 +2,69 @@
 
 @import "tailwindcss";
 
-:root {
-  /* Brand colors (Sidebar color is the true primary) */
-  --brand-primary: oklch(0.35 0.12 240);
-  --brand-success: oklch(0.58 0.16 145);
-  --brand-warning: oklch(0.68 0.15 65);
-  --brand-error: oklch(0.52 0.22 25);
-}
-
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", monospace;
 
-  /* Sync Tailwind with Ant Design generated CSS variables */
+  /* --- Ant Design Semantic Tokens Integration --- */
+
+  /* Primary Palette */
   --color-primary: var(--ant-color-primary);
   --color-primary-hover: var(--ant-color-primary-hover);
   --color-primary-active: var(--ant-color-primary-active);
+  --color-primary-bg: var(--ant-color-primary-bg);
+  --color-primary-bg-hover: var(--ant-color-primary-bg-hover);
+  --color-primary-border: var(--ant-color-primary-border);
+  --color-primary-text: var(--ant-color-primary-text);
 
+  /* Info / Secondary Palette */
+  --color-info: var(--ant-color-info);
+  --color-info-hover: var(--ant-color-info-hover);
+  --color-info-active: var(--ant-color-info-active);
+  --color-info-bg: var(--ant-color-info-bg);
+  --color-info-text: var(--ant-color-info-text);
+
+  /* Success Palette */
   --color-success: var(--ant-color-success);
-  --color-warning: var(--ant-color-warning);
-  --color-error: var(--ant-color-error);
+  --color-success-hover: var(--ant-color-success-hover);
+  --color-success-bg: var(--ant-color-success-bg);
+  --color-success-border: var(--ant-color-success-border);
+  --color-success-text: var(--ant-color-success-text);
 
-  /* Sidebar uses the brand primary color */
-  --color-sidebar-bg: var(--brand-primary);
-  --color-sidebar-fg: oklch(0.95 0.01 240);
-  --color-sidebar-border: oklch(0.4 0.1 240);
-  --color-sidebar-accent: oklch(0.4 0.1 240);
-  --color-sidebar-accent-fg: oklch(0.99 0 0);
+  /* Warning Palette */
+  --color-warning: var(--ant-color-warning);
+  --color-warning-hover: var(--ant-color-warning-hover);
+  --color-warning-bg: var(--ant-color-warning-bg);
+  --color-warning-border: var(--ant-color-warning-border);
+  --color-warning-text: var(--ant-color-warning-text);
+
+  /* Error Palette */
+  --color-error: var(--ant-color-error);
+  --color-error-hover: var(--ant-color-error-hover);
+  --color-error-bg: var(--ant-color-error-bg);
+  --color-error-border: var(--ant-color-error-border);
+  --color-error-text: var(--ant-color-error-text);
+
+  /* Neutrals & Surfaces (Auto-sync with Dark Mode) */
+  --color-layout: var(--ant-color-bg-layout);
+  --color-container: var(--ant-color-bg-container);
+  --color-elevated: var(--ant-color-bg-elevated);
+  --color-spotlight: var(--ant-color-bg-spotlight);
+  --color-mask: var(--ant-color-bg-mask);
+
+  /* Borders & Dividers */
+  --color-border: var(--ant-color-border);
+  --color-border-secondary: var(--ant-color-border-secondary);
+  --color-split: var(--ant-color-split);
+
+  /* Typography */
+  --color-text: var(--ant-color-text);
+  --color-text-secondary: var(--ant-color-text-secondary);
+  --color-text-tertiary: var(--ant-color-text-tertiary);
+  --color-text-quaternary: var(--ant-color-text-quaternary);
+  --color-text-description: var(--ant-color-text-description);
+  --color-text-disabled: var(--ant-color-text-disabled);
+
+  /* Custom Mappings */
+  --color-sidebar-bg: var(--ant-color-primary);
 }

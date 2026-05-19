@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { message } from "antd"
+import { App } from "antd"
 import { env } from "@/env"
 import { getGetDocumentsQueryKey } from "@/api/generated/lighthouse"
 
 export const useUploadDocument = () => {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -43,6 +44,7 @@ export const useUploadDocument = () => {
 }
 
 export const useIngestDocument = () => {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -72,6 +74,7 @@ export const useIngestDocument = () => {
 }
 
 export const useDeleteDocument = () => {
+  const { message } = App.useApp()
   const queryClient = useQueryClient()
 
   return useMutation({

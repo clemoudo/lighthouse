@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Card, Input, Button, Divider, Form, message } from "antd"
+import { Card, Input, Button, Divider, Form, App } from "antd"
 import { User, Lock, Save, ShieldCheck } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
@@ -28,6 +28,7 @@ const passwordSchema = z
   })
 
 function SettingsContent() {
+  const { message } = App.useApp()
   const { data: session, isPending: isSessionPending, refetch } = useSession()
   const [infoPending, setInfoPending] = useState(false)
   const [passwordPending, setPasswordPending] = useState(false)
