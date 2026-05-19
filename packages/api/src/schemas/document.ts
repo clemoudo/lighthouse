@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi"
+import { PaginationMetaSchema } from "./common"
 
 extendZodWithOpenApi(z)
 
@@ -23,7 +24,9 @@ export const DocumentSchema = z
 export const CreateDocumentRequestSchema = z
   .object({
     title: z.string().optional().openapi({ example: "Programme Scolaire - Volume 1" }),
-    file: z.any().openapi({ type: "string", format: "binary", description: "Le fichier PDF à uploader" }),
+    file: z
+      .any()
+      .openapi({ type: "string", format: "binary", description: "Le fichier PDF à uploader" }),
   })
   .openapi("CreateDocumentRequest")
 
@@ -36,7 +39,8 @@ export const CreateDocumentResponseSchema = z
 
 export const ListDocumentsResponseSchema = z
   .object({
-    documents: z.array(DocumentSchema),
+    documents: z.array(DocumentSchema).openapi({ description: "Liste des documents" }),
+    meta: PaginationMetaSchema,
   })
   .openapi("ListDocumentsResponse")
 

@@ -1,15 +1,18 @@
 import { PrismaClient, Prisma } from "@prisma/client"
 import { Pool } from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
+import { omit } from "lodash"
+import { BadRequest } from "http-errors"
 import { env } from "./env"
-import { 
-  ParsedContentSchema, 
-  ChapterMetadataSchema, 
+import {
+  ParsedContentSchema,
+  ChapterMetadataSchema,
   ChunkMetadataSchema,
   type ParsedContent,
   type ChapterMetadata,
-  type ChunkMetadata
+  type ChunkMetadata,
 } from "./types"
+import { PAGINATION_LIMITS } from "@repo/api"
 
 export * from "@prisma/client"
 export * from "./types"
@@ -25,8 +28,21 @@ export interface ChunkSearchResult {
   metadata: ChunkMetadata
 }
 
+export type PaginationMeta = {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export type PaginatedResult<T> = {
+  data: T[]
+  meta: PaginationMeta
+}
+
 /**
- * Extension Prisma pour gérer pgvector et le typage fort des colonnes JSON.
+ * Extension Prisma pour gérer pgvector, le typage fort des colonnes JSON
+ * et la pagination générique optimisée.
  */
 const extendedPrisma = new PrismaClient({
   adapter,
@@ -62,6 +78,54 @@ const extendedPrisma = new PrismaClient({
     },
   },
   model: {
+    $allModels: {
+      /**
+       * Méthode générique pour la pagination.
+       */
+      async paginate<T, A>(
+        this: T,
+        args: Prisma.Exact<A, Prisma.Args<T, "findMany">> & {
+          page?: number
+          pageSize?: number
+        },
+      ): Promise<PaginatedResult<Prisma.Result<T, A, "findMany">>> {
+        const {
+          page = PAGINATION_LIMITS.MIN_PAGE,
+          pageSize = PAGINATION_LIMITS.DEFAULT_PAGE_SIZE,
+        } = args
+
+        if (
+          page < PAGINATION_LIMITS.MIN_PAGE ||
+          pageSize < PAGINATION_LIMITS.MIN_PAGE_SIZE ||
+          pageSize > PAGINATION_LIMITS.MAX_PAGE_SIZE
+        ) {
+          throw BadRequest(
+            `Paramètres de pagination invalides. pageSize doit être entre ${PAGINATION_LIMITS.MIN_PAGE_SIZE}-${PAGINATION_LIMITS.MAX_PAGE_SIZE} et page doit être >= ${PAGINATION_LIMITS.MIN_PAGE}.`,
+          )
+        }
+
+        const [data, total] = await Promise.all([
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (this as any).findMany({
+            ...omit(args, ["page", "pageSize"]),
+            skip: pageSize * (page - 1),
+            take: pageSize,
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (this as any).count({ where: (args as any).where }),
+        ])
+
+        return {
+          data,
+          meta: {
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+          },
+        }
+      },
+    },
     chunk: {
       /**
        * Insertion massive de chunks avec embeddings.
@@ -106,7 +170,7 @@ const extendedPrisma = new PrismaClient({
           ORDER BY embedding <=> ${vectorStr}::vector
           LIMIT ${limit}
         `
-      }
+      },
     },
   },
 })

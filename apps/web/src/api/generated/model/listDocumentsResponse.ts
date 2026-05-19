@@ -6,7 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Document } from "./document"
+import type { PaginationMeta } from "./paginationMeta"
 
 export interface ListDocumentsResponse {
+  /** Liste des documents */
   documents: Document[]
+  meta: PaginationMeta
 }

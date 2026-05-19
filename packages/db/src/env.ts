@@ -9,11 +9,13 @@ const serverSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL est requise"),
 })
 
-const isBuild = process.env.SKIP_ENV_VALIDATION === "1" || process.env.npm_lifecycle_event === "build" || process.env.npm_lifecycle_event === "generate"
-const isTest = process.env.NODE_ENV === "test" || process.env.npm_lifecycle_event === "test"
+const isBuild = process.env.SKIP_ENV_VALIDATION === "1"
+const isTest = process.env.NODE_ENV === "test"
 
 const result =
-  isBuild || isTest ? envSchema.safeParse(process.env) : serverSchema.extend(envSchema.shape).safeParse(process.env)
+  isBuild || isTest
+    ? envSchema.safeParse(process.env)
+    : serverSchema.extend(envSchema.shape).safeParse(process.env)
 
 if (!result.success) {
   console.error("❌ Invalid environment variables in @repo/db:", result.error.flatten().fieldErrors)

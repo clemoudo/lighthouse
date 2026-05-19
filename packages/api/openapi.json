@@ -44,16 +44,22 @@
           },
           "role": {
             "type": "string"
+          },
+          "banned": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "banReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "banExpires": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "email",
-          "emailVerified",
-          "createdAt",
-          "updatedAt"
-        ]
+        "required": ["id", "name", "email", "emailVerified", "createdAt", "updatedAt"]
       },
       "AuthSession": {
         "type": "object",
@@ -66,10 +72,7 @@
             "$ref": "#/components/schemas/Session"
           }
         },
-        "required": [
-          "user",
-          "session"
-        ]
+        "required": ["user", "session"]
       },
       "Session": {
         "type": "object",
@@ -106,14 +109,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "id",
-          "userId",
-          "expiresAt",
-          "token",
-          "createdAt",
-          "updatedAt"
-        ]
+        "required": ["id", "userId", "expiresAt", "token", "createdAt", "updatedAt"]
       },
       "Document": {
         "type": "object",
@@ -145,12 +141,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "PROCESSING",
-              "COMPLETED",
-              "FAILED"
-            ],
+            "enum": ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
             "example": "PENDING"
           },
           "error": {
@@ -189,12 +180,36 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Document"
-            }
+            },
+            "description": "Liste des documents"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
           }
         },
-        "required": [
-          "documents"
-        ]
+        "required": ["documents", "meta"]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 100
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "example": 10
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": ["total", "page", "pageSize", "totalPages"]
       },
       "CreateDocumentResponse": {
         "type": "object",
@@ -207,10 +222,7 @@
             "$ref": "#/components/schemas/Document"
           }
         },
-        "required": [
-          "message",
-          "document"
-        ]
+        "required": ["message", "document"]
       },
       "CreateDocumentRequest": {
         "type": "object",
@@ -234,9 +246,7 @@
             "example": "Ingestion démarrée avec succès"
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       },
       "ChatResponse": {
         "type": "string"
@@ -251,20 +261,13 @@
               "properties": {
                 "role": {
                   "type": "string",
-                  "enum": [
-                    "user",
-                    "assistant",
-                    "system"
-                  ]
+                  "enum": ["user", "assistant", "system"]
                 },
                 "content": {
                   "type": "string"
                 }
               },
-              "required": [
-                "role",
-                "content"
-              ]
+              "required": ["role", "content"]
             },
             "example": [
               {
@@ -274,9 +277,7 @@
             ]
           }
         },
-        "required": [
-          "messages"
-        ]
+        "required": ["messages"]
       }
     },
     "parameters": {}
@@ -400,9 +401,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "message"
-                  ]
+                  "required": ["message"]
                 }
               }
             }
@@ -472,12 +471,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "status",
-                    "uptime",
-                    "database",
-                    "timestamp"
-                  ]
+                  "required": ["status", "uptime", "database", "timestamp"]
                 }
               }
             }
@@ -496,10 +490,7 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "status",
-                    "database"
-                  ]
+                  "required": ["status", "database"]
                 }
               }
             }

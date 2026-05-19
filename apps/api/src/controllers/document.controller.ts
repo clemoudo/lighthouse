@@ -2,15 +2,21 @@ import type { Request, Response } from "express"
 import fs from "node:fs/promises"
 import { prisma, IngestionStatus } from "@repo/db"
 import { logger } from "@repo/logger"
+import { PaginationQuerySchema } from "@repo/api"
 import { ingestDocument } from "../services/ingestion.service"
 import { storageService } from "../services/storage.service"
 
-export const listDocuments = async (_req: Request, res: Response) => {
+export const listDocuments = async (req: Request, res: Response) => {
   try {
-    const documents = await prisma.document.findMany({
+    const { page, pageSize } = PaginationQuerySchema.parse(req.query)
+
+    const result = await prisma.document.paginate({
       orderBy: { createdAt: "desc" },
+      page,
+      pageSize,
     })
-    res.json({ documents })
+
+    res.json(result)
   } catch (error) {
     logger.error("Erreur lors de la récupération des documents:", error)
     res.status(500).json({ error: "Erreur interne" })

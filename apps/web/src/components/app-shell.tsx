@@ -47,10 +47,16 @@ const navItems = [
 
 const adminItems = [
   {
-    name: "Administration",
+    name: "Documents",
     href: "/admin/documents",
     icon: ShieldCheck,
-    description: "Gestion des documents",
+    description: "Gestion du RAG",
+  },
+  {
+    name: "Utilisateurs",
+    href: "/admin/users",
+    icon: UserIcon,
+    description: "Gestion des comptes",
   },
 ]
 

@@ -302,15 +302,24 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
         specifier: ^25.8.0
         version: 25.8.0
+      eslint:
+        specifier: ^9.39.4
+        version: 9.39.4(jiti@2.7.0)
       openapi3-ts:
         specifier: ^4.5.0
         version: 4.5.0
+      prettier:
+        specifier: ^3.5.2
+        version: 3.8.3
       tsx:
         specifier: ^4.22.0
         version: 4.22.0
@@ -326,6 +335,15 @@ importers:
       '@prisma/client':
         specifier: 7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3))(typescript@5.9.3)
+      '@repo/api':
+        specifier: workspace:*
+        version: link:../api
+      http-errors:
+        specifier: ^2.0.1
+        version: 2.0.1
+      lodash:
+        specifier: ^4.18.1
+        version: 4.18.1
       pg:
         specifier: ^8.20.0
         version: 8.20.0
@@ -336,15 +354,33 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/http-errors':
+        specifier: ^2.0.5
+        version: 2.0.5
+      '@types/lodash':
+        specifier: ^4.17.24
+        version: 4.17.24
       '@types/node':
         specifier: ^25.8.0
         version: 25.8.0
       '@types/pg':
         specifier: ^8.20.0
         version: 8.20.0
+      eslint:
+        specifier: ^9.39.4
+        version: 9.39.4(jiti@2.7.0)
+      prettier:
+        specifier: ^3.5.2
+        version: 3.8.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/eslint-config:
     devDependencies:
@@ -2583,6 +2619,9 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
+
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
 
@@ -4324,6 +4363,9 @@ packages:
 
   lodash.upperfirst@4.3.1:
     resolution: {integrity: sha512-sReKOYJIJf74dhJONhU4e0/shzi1trVbSWDOhKYE5XV2O+H7Sb2Dihwuc7xWxVl+DgFPyTqIN3zMfT9cq5iWDg==}
+
+  lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
@@ -7816,6 +7858,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/lodash@4.17.24': {}
+
   '@types/methods@1.1.4': {}
 
   '@types/multer@2.1.0':
@@ -9749,6 +9793,8 @@ snapshots:
   lodash.startcase@4.4.0: {}
 
   lodash.upperfirst@4.3.1: {}
+
+  lodash@4.18.1: {}
 
   long@5.3.2: {}
 

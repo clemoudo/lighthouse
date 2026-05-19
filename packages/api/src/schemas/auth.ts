@@ -16,6 +16,9 @@ export const UserSchema = z
     createdAt: z.date(),
     updatedAt: z.date(),
     role: z.string().optional(), // Admin role
+    banned: z.boolean().nullable().optional(),
+    banReason: z.string().nullable().optional(),
+    banExpires: z.date().nullable().optional(),
   })
   .openapi("User")
 

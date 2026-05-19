@@ -1,7 +1,13 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi"
 import { z } from "zod"
 import { AuthSessionSchema, UserSchema } from "./schemas/auth"
-import { DocumentSchema, CreateDocumentResponseSchema, CreateDocumentRequestSchema, ListDocumentsResponseSchema, IngestDocumentResponseSchema } from "./schemas/document"
+import {
+  DocumentSchema,
+  CreateDocumentResponseSchema,
+  CreateDocumentRequestSchema,
+  ListDocumentsResponseSchema,
+  IngestDocumentResponseSchema,
+} from "./schemas/document"
 import { ChatRequestSchema, ChatResponseSchema } from "./schemas/chat"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 

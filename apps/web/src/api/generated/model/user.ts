@@ -16,4 +16,10 @@ export interface User {
   createdAt: string
   updatedAt: string
   role?: string
+  /** @nullable */
+  banned?: boolean | null
+  /** @nullable */
+  banReason?: string | null
+  /** @nullable */
+  banExpires?: string | null
 }

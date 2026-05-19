@@ -8,10 +8,12 @@ export const ChatMessageSchema = z.object({
   content: z.string(),
 })
 
-export const ChatRequestSchema = z.object({
-  messages: z.array(ChatMessageSchema).openapi({
-    example: [{ role: "user", content: "Comment favoriser l'autonomie en classe ?" }]
-  }),
-}).openapi("ChatRequest")
+export const ChatRequestSchema = z
+  .object({
+    messages: z.array(ChatMessageSchema).openapi({
+      example: [{ role: "user", content: "Comment favoriser l'autonomie en classe ?" }],
+    }),
+  })
+  .openapi("ChatRequest")
 
 export const ChatResponseSchema = z.string().openapi("ChatResponse")

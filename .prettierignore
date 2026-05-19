@@ -14,8 +14,11 @@ coverage
 # Nextjs
 next-env.d.ts
 
-#pnpm
+# Generated
+**/generated/**
+
+# pnpm
 pnpm-lock.yaml
 
-# Cercificate
+# Certificate
 acme.json
