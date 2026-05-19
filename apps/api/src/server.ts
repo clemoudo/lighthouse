@@ -9,7 +9,6 @@ import { authMiddleware } from "./middlewares/auth"
 import { env } from "./env"
 
 // Routers
-import authRoutes from "./routes/auth.routes"
 import documentRoutes from "./routes/document.routes"
 import chatRoutes from "./routes/chat.routes"
 
@@ -53,7 +52,6 @@ export const createServer = (): Express => {
   })
 
   // API Routes
-  app.use("/auth", authRoutes)
   app.use("/documents", documentRoutes)
   app.use("/chat", chatRoutes)
 

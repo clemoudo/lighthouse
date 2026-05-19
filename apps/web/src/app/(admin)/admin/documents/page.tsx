@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo } from "react"
-import { Card } from "antd"
-import { LayoutDashboard } from "lucide-react"
+import { Card, Button } from "antd"
+import { LayoutDashboard, RefreshCw } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
@@ -14,16 +14,13 @@ export default function AdminDocumentsPage() {
   const { data: session, isPending } = useSession()
   const router = useRouter()
 
-  // Récupération des documents avec polling si nécessaire
-  const { data: documentsResponse, isLoading: isLoadingDocuments } = useGetDocuments({
-    query: {
-      refetchInterval: (query) => {
-        const data = query.state.data
-        const docs = data?.data?.documents
-        return docs?.some((d) => d.status === "PROCESSING") ? 3000 : false
-      },
-    },
-  })
+  // Récupération des documents
+  const {
+    data: documentsResponse,
+    isLoading: isLoadingDocuments,
+    refetch,
+    isFetching,
+  } = useGetDocuments()
 
   const documents = useMemo(
     () => (documentsResponse?.status === 200 ? documentsResponse.data.documents : []),
@@ -49,8 +46,20 @@ export default function AdminDocumentsPage() {
         <UploadCard />
 
         {/* Colonne Liste */}
-        <Card title="Documents indexés" className="lg:col-span-2 shadow-sm">
-          <DocumentsTable documents={documents} loading={isLoadingDocuments} />
+        <Card
+          title="Documents indexés"
+          className="lg:col-span-2 shadow-sm"
+          extra={
+            <Button
+              icon={<RefreshCw className={isFetching ? "animate-spin" : ""} size={16} />}
+              onClick={() => refetch()}
+              loading={isFetching}
+            >
+              Actualiser
+            </Button>
+          }
+        >
+          <DocumentsTable documents={documents} loading={isLoadingDocuments || isFetching} />
         </Card>
       </div>
     </div>

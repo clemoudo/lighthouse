@@ -1,8 +1,8 @@
 "use client"
 
 import React, { createContext, useContext, ReactNode, useMemo } from "react"
-import { useGetAuthCheck } from "@/api/generated/lighthouse"
-import type { User, Session } from "@/api/generated/model"
+import { useSession } from "@/lib/auth-client"
+import { Session, User } from "better-auth/types"
 
 interface AuthContextType {
   user: User | null
@@ -10,37 +10,26 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   isError: boolean
-  refetch: () => Promise<unknown>
+  refetch: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const {
-    data: response,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetAuthCheck({
-    query: {
-      staleTime: 1000 * 60 * 5, // 5 minutes cache
-      refetchOnWindowFocus: true,
-    },
-  })
+  const { data: sessionData, isPending: isLoading, error, refetch } = useSession()
 
   const value = useMemo(() => {
-    // Orval wraps the response in a 'data' property because of multiple status codes
-    const authData = response?.data
-
     return {
-      user: authData?.user?.user ?? null,
-      session: authData?.user?.session ?? null,
-      isAuthenticated: !!authData?.authenticated,
+      user: sessionData?.user ?? null,
+      session: sessionData?.session ?? null,
+      isAuthenticated: !!sessionData,
       isLoading,
-      isError,
-      refetch,
+      isError: !!error,
+      refetch: async () => {
+        await refetch()
+      },
     }
-  }, [response, isLoading, isError, refetch])
+  }, [sessionData, isLoading, error, refetch])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

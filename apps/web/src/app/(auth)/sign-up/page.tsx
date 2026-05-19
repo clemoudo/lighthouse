@@ -5,12 +5,10 @@ import Link from "next/link"
 import { Card, Input, Button, Alert, Typography, Form, Divider, Result } from "antd"
 import { User, Mail, Lock, ArrowRight } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
-import { useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import { signUp } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
-import { getGetAuthProfileQueryKey } from "@/api/generated/lighthouse"
 
 const { Title, Text } = Typography
 
@@ -21,7 +19,6 @@ const signUpSchema = z.object({
 })
 
 export default function SignUpPage() {
-  const queryClient = useQueryClient()
   const { refetch } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
@@ -53,8 +50,6 @@ export default function SignUpPage() {
           setIsPending(false)
         } else {
           setIsSuccess(true)
-          // Invalidate Orval/React-Query cache for the user profile
-          await queryClient.invalidateQueries({ queryKey: getGetAuthProfileQueryKey() })
           // Refetch Better-Auth session context
           await refetch()
         }

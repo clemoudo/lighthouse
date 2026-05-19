@@ -12,55 +12,6 @@ registry.register("User", UserSchema)
 registry.register("AuthSession", AuthSessionSchema)
 registry.register("Document", DocumentSchema)
 
-// --- Auth Routes ---
-registry.registerPath({
-  method: "get",
-  path: "/auth/check",
-  summary: "Check authentication status",
-  responses: {
-    200: {
-      description: "Returns authentication status and current user/session",
-      content: {
-        "application/json": {
-          schema: z.object({
-            authenticated: z.boolean(),
-            user: AuthSessionSchema,
-          }),
-        },
-      },
-    },
-  },
-})
-
-registry.registerPath({
-  method: "get",
-  path: "/auth/profile",
-  summary: "Get current user profile",
-  responses: {
-    200: {
-      description: "Returns current user and session",
-      content: {
-        "application/json": {
-          schema: z.object({
-            user: AuthSessionSchema,
-          }),
-        },
-      },
-    },
-    401: {
-      description: "Unauthorized",
-      content: {
-        "application/json": {
-          schema: z.object({
-            error: z.string(),
-            message: z.string(),
-          }),
-        },
-      },
-    },
-  },
-})
-
 // --- Document Routes ---
 registry.registerPath({
   method: "get",
