@@ -1,45 +1,88 @@
-# Node
-node_modules
-npm-debug.log
-pnpm-debug.log
-.pnpm-debug.log*
+# Node & Dependencies
+**/node_modules
 .pnpm-store
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Next.js
-.next
-out
+# Next.js & Frontend
+**/.next
+**/out
+**/next-env.d.ts
 
 # Turborepo
 .turbo
 
 # Build outputs
-dist
-build
+**/dist
+**/build
+**/*.tsbuildinfo
 
-# Environment / Secrets (CRITICAL)
+# Environment & Secrets (CRITICAL)
 .env
 .env.*
 .infisical.json
 sonar-project.properties
+*.pem
+*.key
+*.cert
+*.crt
+*.pub
 
-# Git
+# Git & CI/CD
 .git
 .gitignore
+.github
+.husky
+.changeset
 
-# IDE
+# IDE / Editors
 .vscode
 .idea
 *.swp
 *.swo
+.project
+.settings
+.classpath
+
+# OS Files
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
 
 # Docker
-Dockerfile
-docker-compose.yml
+Dockerfile*
+docker-compose*.yml
 .dockerignore
 
 # Testing
-coverage
-.jest
+**/coverage
+**/.jest
+**/.nyc_output
+**/.playwright
+**/test-results
 
-# Docs
-docs/
+# Python
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/venv
+**/.pytest_cache
+
+# Infrastructure & Media
+infra
+uploads
+docs
+
+# Agentic Tools
+.agents
+.antigravitycli
+.gemini
+.geminiignore
+
+# Misc
+README.md
+CONTRIBUTING.md
+LICENSE
+

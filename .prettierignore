@@ -20,5 +20,28 @@ next-env.d.ts
 # pnpm
 pnpm-lock.yaml
 
-# Certificate
+# Infrastructure
+infra
 acme.json
+
+# Media & Uploads
+uploads
+
+# Documentation
+docs
+
+# Agentic Tools
+.agents
+.antigravitycli
+.gemini
+.geminiignore
+
+# Secrets
+.env
+.env.*
+.infisical.json
+*.pem
+*.key
+*.cert
+*.crt
+*.pub
