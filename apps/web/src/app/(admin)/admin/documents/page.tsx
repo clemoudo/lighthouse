@@ -34,7 +34,7 @@ export default function AdminDocumentsPage() {
   }
 
   return (
-    <div className="p-6">
+    <>
       <PageHeader
         title="Administration des Documents"
         description="Gérez les programmes scolaires et les ressources du RAG."
@@ -62,6 +62,6 @@ export default function AdminDocumentsPage() {
           <DocumentsTable documents={documents} loading={isLoadingDocuments || isFetching} />
         </Card>
       </div>
-    </div>
+    </>
   )
 }

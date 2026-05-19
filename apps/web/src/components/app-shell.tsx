@@ -13,12 +13,33 @@ import {
   LogOut,
   User as UserIcon,
   ShieldCheck,
+  LucideIcon,
 } from "lucide-react"
-import { Button, Drawer, Divider, Avatar, Dropdown, type MenuProps, Skeleton } from "antd"
+import {
+  Button,
+  Drawer,
+  Divider,
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Skeleton,
+  Typography,
+  Tooltip,
+} from "antd"
 import { cn } from "@/lib/utils"
 import { useSession, signOut } from "@/lib/auth-client"
 
-const navItems = [
+const { Text, Title } = Typography
+
+interface NavItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  description: string
+  disabled?: boolean
+}
+
+const navItems: NavItem[] = [
   {
     name: "Assistant IA",
     href: "/assistant",
@@ -30,6 +51,7 @@ const navItems = [
     href: "/search",
     icon: Search,
     description: "Recherche sémantique",
+    disabled: true,
   },
   {
     name: "Référentiel",
@@ -42,6 +64,7 @@ const navItems = [
     href: "/tracking",
     icon: BarChart3,
     description: "Progression",
+    disabled: true,
   },
 ]
 
@@ -119,8 +142,8 @@ function UserProfile() {
             className="bg-white/20 shrink-0 border-none"
           />
           <div className="flex flex-1 flex-col min-w-0">
-            <span className="truncate text-sm font-medium text-white">{session.user.name}</span>
-            <span className="truncate text-[10px] text-white/50">{session.user.email}</span>
+            <Text className="truncate text-sm font-medium text-white">{session.user.name}</Text>
+            <Text className="truncate text-[10px] text-white/50">{session.user.email}</Text>
           </div>
         </div>
       </Dropdown>
@@ -133,71 +156,70 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const { data: session } = useSession()
   const isAdmin = session?.user.role === "admin"
 
+  const renderLink = (item: NavItem) => {
+    const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+
+    const content = (
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all w-full",
+          item.disabled
+            ? "opacity-50 cursor-not-allowed text-white/40"
+            : isActive
+              ? "bg-white/20 text-white"
+              : "text-white/80 hover:bg-white/10 hover:text-white",
+        )}
+      >
+        <item.icon className="h-5 w-5 shrink-0" />
+        <div className="flex flex-col overflow-hidden">
+          <span className="truncate">{item.name}</span>
+          <span className="text-[11px] font-normal opacity-70 truncate">{item.description}</span>
+        </div>
+      </div>
+    )
+
+    if (item.disabled) {
+      return (
+        <Tooltip title="Prochainement disponible" placement="right" key={item.href}>
+          {content}
+        </Tooltip>
+      )
+    }
+
+    return (
+      <Link key={item.href} href={item.href} onClick={onNavigate} className="block">
+        {content}
+      </Link>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col bg-primary">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-6">
-        <Image src="/lighthouse.png" alt="Lighthouse" width={48} height={48} className="shrink-0" />
-        <div>
-          <h1 className="text-lg font-semibold text-white">Lighthouse</h1>
-          <p className="text-xs text-white/70">Programme Scolaire</p>
+      <div className="flex items-center gap-3 px-4 py-8">
+        <Image src="/lighthouse.png" alt="Lighthouse" width={44} height={44} className="shrink-0" />
+        <div className="flex flex-col">
+          <Title level={4} className="m-0! text-white! font-bold!">
+            Lighthouse
+          </Title>
+          <Text className="text-[11px] text-white/60 font-medium uppercase tracking-wider">
+            Programme Scolaire
+          </Text>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
-                isActive
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white",
-              )}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              <div className="flex flex-col">
-                <span>{item.name}</span>
-                <span className="text-xs font-normal opacity-70">{item.description}</span>
-              </div>
-            </Link>
-          )
-        })}
+        {navItems.map(renderLink)}
 
         {isAdmin && (
           <>
-            <div className="px-3 pt-4 pb-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+            <div className="px-3 pt-6 pb-2">
+              <Text className="text-[10px] font-bold uppercase tracking-wider text-white/40">
                 Administration
-              </p>
+              </Text>
             </div>
-            {adminItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "text-white/80 hover:bg-white/10 hover:text-white",
-                  )}
-                >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  <div className="flex flex-col">
-                    <span>{item.name}</span>
-                    <span className="text-xs font-normal opacity-70">{item.description}</span>
-                  </div>
-                </Link>
-              )
-            })}
+            {adminItems.map(renderLink)}
           </>
         )}
       </nav>
@@ -244,13 +266,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           open={open}
           closable={false}
           styles={{ body: { padding: 0 } }}
-          size={256}
+          width={256}
         >
           <NavContent onNavigate={() => setOpen(false)} />
         </Drawer>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0 p-6">{children}</main>
       </div>
     </div>
   )

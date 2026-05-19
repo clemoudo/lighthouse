@@ -24,6 +24,7 @@ L'architecture est basée sur des microservices orchestrés via Docker. Le rever
 - **API Gateway:** Accessible at `http://lighthouse.local:3001`.
 - **Frontend:** Accessible at `http://lighthouse.local:3000`.
 - **Language:** All code comments and technical documentation MUST be written in English.
-- **Ergonomics:** Prioritize accessibility and responsive design (tablets, mobile, PC).
+- **Ergonomics:** Prioritize accessibility and responsive design (tablets, mobile, PC). Use Ant Design 6 components as the primary UI library for consistency.
+- **Entry Point:** The application redirects by default to the AI Assistant (`/assistant`).
 - **Performance:** Target response times < 2s for semantic search.
 - **GDPR:** Ensure local data hosting and anonymization where required.

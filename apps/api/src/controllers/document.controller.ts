@@ -10,13 +10,28 @@ export const listDocuments = async (req: Request, res: Response) => {
   try {
     const { page, pageSize } = PaginationQuerySchema.parse(req.query)
 
-    const result = await prisma.document.paginate({
+    const { data, meta } = await prisma.document.paginate({
       orderBy: { createdAt: "desc" },
       page,
       pageSize,
+      select: {
+        id: true,
+        title: true,
+        filename: true,
+        filePath: true,
+        fileSize: true,
+        mimeType: true,
+        status: true,
+        error: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
 
-    res.json(result)
+    res.json({
+      documents: data,
+      meta,
+    })
   } catch (error) {
     logger.error("Erreur lors de la récupération des documents:", error)
     res.status(500).json({ error: "Erreur interne" })

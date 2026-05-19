@@ -1,7 +1,10 @@
 "use client"
 
 import { type LucideIcon } from "lucide-react"
+import { Flex, Typography } from "antd"
 import { cn } from "@/lib/utils"
+
+const { Title, Paragraph } = Typography
 
 interface PageHeaderProps {
   title: string
@@ -12,16 +15,21 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, icon: Icon, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-1 px-1", className)}>
-      <div className="flex items-center gap-3">
+    <Flex vertical gap={4} className={cn("px-1 mb-6", className)}>
+      <Flex align="center" gap={12}>
         {Icon && <Icon className="h-8 w-8 text-primary shrink-0" />}
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-      </div>
+        <Title level={1} className="m-0! text-2xl! font-bold tracking-tight sm:text-3xl!">
+          {title}
+        </Title>
+      </Flex>
       {description && (
-        <p className="text-sm font-medium text-default-500 max-w-2xl leading-normal ml-11">
+        <Paragraph
+          type="secondary"
+          className="mb-0! ml-11 max-w-2xl text-sm font-medium leading-normal"
+        >
           {description}
-        </p>
+        </Paragraph>
       )}
-    </div>
+    </Flex>
   )
 }

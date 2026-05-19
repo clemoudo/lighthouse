@@ -281,14 +281,14 @@ export default function AdminUsersPage() {
   )
 
   return (
-    <div className="p-6">
+    <>
       <PageHeader
         title="Gestion des Utilisateurs"
         description="Consultez et gérez les comptes utilisateurs de la plateforme."
         icon={UserIcon}
       />
 
-      <Card className="mt-6 shadow-sm">
+      <Card className="shadow-sm">
         <Space className="mb-6 w-full justify-between" wrap>
           <Space wrap>
             <Input
@@ -350,6 +350,6 @@ export default function AdminUsersPage() {
           locale={{ emptyText: "Aucun utilisateur trouvé." }}
         />
       </Card>
-    </div>
+    </>
   )
 }

@@ -2,11 +2,11 @@
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { Input, Button, Typography, Space } from "antd"
-import { Send, User, Bot, Sparkles, AlertCircle } from "lucide-react"
-import { PageHeader } from "@/components/page-header"
+import { Input, Button, Typography, Space, Flex, Avatar } from "antd"
+import { Send, User, Bot, AlertCircle } from "lucide-react"
 import { env } from "@/env"
 import { useEffect, useRef, useState } from "react"
+import { cn } from "@/lib/utils"
 
 const { Text } = Typography
 
@@ -14,7 +14,7 @@ export default function AssistantPage() {
   const [input, setInput] = useState("")
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
-      api: `${env.NEXT_PUBLIC_API_URL}/chat`,
+      api: env.NEXT_PUBLIC_API_URL + "/chat",
       fetch: (url, options) => {
         return fetch(url, {
           ...options,
@@ -56,39 +56,47 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <PageHeader
-        title="Assistant IA"
-        description="Posez des questions pédagogiques basées sur le programme officiel."
-        icon={Sparkles}
-      />
-
-      <div className="flex-1 overflow-y-auto mb-6 pr-2">
-        <div className="space-y-4">
+    <Flex vertical className="h-[calc(100vh-32px)] max-w-4xl mx-auto relative">
+      {/* Messages Stream */}
+      <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
+        <div className="space-y-8">
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+              className={cn(
+                "flex w-full gap-4",
+                m.role === "user" ? "flex-row-reverse" : "flex-row",
+              )}
             >
+              <div className="shrink-0 pt-1">
+                <Avatar
+                  size={36}
+                  icon={m.role === "user" ? <User size={18} /> : <Bot size={18} />}
+                  className={
+                    m.role === "user" ? "bg-primary" : "bg-white border border-border text-primary"
+                  }
+                />
+              </div>
+
               <div
-                className={`flex max-w-[80%] gap-3 p-4 rounded-2xl ${
-                  m.role === "user"
-                    ? "bg-primary text-white rounded-tr-none shadow-md"
-                    : "bg-white text-foreground rounded-tl-none border border-border shadow-sm"
-                }`}
+                className={cn(
+                  "flex flex-col gap-2 max-w-[80%]",
+                  m.role === "user" ? "items-end" : "items-start",
+                )}
               >
-                <div className="shrink-0 mt-1">
-                  {m.role === "user" ? (
-                    <User size={18} />
-                  ) : (
-                    <Bot size={18} className="text-primary" />
+                <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                  {m.role === "user" ? "Vous" : "Assistant Lighthouse"}
+                </Text>
+
+                <div
+                  className={cn(
+                    "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+                    m.role === "user"
+                      ? "bg-primary text-white rounded-tr-none"
+                      : "bg-white text-foreground rounded-tl-none border border-border",
                   )}
-                </div>
-                <div className="flex flex-col gap-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
-                    {m.role === "user" ? "Vous" : "Assistant Lighthouse"}
-                  </span>
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                >
+                  <div className="whitespace-pre-wrap">
                     {m.parts.map((part, i) =>
                       part.type === "text" ? <span key={i}>{part.text}</span> : null,
                     )}
@@ -97,38 +105,61 @@ export default function AssistantPage() {
               </div>
             </div>
           ))}
-        </div>
 
-        {isLoading && messages[messages.length - 1]?.role === "user" && (
-          <div className="flex justify-start mt-4">
-            <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
-              <Bot size={18} className="text-primary animate-pulse" />
-              <Text italic type="secondary" className="text-sm">
-                L'assistant réfléchit...
-              </Text>
+          {isLoading && messages[messages.length - 1]?.role === "user" && (
+            <div className="flex gap-4">
+              <div className="shrink-0">
+                <Avatar
+                  size={36}
+                  icon={<Bot size={18} />}
+                  className="bg-white border border-border text-primary"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                  Assistant Lighthouse
+                </Text>
+                <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <span
+                      className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="flex justify-center mt-4">
-            <Space className="bg-red-50 text-red-600 px-4 py-2 rounded-lg border border-red-100 shadow-sm text-xs">
-              <AlertCircle size={14} />
-              <span>Désolé, une erreur est survenue : {error.message}</span>
-            </Space>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          {error && (
+            <div className="flex justify-center">
+              <Space className="bg-red-50 text-red-600 px-6 py-3 rounded-xl border border-red-100 shadow-sm text-xs">
+                <AlertCircle size={16} />
+                <span>Une erreur est survenue : {error.message}</span>
+              </Space>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <div className="sticky bottom-0 bg-surface-secondary pt-2">
-        <form onSubmit={onFinish} className="relative">
+      {/* Input Area */}
+      <div className="px-10 pt-4 bg-layout/80 backdrop-blur-sm sticky bottom-0">
+        <form onSubmit={onFinish} className="relative group max-w-3xl mx-auto">
           <Input.TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Posez votre question sur l'autonomie, les domaines d'apprentissage..."
-            autoSize={{ minRows: 1, maxRows: 6 }}
-            className="pr-12 py-3 rounded-xl shadow-lg border-primary/20 focus:border-primary transition-all resize-none"
+            placeholder="Posez votre question sur le programme..."
+            autoSize={{ minRows: 1, maxRows: 8 }}
+            className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-white text-base"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault()
@@ -139,16 +170,15 @@ export default function AssistantPage() {
           <Button
             type="primary"
             htmlType="submit"
-            icon={<Send size={18} />}
+            icon={<Send size={20} />}
             disabled={!input.trim() || isLoading}
-            className="absolute right-2 bottom-2 h-10 w-10 flex items-center justify-center rounded-lg shadow-md"
+            className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
           />
         </form>
-        <p className="text-[10px] text-center mt-3 text-muted-foreground opacity-70">
-          L'IA peut faire des erreurs. Vérifiez toujours les informations importantes dans le
-          référentiel officiel.
+        <p className="text-[10px] text-center mt-4 text-muted-foreground opacity-50 font-medium">
+          L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
         </p>
       </div>
-    </div>
+    </Flex>
   )
 }

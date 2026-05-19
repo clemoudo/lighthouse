@@ -20,6 +20,18 @@
 - **Tailwind v4:** Variables and theme configuration are located in `src/app/globals.css`. Use `@theme inline` for custom tokens.
 - **Icons:** Use `lucide-react`.
 
+## UI & Layout Conventions
+
+- **Ant Design First:** Favor `Flex`, `Space`, `Typography`, and `Card` from Ant Design for layout and text over raw HTML/Tailwind where possible to maintain theme consistency.
+- **Page Headers:** Use the `PageHeader` component for consistent titles and descriptions across pages.
+- **Navigation:** New features are marked as `disabled` with a "Prochainement disponible" `Tooltip` in the `AppShell` until fully implemented.
+- **Chatbot Interface:** The AI Assistant (`/assistant`) uses a modern, immersive layout:
+  - No `PageHeader` or containing `Card`.
+  - Centered message stream (max-width 4xl).
+  - Sticky bottom input with backdrop blur.
+  - Assistant messages: White background with border.
+  - User messages: Primary color background.
+
 ## Theme
 
 - The application uses `oklch()` color tokens defined in `globals.css`.

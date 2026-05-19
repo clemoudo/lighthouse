@@ -13,7 +13,7 @@ export default function CurriculumPage() {
   const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <>
       <PageHeader
         title="Référentiel & Programmes"
         description="Consultez les programmes scolaires officiels disponibles pour l'assistant IA."
@@ -30,7 +30,7 @@ export default function CurriculumPage() {
       ) : (
         <Row gutter={[16, 16]}>
           {documents.map((doc) => (
-            <Col key={doc.id} xs={24} sm={24} md={12} lg={12} xl={12} xxl={8}>
+            <Col key={doc.id} xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
               <Card
                 hoverable
                 className="shadow-sm overflow-hidden h-full flex flex-col"
@@ -41,7 +41,7 @@ export default function CurriculumPage() {
                     <FileText size={24} />
                   </div>
                   <div className="min-w-0">
-                    <Typography.Title level={5} className="m-0 truncate" title={doc.title}>
+                    <Typography.Title level={5} className="m-0! truncate" title={doc.title}>
                       {doc.title}
                     </Typography.Title>
                     <Text type="secondary" className="text-xs">
@@ -75,6 +75,6 @@ export default function CurriculumPage() {
           ))}
         </Row>
       )}
-    </div>
+    </>
   )
 }
