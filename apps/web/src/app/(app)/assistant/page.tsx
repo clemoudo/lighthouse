@@ -1,8 +1,8 @@
 "use client"
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
-import { Input, Button, Typography, Space, Flex, Avatar } from "antd"
+import { DefaultChatTransport, isDataUIPart } from "ai"
+import { Input, Button, Typography, Space, Flex, Avatar, ConfigProvider, theme } from "antd"
 import { Send, User, AlertCircle } from "lucide-react"
 import { env } from "@/env"
 import { useEffect, useRef, useState } from "react"
@@ -11,8 +11,69 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { useTheme } from "next-themes"
 import { useSession } from "@/lib/auth-client"
+import { Citations } from "@/components/assistant/citations"
+import { type ChatSource } from "@repo/api"
 
 const { Text, Title, Paragraph } = Typography
+
+// Define the data types for type safety in message parts
+interface ChatDataTypes {
+  sources: ChatSource[]
+  [key: string]: unknown
+}
+
+// Custom UIMessage type with our data parts
+type ChatUIMessage = UIMessage<never, ChatDataTypes>
+
+/**
+ * Component to render the markdown content of a message.
+ * It uses Ant Design Typography components for consistent styling.
+ */
+function MessageContent({ role, parts }: { role: string; parts: UIMessage["parts"] }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <Paragraph className="m-0 last:mb-0 mb-4">{children}</Paragraph>,
+        h1: ({ children }) => (
+          <Title level={4} className="mt-2 mb-4">
+            {children}
+          </Title>
+        ),
+        h2: ({ children }) => (
+          <Title level={5} className="mt-2 mb-3">
+            {children}
+          </Title>
+        ),
+        h3: ({ children }) => (
+          <Text strong className="block mt-2 mb-2">
+            {children}
+          </Text>
+        ),
+        ul: ({ children }) => <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>,
+        ol: ({ children }) => <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>,
+        li: ({ children }) => <li className="mb-1">{children}</li>,
+        strong: ({ children }) => <Text strong>{children}</Text>,
+        em: ({ children }) => <Text italic>{children}</Text>,
+        code: ({ children }) => (
+          <code
+            className={cn(
+              "px-1.5 py-0.5 rounded text-xs font-mono",
+              role === "user" ? "bg-white/20" : "bg-fill-secondary text-text",
+            )}
+          >
+            {children}
+          </code>
+        ),
+      }}
+    >
+      {parts
+        .filter((part) => part.type === "text")
+        .map((part) => (part.type === "text" ? part.text : ""))
+        .join("")}
+    </ReactMarkdown>
+  )
+}
 
 export default function AssistantPage() {
   const { resolvedTheme } = useTheme()
@@ -21,7 +82,7 @@ export default function AssistantPage() {
 
   const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error } = useChat<ChatUIMessage>({
     transport: new DefaultChatTransport({
       api: env.NEXT_PUBLIC_API_URL + "/chat",
       fetch: (url, options) => {
@@ -42,7 +103,7 @@ export default function AssistantPage() {
           },
         ],
       },
-    ] as UIMessage[],
+    ] as ChatUIMessage[],
   })
 
   const isLoading = status !== "ready"
@@ -69,132 +130,76 @@ export default function AssistantPage() {
       {/* Messages Stream */}
       <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
         <div className="space-y-8">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={cn(
-                "flex w-full gap-4",
-                m.role === "user" ? "flex-row-reverse" : "flex-row",
-              )}
-            >
-              <div className="shrink-0 pt-1">
-                <Avatar
-                  size={40}
-                  src={m.role === "user" ? session?.user.image : assistantAvatar}
-                  icon={m.role === "user" && !session?.user.image ? <User size={18} /> : undefined}
-                  className={cn(
-                    m.role === "user"
-                      ? session?.user.image
-                        ? "border-none"
-                        : "bg-primary"
-                      : "bg-container border border-border overflow-visible!",
-                  )}
-                />
-              </div>
+          {messages.map((m) => {
+            // Logic to find sources in message parts
+            const sourcesPart = m.parts.find(
+              (part) => isDataUIPart(part) && part.type === "data-sources",
+            )
+            const messageSources =
+              sourcesPart && isDataUIPart(sourcesPart)
+                ? (sourcesPart.data as ChatSource[])
+                : undefined
 
+            return (
               <div
+                key={m.id}
                 className={cn(
-                  "flex flex-col gap-2 max-w-[80%] min-w-0",
-                  m.role === "user" ? "items-end" : "items-start",
+                  "flex w-full gap-4",
+                  m.role === "user" ? "flex-row-reverse" : "flex-row",
                 )}
               >
-                <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
-                  {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
-                </Text>
+                <div className="shrink-0 pt-1">
+                  <Avatar
+                    size={40}
+                    src={m.role === "user" ? session?.user.image : assistantAvatar}
+                    icon={
+                      m.role === "user" && !session?.user.image ? <User size={18} /> : undefined
+                    }
+                    className={cn(
+                      m.role === "user"
+                        ? session?.user.image
+                          ? "border-none"
+                          : "bg-primary"
+                        : "bg-container border border-border overflow-visible!",
+                    )}
+                  />
+                </div>
 
                 <div
                   className={cn(
-                    "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
-                    m.role === "user"
-                      ? "bg-primary text-text-light-solid rounded-tr-none"
-                      : "bg-container text-text rounded-tl-none border border-border",
+                    "flex flex-col gap-2 max-w-[80%] min-w-0",
+                    m.role === "user" ? "items-end" : "items-start",
                   )}
                 >
-                  <div className="wrap-break-word">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children }) => (
-                          <Paragraph
-                            className={cn(
-                              "m-0 last:mb-0 mb-4",
-                              m.role === "user" ? "text-text-light-solid" : "text-text",
-                            )}
-                          >
-                            {children}
-                          </Paragraph>
-                        ),
-                        h1: ({ children }) => (
-                          <Title
-                            level={4}
-                            className={cn(
-                              "mt-2 mb-4",
-                              m.role === "user" ? "text-text-light-solid!" : "",
-                            )}
-                          >
-                            {children}
-                          </Title>
-                        ),
-                        h2: ({ children }) => (
-                          <Title
-                            level={5}
-                            className={cn(
-                              "mt-2 mb-3",
-                              m.role === "user" ? "text-text-light-solid!" : "",
-                            )}
-                          >
-                            {children}
-                          </Title>
-                        ),
-                        h3: ({ children }) => (
-                          <Text
-                            strong
-                            className={cn(
-                              "block mt-2 mb-2",
-                              m.role === "user" ? "text-text-light-solid" : "",
-                            )}
-                          >
-                            {children}
-                          </Text>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>
-                        ),
-                        li: ({ children }) => <li className="mb-1">{children}</li>,
-                        strong: ({ children }) => (
-                          <Text strong className={m.role === "user" ? "text-text-light-solid" : ""}>
-                            {children}
-                          </Text>
-                        ),
-                        em: ({ children }) => (
-                          <Text italic className={m.role === "user" ? "text-text-light-solid" : ""}>
-                            {children}
-                          </Text>
-                        ),
-                        code: ({ children }) => (
-                          <code
-                            className={cn(
-                              "px-1.5 py-0.5 rounded text-xs font-mono",
-                              m.role === "user"
-                                ? "bg-white/20 text-text-light-solid"
-                                : "bg-fill-secondary text-text",
-                            )}
-                          >
-                            {children}
-                          </code>
-                        ),
-                      }}
-                    >
-                      {m.parts.map((part) => (part.type === "text" ? part.text : "")).join("")}
-                    </ReactMarkdown>
+                  <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                    {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
+                  </Text>
+
+                  <div
+                    className={cn(
+                      "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+                      m.role === "user"
+                        ? "bg-primary rounded-tr-none"
+                        : "bg-container text-text rounded-tl-none border border-border",
+                    )}
+                  >
+                    <div className="wrap-break-word">
+                      {m.role === "user" ? (
+                        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+                          <MessageContent role={m.role} parts={m.parts} />
+                        </ConfigProvider>
+                      ) : (
+                        <MessageContent role={m.role} parts={m.parts} />
+                      )}
+                    </div>
                   </div>
+
+                  {/* Citations UI Component */}
+                  <Citations sources={messageSources} />
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <div className="flex gap-4">

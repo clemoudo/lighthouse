@@ -3,6 +3,16 @@ import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi"
 
 extendZodWithOpenApi(z)
 
+export const ChatSourceSchema = z
+  .object({
+    id: z.string(),
+    source: z.string(),
+    page: z.number(),
+  })
+  .openapi("ChatSource")
+
+export type ChatSource = z.infer<typeof ChatSourceSchema>
+
 export const ChatMessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
   content: z.string(),
