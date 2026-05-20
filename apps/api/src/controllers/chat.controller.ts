@@ -11,19 +11,24 @@ import { vectorService } from "../services/vector.service"
 import { storageService } from "../services/storage.service"
 import { chatService } from "../services/chat.service"
 
+const MAX_MESSAGES = 10
+
 /**
  * Controller to handle RAG-based chat interactions.
  */
 export const handleChat = async (req: Request, res: Response) => {
   try {
     const { messages } = req.body
+    const limitedMessages = messages?.slice(-MAX_MESSAGES) ?? []
 
-    logger.info(`[CHAT] Request received with ${messages?.length} messages.`)
+    logger.info(
+      `[CHAT] Request received with ${messages?.length} messages (limited to last ${MAX_MESSAGES}).`,
+    )
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
         // 1. Convert UI messages to model messages
-        const modelMessages = await convertToModelMessages(messages)
+        const modelMessages = await convertToModelMessages(limitedMessages)
         const lastUserMessage = [...modelMessages].reverse().find((m) => m.role === "user")
 
         let query = ""
