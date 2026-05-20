@@ -3,15 +3,24 @@
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Input, Button, Typography, Space, Flex, Avatar } from "antd"
-import { Send, User, Bot, AlertCircle } from "lucide-react"
+import { Send, User, AlertCircle } from "lucide-react"
 import { env } from "@/env"
 import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { useTheme } from "next-themes"
+import { useSession } from "@/lib/auth-client"
 
-const { Text } = Typography
+const { Text, Title, Paragraph } = Typography
 
 export default function AssistantPage() {
+  const { resolvedTheme } = useTheme()
+  const { data: session } = useSession()
   const [input, setInput] = useState("")
+
+  const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
+
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: env.NEXT_PUBLIC_API_URL + "/chat",
@@ -29,7 +38,7 @@ export default function AssistantPage() {
         parts: [
           {
             type: "text",
-            text: "Bonjour ! Je suis votre assistant Lighthouse. Posez-moi vos questions sur le programme scolaire (Pacte pour un Enseignement d'excellence), je chercherai les réponses dans le référentiel officiel.",
+            text: "Bonjour ! Je suis **Félix**, votre assistant **Lighthouse**. 🕊️\n\nEn tant qu'expert du programme scolaire belge (*Pacte pour un Enseignement d'excellence*), je suis là pour prendre de la hauteur et vous éclairer dans la planification de vos activités en maternelle.\n\nPosez-moi vos questions, je chercherai les réponses directement dans le référentiel officiel pour vous aider à garder le cap !",
           },
         ],
       },
@@ -56,7 +65,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <Flex vertical className="h-[calc(100vh-32px)] max-w-4xl mx-auto relative">
+    <Flex vertical className="h-full max-w-4xl mx-auto relative overflow-hidden">
       {/* Messages Stream */}
       <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
         <div className="space-y-8">
@@ -70,22 +79,27 @@ export default function AssistantPage() {
             >
               <div className="shrink-0 pt-1">
                 <Avatar
-                  size={36}
-                  icon={m.role === "user" ? <User size={18} /> : <Bot size={18} />}
-                  className={
-                    m.role === "user" ? "bg-primary" : "bg-white border border-border text-primary"
-                  }
+                  size={40}
+                  src={m.role === "user" ? session?.user.image : assistantAvatar}
+                  icon={m.role === "user" && !session?.user.image ? <User size={18} /> : undefined}
+                  className={cn(
+                    m.role === "user"
+                      ? session?.user.image
+                        ? "border-none"
+                        : "bg-primary"
+                      : "bg-white border border-border overflow-visible!",
+                  )}
                 />
               </div>
 
               <div
                 className={cn(
-                  "flex flex-col gap-2 max-w-[80%]",
+                  "flex flex-col gap-2 max-w-[80%] min-w-0",
                   m.role === "user" ? "items-end" : "items-start",
                 )}
               >
                 <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
-                  {m.role === "user" ? "Vous" : "Assistant Lighthouse"}
+                  {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
                 </Text>
 
                 <div
@@ -96,10 +110,77 @@ export default function AssistantPage() {
                       : "bg-white text-foreground rounded-tl-none border border-border",
                   )}
                 >
-                  <div className="whitespace-pre-wrap">
-                    {m.parts.map((part, i) =>
-                      part.type === "text" ? <span key={i}>{part.text}</span> : null,
-                    )}
+                  <div className="wrap-break-word">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => (
+                          <Paragraph
+                            className={cn(
+                              "m-0 last:mb-0 mb-4",
+                              m.role === "user" ? "text-white" : "text-foreground",
+                            )}
+                          >
+                            {children}
+                          </Paragraph>
+                        ),
+                        h1: ({ children }) => (
+                          <Title
+                            level={4}
+                            className={cn("mt-2 mb-4", m.role === "user" ? "text-white!" : "")}
+                          >
+                            {children}
+                          </Title>
+                        ),
+                        h2: ({ children }) => (
+                          <Title
+                            level={5}
+                            className={cn("mt-2 mb-3", m.role === "user" ? "text-white!" : "")}
+                          >
+                            {children}
+                          </Title>
+                        ),
+                        h3: ({ children }) => (
+                          <Text
+                            strong
+                            className={cn("block mt-2 mb-2", m.role === "user" ? "text-white" : "")}
+                          >
+                            {children}
+                          </Text>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>
+                        ),
+                        ol: ({ children }) => (
+                          <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>
+                        ),
+                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        strong: ({ children }) => (
+                          <Text strong className={m.role === "user" ? "text-white" : ""}>
+                            {children}
+                          </Text>
+                        ),
+                        em: ({ children }) => (
+                          <Text italic className={m.role === "user" ? "text-white" : ""}>
+                            {children}
+                          </Text>
+                        ),
+                        code: ({ children }) => (
+                          <code
+                            className={cn(
+                              "px-1.5 py-0.5 rounded text-xs font-mono",
+                              m.role === "user"
+                                ? "bg-white/20 text-white"
+                                : "bg-muted text-foreground",
+                            )}
+                          >
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {m.parts.map((part) => (part.type === "text" ? part.text : "")).join("")}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </div>
@@ -110,14 +191,14 @@ export default function AssistantPage() {
             <div className="flex gap-4">
               <div className="shrink-0">
                 <Avatar
-                  size={36}
-                  icon={<Bot size={18} />}
-                  className="bg-white border border-border text-primary"
+                  size={40}
+                  src={assistantAvatar}
+                  className="bg-white border border-border overflow-visible!"
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
-                  Assistant Lighthouse
+                  Félix
                 </Text>
                 <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
                   <div className="flex gap-1">

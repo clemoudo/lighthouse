@@ -235,16 +235,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-layout">
+    <div className="flex h-screen bg-layout overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">
+      <aside className="hidden h-full w-64 shrink-0 lg:block border-r border-border">
         <NavContent />
       </aside>
 
       {/* Mobile Header + Content */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 h-full">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-container px-4 lg:hidden">
+        <header className="flex h-16 items-center gap-4 border-b border-border bg-container px-4 lg:hidden shrink-0">
           <Button
             type="text"
             onClick={() => setOpen(true)}
@@ -254,7 +254,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Image src="/lighthouse.png" alt="Lighthouse" width={32} height={32} />
+            <Image src="/lighthouse-64.png" alt="Lighthouse" width={32} height={32} />
             <span className="font-semibold text-text">Lighthouse</span>
           </div>
         </header>
@@ -266,13 +266,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           open={open}
           closable={false}
           styles={{ body: { padding: 0 } }}
-          width={256}
+          size={256}
         >
           <NavContent onNavigate={() => setOpen(false)} />
         </Drawer>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 p-6">{children}</main>
+        <main className="flex-1 min-w-0 p-6 overflow-y-auto flex flex-col">{children}</main>
       </div>
     </div>
   )
