@@ -1,9 +1,10 @@
-import { prisma, IngestionStatus, type ParsedPage } from "@repo/db"
+import { prisma, IngestionStatus, type ParsedPage, UserRole } from "@repo/db"
 import { logger } from "@repo/logger"
 import { parsingService } from "./parsing.service"
 import { vectorService } from "./vector.service"
 import { storageService, type SaveChunksParams } from "./storage.service"
 import { sendEmail } from "./email.service"
+import { env } from "@/env"
 
 // --- DEVELOPMENT CONFIG ---
 const USE_CACHED_PARSING = true // Set to false to force a new LlamaParse call
@@ -15,7 +16,7 @@ const USE_CACHED_PARSING = true // Set to false to force a new LlamaParse call
 async function notifyAdmins(documentTitle: string, status: "SUCCESS" | "FAILURE", error?: string) {
   try {
     const admins = await prisma.user.findMany({
-      where: { role: "admin" },
+      where: { role: UserRole.ADMIN },
       select: { email: true },
     })
 
@@ -79,7 +80,7 @@ export const ingestDocument = async (documentId: string) => {
     // 3. Parsing Phase (Cache-aware)
     let pages: ParsedPage[] = []
 
-    if (USE_CACHED_PARSING && document.parsedContent) {
+    if (env.NODE_ENV === "development" && USE_CACHED_PARSING && document.parsedContent) {
       logger.info("[INGESTION] Using cached LlamaParse results from database.")
       pages = document.parsedContent
     } else {

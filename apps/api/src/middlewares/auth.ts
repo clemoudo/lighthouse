@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import { fromNodeHeaders } from "better-auth/node"
+import { UserRole } from "@repo/db"
 import { auth } from "../lib/auth"
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -34,7 +35,7 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
       .json({ error: "Unauthorized", message: "You must be logged in to access this resource" })
   }
 
-  if (req.user.role !== "admin") {
+  if (req.user.role !== UserRole.ADMIN) {
     return res
       .status(403)
       .json({ error: "Forbidden", message: "You must be an admin to access this resource" })

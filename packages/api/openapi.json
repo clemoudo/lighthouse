@@ -43,7 +43,11 @@
             "format": "date-time"
           },
           "role": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "USER"
+            ]
           },
           "banned": {
             "type": "boolean",
@@ -289,6 +293,11 @@
       "ChatRequest": {
         "type": "object",
         "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "L'ID de la conversation existante pour maintenir le contexte."
+          },
           "messages": {
             "type": "array",
             "items": {

@@ -5,6 +5,7 @@
  * API for the Lighthouse project
  * OpenAPI spec version: 1.0.0
  */
+import type { UserRole } from "./userRole"
 
 export interface User {
   id: string
@@ -15,7 +16,7 @@ export interface User {
   image?: string | null
   createdAt: string
   updatedAt: string
-  role?: string
+  role?: UserRole
   /** @nullable */
   banned?: boolean | null
   /** @nullable */

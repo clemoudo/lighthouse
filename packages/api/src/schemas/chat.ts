@@ -20,6 +20,9 @@ export const ChatMessageSchema = z.object({
 
 export const ChatRequestSchema = z
   .object({
+    conversationId: z.uuid().optional().openapi({
+      description: "L'ID de la conversation existante pour maintenir le contexte.",
+    }),
     messages: z.array(ChatMessageSchema).openapi({
       example: [{ role: "user", content: "Comment favoriser l'autonomie en classe ?" }],
     }),

@@ -23,26 +23,22 @@ export class ChatService {
   }
 
   /**
-   * Analyzes the query to decide if RAG is needed.
+   * Analyzes the query to decide if RAG is needed (Minimalist version).
    */
   async classifyIntent(query: string) {
-    const { output } = await generateText({
+    const { output, usage } = await generateText({
       model: mistral("mistral-small-latest"),
+      system:
+        "Détermine si la requête nécessite le référentiel scolaire belge (Pacte d'excellence). Raison en 5 mots max.",
       output: Output.object({
         schema: z.object({
-          needsRAG: z
-            .boolean()
-            .describe(
-              "Vrai si la requête nécessite des connaissances spécifiques du programme scolaire, des compétences pédagogiques ou des documents officiels du curriculum belge (Pacte pour un Enseignement d'excellence).",
-            ),
-          reasoning: z
-            .string()
-            .describe("Brève explication de pourquoi le RAG est nécessaire ou non."),
+          needsRAG: z.boolean(),
+          reasoning: z.string(),
         }),
       }),
-      prompt: `Analyse la requête utilisateur suivante et détermine si elle nécessite des informations précises issues du programme scolaire belge (Pacte pour un Enseignement d'excellence) pour être répondue avec précision : "${query}"`,
+      prompt: query,
     })
-    return output
+    return { intent: output, usage }
   }
 
   /**

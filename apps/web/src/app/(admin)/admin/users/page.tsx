@@ -29,6 +29,7 @@ import {
 import { PageHeader } from "@/components/page-header"
 import { useSession, authClient } from "@/lib/auth-client"
 import { useQuery, useMutation } from "@tanstack/react-query"
+import { UserRole } from "@/api/generated/model"
 import type { ColumnsType } from "antd/es/table"
 
 const { Text } = Typography
@@ -184,8 +185,8 @@ export default function AdminUsersPage() {
         key: "role",
         render: (role) => (
           <Tag
-            color={role === "admin" ? "gold" : "default"}
-            icon={role === "admin" ? <Shield size={12} /> : null}
+            color={role === UserRole.ADMIN ? "gold" : "default"}
+            icon={role === UserRole.ADMIN ? <Shield size={12} /> : null}
           >
             {role?.toUpperCase()}
           </Tag>

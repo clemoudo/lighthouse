@@ -8,5 +8,7 @@
 import type { ChatRequestMessagesItem } from "./chatRequestMessagesItem"
 
 export interface ChatRequest {
+  /** L'ID de la conversation existante pour maintenir le contexte. */
+  conversationId?: string
   messages: ChatRequestMessagesItem[]
 }

@@ -121,7 +121,7 @@ export class ParsingService {
     logger.info("[PARSING] Extracting structured hierarchical ToC using Mistral")
 
     const { output } = await generateText({
-      model: mistral.chat("mistral-large-latest"),
+      model: mistral.chat("mistral-small-latest"),
       output: Output.object({
         schema: z.object({
           chapters: z.array(TableOfContentsEntrySchema),

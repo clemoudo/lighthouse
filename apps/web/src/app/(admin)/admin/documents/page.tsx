@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import UploadCard from "./_components/UploadCard"
 import { DocumentsTable } from "./_components/DocumentsTable"
+import { UserRole } from "@/api/generated/model"
 
 export default function AdminDocumentsPage() {
   const { data: session, isPending } = useSession()
@@ -28,7 +29,7 @@ export default function AdminDocumentsPage() {
   )
 
   // Verification simple du rôle
-  if (!isPending && session?.user.role !== "admin") {
+  if (!isPending && session?.user.role !== UserRole.ADMIN) {
     router.push("/")
     return null
   }

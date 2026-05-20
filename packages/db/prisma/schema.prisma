@@ -8,13 +8,18 @@ datasource db {
   extensions = [vector]
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
 model User {
   id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   name          String
   email         String    @unique
   emailVerified Boolean
   image         String?
-  role          String?   @default("user")
+  role          UserRole? @default(USER)
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
@@ -22,6 +27,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  conversations Conversation[]
 
   @@map("user")
 }
@@ -31,6 +37,50 @@ enum IngestionStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum MessageIntent {
+  RAG
+  DIRECT
+  CLASSIFICATION
+}
+
+model Conversation {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title     String?
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("conversation")
+}
+
+model Message {
+  id               String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  role             MessageRole
+  content          String         @db.Text
+  
+  // IA Metadata (assistant only)
+  model            String?
+  intent           MessageIntent?
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  sources          Json?
+
+  conversationId   String       @db.Uuid
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime     @default(now())
+
+  @@map("message")
 }
 
 model Document {

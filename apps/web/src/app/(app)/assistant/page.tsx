@@ -79,17 +79,28 @@ export default function AssistantPage() {
   const { resolvedTheme } = useTheme()
   const { data: session } = useSession()
   const [input, setInput] = useState("")
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined)
 
   const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
 
   const { messages, sendMessage, status, error } = useChat<ChatUIMessage>({
     transport: new DefaultChatTransport({
       api: env.NEXT_PUBLIC_API_URL + "/chat",
-      fetch: (url, options) => {
-        return fetch(url, {
+      body: {
+        conversationId,
+      },
+      fetch: async (url, options) => {
+        const response = await fetch(url, {
           ...options,
           credentials: "include",
         })
+
+        const id = response.headers.get("x-conversation-id")
+        if (id) {
+          setConversationId((prev) => (id !== prev ? id : prev))
+        }
+
+        return response
       },
     }),
     messages: [
@@ -103,7 +114,7 @@ export default function AssistantPage() {
           },
         ],
       },
-    ] as ChatUIMessage[],
+    ],
   })
 
   const isLoading = status !== "ready"
@@ -117,10 +128,10 @@ export default function AssistantPage() {
     scrollToBottom()
   }, [messages])
 
-  const onFinish = (e?: React.FormEvent) => {
+  const onFinish = (e?: React.SubmitEvent) => {
     e?.preventDefault()
     if (input.trim() && !isLoading) {
-      sendMessage({ text: input })
+      sendMessage({ text: input }, { body: { conversationId } })
       setInput("")
     }
   }

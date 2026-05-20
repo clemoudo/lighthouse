@@ -28,6 +28,7 @@ import {
 } from "antd"
 import { cn } from "@/lib/utils"
 import { useSession, signOut } from "@/lib/auth-client"
+import { UserRole } from "@/api/generated/model"
 
 const { Text, Title } = Typography
 
@@ -165,7 +166,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     setMounted(true)
   }, [])
 
-  const isAdmin = mounted && session?.user.role === "admin"
+  const isAdmin = mounted && session?.user.role === UserRole.ADMIN
 
   const renderLink = (item: NavItem) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
