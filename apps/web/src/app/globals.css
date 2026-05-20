@@ -64,6 +64,13 @@
   --color-text-quaternary: var(--ant-color-text-quaternary);
   --color-text-description: var(--ant-color-text-description);
   --color-text-disabled: var(--ant-color-text-disabled);
+  --color-text-light-solid: var(--ant-color-text-light-solid);
+
+  /* Fill Colors */
+  --color-fill: var(--ant-color-fill);
+  --color-fill-secondary: var(--ant-color-fill-secondary);
+  --color-fill-tertiary: var(--ant-color-fill-tertiary);
+  --color-fill-quaternary: var(--ant-color-fill-quaternary);
 
   /* Custom Mappings */
   --color-sidebar-bg: var(--ant-color-primary);

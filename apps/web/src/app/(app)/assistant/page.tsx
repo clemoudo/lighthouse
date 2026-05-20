@@ -87,7 +87,7 @@ export default function AssistantPage() {
                       ? session?.user.image
                         ? "border-none"
                         : "bg-primary"
-                      : "bg-white border border-border overflow-visible!",
+                      : "bg-container border border-border overflow-visible!",
                   )}
                 />
               </div>
@@ -106,8 +106,8 @@ export default function AssistantPage() {
                   className={cn(
                     "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
                     m.role === "user"
-                      ? "bg-primary text-white rounded-tr-none"
-                      : "bg-white text-foreground rounded-tl-none border border-border",
+                      ? "bg-primary text-text-light-solid rounded-tr-none"
+                      : "bg-container text-text rounded-tl-none border border-border",
                   )}
                 >
                   <div className="wrap-break-word">
@@ -118,7 +118,7 @@ export default function AssistantPage() {
                           <Paragraph
                             className={cn(
                               "m-0 last:mb-0 mb-4",
-                              m.role === "user" ? "text-white" : "text-foreground",
+                              m.role === "user" ? "text-text-light-solid" : "text-text",
                             )}
                           >
                             {children}
@@ -127,7 +127,10 @@ export default function AssistantPage() {
                         h1: ({ children }) => (
                           <Title
                             level={4}
-                            className={cn("mt-2 mb-4", m.role === "user" ? "text-white!" : "")}
+                            className={cn(
+                              "mt-2 mb-4",
+                              m.role === "user" ? "text-text-light-solid!" : "",
+                            )}
                           >
                             {children}
                           </Title>
@@ -135,7 +138,10 @@ export default function AssistantPage() {
                         h2: ({ children }) => (
                           <Title
                             level={5}
-                            className={cn("mt-2 mb-3", m.role === "user" ? "text-white!" : "")}
+                            className={cn(
+                              "mt-2 mb-3",
+                              m.role === "user" ? "text-text-light-solid!" : "",
+                            )}
                           >
                             {children}
                           </Title>
@@ -143,7 +149,10 @@ export default function AssistantPage() {
                         h3: ({ children }) => (
                           <Text
                             strong
-                            className={cn("block mt-2 mb-2", m.role === "user" ? "text-white" : "")}
+                            className={cn(
+                              "block mt-2 mb-2",
+                              m.role === "user" ? "text-text-light-solid" : "",
+                            )}
                           >
                             {children}
                           </Text>
@@ -156,12 +165,12 @@ export default function AssistantPage() {
                         ),
                         li: ({ children }) => <li className="mb-1">{children}</li>,
                         strong: ({ children }) => (
-                          <Text strong className={m.role === "user" ? "text-white" : ""}>
+                          <Text strong className={m.role === "user" ? "text-text-light-solid" : ""}>
                             {children}
                           </Text>
                         ),
                         em: ({ children }) => (
-                          <Text italic className={m.role === "user" ? "text-white" : ""}>
+                          <Text italic className={m.role === "user" ? "text-text-light-solid" : ""}>
                             {children}
                           </Text>
                         ),
@@ -170,8 +179,8 @@ export default function AssistantPage() {
                             className={cn(
                               "px-1.5 py-0.5 rounded text-xs font-mono",
                               m.role === "user"
-                                ? "bg-white/20 text-white"
-                                : "bg-muted text-foreground",
+                                ? "bg-white/20 text-text-light-solid"
+                                : "bg-fill-secondary text-text",
                             )}
                           >
                             {children}
@@ -193,14 +202,14 @@ export default function AssistantPage() {
                 <Avatar
                   size={40}
                   src={assistantAvatar}
-                  className="bg-white border border-border overflow-visible!"
+                  className="bg-container border border-border overflow-visible!"
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
                   Félix
                 </Text>
-                <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
+                <div className="bg-container px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
                   <div className="flex gap-1">
                     <span
                       className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
@@ -222,7 +231,7 @@ export default function AssistantPage() {
 
           {error && (
             <div className="flex justify-center">
-              <Space className="bg-red-50 text-red-600 px-6 py-3 rounded-xl border border-red-100 shadow-sm text-xs">
+              <Space className="bg-error-bg text-error px-6 py-3 rounded-xl border border-error-border shadow-sm text-xs">
                 <AlertCircle size={16} />
                 <span>Une erreur est survenue : {error.message}</span>
               </Space>
@@ -240,7 +249,7 @@ export default function AssistantPage() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Posez votre question sur le programme..."
             autoSize={{ minRows: 1, maxRows: 8 }}
-            className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-white text-base"
+            className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault()
@@ -256,7 +265,7 @@ export default function AssistantPage() {
             className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
           />
         </form>
-        <p className="text-[10px] text-center mt-4 text-muted-foreground opacity-50 font-medium">
+        <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium">
           L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
         </p>
       </div>
