@@ -4,6 +4,7 @@ import { Card, Tag, Typography, Button, Empty, Row, Col } from "antd"
 import { FileText, Download, BookOpen, Clock } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useGetDocuments } from "@/api/generated/lighthouse"
+import { CurriculumSkeleton } from "@/components/skeletons"
 
 const { Text } = Typography
 
@@ -20,7 +21,9 @@ export default function CurriculumPage() {
         icon={BookOpen}
       />
 
-      {documents.length === 0 && !isLoading ? (
+      {isLoading ? (
+        <CurriculumSkeleton />
+      ) : documents.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12 shadow-sm">
           <Empty
             description="Aucun programme n'a encore été indexé."

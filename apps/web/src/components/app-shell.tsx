@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -85,8 +85,13 @@ const adminItems = [
 
 function UserProfile() {
   const { data: session, isPending } = useSession()
+  const [mounted, setMounted] = useState(false)
 
-  if (isPending) {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted || isPending) {
     return (
       <div className="flex items-center gap-3 px-4 py-4">
         <Skeleton.Avatar active size="small" shape="circle" />
@@ -154,7 +159,13 @@ function UserProfile() {
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const isAdmin = session?.user.role === "admin"
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isAdmin = mounted && session?.user.role === "admin"
 
   const renderLink = (item: NavItem) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")

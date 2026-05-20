@@ -59,7 +59,14 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "name", "email", "emailVerified", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "name",
+          "email",
+          "emailVerified",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "AuthSession": {
         "type": "object",
@@ -72,7 +79,10 @@
             "$ref": "#/components/schemas/Session"
           }
         },
-        "required": ["user", "session"]
+        "required": [
+          "user",
+          "session"
+        ]
       },
       "Session": {
         "type": "object",
@@ -109,7 +119,14 @@
             "nullable": true
           }
         },
-        "required": ["id", "userId", "expiresAt", "token", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "userId",
+          "expiresAt",
+          "token",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "Document": {
         "type": "object",
@@ -141,7 +158,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "COMPLETED",
+              "FAILED"
+            ],
             "example": "PENDING"
           },
           "error": {
@@ -187,7 +209,10 @@
             "$ref": "#/components/schemas/PaginationMeta"
           }
         },
-        "required": ["documents", "meta"]
+        "required": [
+          "documents",
+          "meta"
+        ]
       },
       "PaginationMeta": {
         "type": "object",
@@ -209,7 +234,12 @@
             "example": 10
           }
         },
-        "required": ["total", "page", "pageSize", "totalPages"]
+        "required": [
+          "total",
+          "page",
+          "pageSize",
+          "totalPages"
+        ]
       },
       "CreateDocumentResponse": {
         "type": "object",
@@ -222,7 +252,10 @@
             "$ref": "#/components/schemas/Document"
           }
         },
-        "required": ["message", "document"]
+        "required": [
+          "message",
+          "document"
+        ]
       },
       "CreateDocumentRequest": {
         "type": "object",
@@ -246,7 +279,9 @@
             "example": "Ingestion démarrée avec succès"
           }
         },
-        "required": ["message"]
+        "required": [
+          "message"
+        ]
       },
       "ChatResponse": {
         "type": "string"
@@ -261,13 +296,20 @@
               "properties": {
                 "role": {
                   "type": "string",
-                  "enum": ["user", "assistant", "system"]
+                  "enum": [
+                    "user",
+                    "assistant",
+                    "system"
+                  ]
                 },
                 "content": {
                   "type": "string"
                 }
               },
-              "required": ["role", "content"]
+              "required": [
+                "role",
+                "content"
+              ]
             },
             "example": [
               {
@@ -277,7 +319,9 @@
             ]
           }
         },
-        "required": ["messages"]
+        "required": [
+          "messages"
+        ]
       }
     },
     "parameters": {}
@@ -401,7 +445,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["message"]
+                  "required": [
+                    "message"
+                  ]
                 }
               }
             }
@@ -471,7 +517,12 @@
                       "type": "string"
                     }
                   },
-                  "required": ["status", "uptime", "database", "timestamp"]
+                  "required": [
+                    "status",
+                    "uptime",
+                    "database",
+                    "timestamp"
+                  ]
                 }
               }
             }
@@ -490,7 +541,10 @@
                       "type": "string"
                     }
                   },
-                  "required": ["status", "database"]
+                  "required": [
+                    "status",
+                    "database"
+                  ]
                 }
               }
             }

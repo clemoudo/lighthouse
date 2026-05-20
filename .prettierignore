@@ -16,6 +16,7 @@ next-env.d.ts
 
 # Generated
 **/generated/**
+**/openapi.json
 
 # pnpm
 pnpm-lock.yaml
