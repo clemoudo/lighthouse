@@ -27,7 +27,7 @@ export const handleChat = async (req: Request, res: Response) => {
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        // 1. Convert UI messages to model messages
+        // 1. Extract query from last user message
         const modelMessages = await convertToModelMessages(limitedMessages)
         const lastUserMessage = [...modelMessages].reverse().find((m) => m.role === "user")
 
@@ -43,45 +43,49 @@ export const handleChat = async (req: Request, res: Response) => {
           }
         }
 
-        // 2. RAG Retrieval Phase
-        let context = ""
-        if (query) {
-          logger.info(`[RAG] Searching context for: "${query}"`)
+        if (!query) {
+          logger.warn("[CHAT] No user query found.")
+          const result = await streamText({
+            model: mistral("mistral-small-latest"),
+            system: chatService.getDirectSystemPrompt(),
+            messages: modelMessages,
+          })
+          return writer.merge(result.toUIMessageStream())
+        }
 
-          // Generate query embedding
+        // 2. Intent Classification Phase
+        logger.info(`[CHAT] Classifying intent for: "${query}"`)
+        const { needsRAG, reasoning } = await chatService.classifyIntent(query)
+        logger.info(`[CHAT] Intent: ${needsRAG ? "RAG" : "DIRECT"} (Reason: ${reasoning})`)
+
+        if (needsRAG) {
+          // 3a. RAG Path (Mistral Large + Retrieval)
           const embedding = await vectorService.generateEmbedding(query)
-
-          // Search for relevant chunks in PostgreSQL
           const relevantChunks = await storageService.searchSimilarChunks(embedding, 5)
 
           logger.info(`[RAG] Found ${relevantChunks.length} chunks.`)
 
-          // Write formatted sources to the stream for the UI
           writer.write({
             type: "data-sources",
             data: chatService.formatSourcesForUI(relevantChunks),
           })
 
-          relevantChunks.forEach((chunk, i) => {
-            logger.info(
-              `  #${i + 1} [Sim: ${chunk.similarity.toFixed(4)}] : ${chunk.content.substring(0, 150).replace(/\n/g, " ")}...`,
-            )
+          const context = chatService.formatRAGContext(relevantChunks)
+          const result = await streamText({
+            model: mistral("mistral-large-latest"),
+            system: chatService.getSystemPrompt(context),
+            messages: modelMessages,
           })
-
-          // Build context for the AI
-          context = chatService.formatRAGContext(relevantChunks)
+          writer.merge(result.toUIMessageStream())
         } else {
-          logger.warn("[RAG] No user query found in history.")
+          // 3b. Direct Path (Mistral Small)
+          const result = await streamText({
+            model: mistral("mistral-small-latest"),
+            system: chatService.getDirectSystemPrompt(),
+            messages: modelMessages,
+          })
+          writer.merge(result.toUIMessageStream())
         }
-
-        // 3. AI Generation Phase (Streaming)
-        const result = await streamText({
-          model: mistral("mistral-large-latest"),
-          system: chatService.getSystemPrompt(context),
-          messages: modelMessages,
-        })
-
-        writer.merge(result.toUIMessageStream())
       },
     })
 
