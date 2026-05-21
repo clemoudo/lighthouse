@@ -14,6 +14,7 @@ import {
   Popconfirm,
   Avatar,
   App,
+  Flex,
 } from "antd"
 import {
   User as UserIcon,
@@ -158,12 +159,12 @@ export default function AdminUsersPage() {
         title: "Utilisateur",
         key: "user",
         render: (_, record) => (
-          <Space>
+          <Flex align="center" gap={12}>
             <Avatar
               src={record.image ?? undefined}
               icon={!record.image && <UserIcon size={14} />}
             />
-            <div className="flex flex-col">
+            <Flex vertical>
               <span className="font-medium">
                 {record.name}
                 {record.id === session?.user.id && (
@@ -175,8 +176,8 @@ export default function AdminUsersPage() {
               <Text type="secondary" className="text-xs">
                 {record.email}
               </Text>
-            </div>
-          </Space>
+            </Flex>
+          </Flex>
         ),
       },
       {

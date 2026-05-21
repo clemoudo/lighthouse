@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Switch, Card, Tabs, Typography } from "antd"
+import { Switch, Card, Tabs, Typography, Flex, Space } from "antd"
 import { BarChart3, LayoutGrid, CheckSquare, Info } from "lucide-react"
 import { domains } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -88,10 +88,10 @@ export default function SuiviPage() {
   const overallProgress = Math.round((totalAcquired / totalCompetences) * 100)
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
+    <Flex vertical className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Content */}
       <div className="flex-1 px-4 py-8 lg:px-8">
-        <div className="mx-auto max-w-4xl space-y-8">
+        <Space orientation="vertical" size={32} className="mx-auto max-w-4xl w-full">
           <PageHeader
             title="Mon Suivi"
             description="Suivez l'acquisition des compétences pour votre classe"
@@ -112,9 +112,9 @@ export default function SuiviPage() {
               </Text>
             </div>
 
-            <div className="space-y-4">
+            <Flex vertical gap={16}>
               {/* Custom Multi-segment Progress Bar */}
-              <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden flex border border-border shadow-inner">
+              <Flex className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden border border-border shadow-inner">
                 <div
                   className="h-full bg-green-500 transition-all duration-500 ease-out"
                   style={{ width: `${(totalAcquired / totalCompetences) * 100}%` }}
@@ -123,11 +123,11 @@ export default function SuiviPage() {
                   className="h-full bg-orange-500 transition-all duration-500 ease-out"
                   style={{ width: `${(totalSeen / totalCompetences) * 100}%` }}
                 />
-              </div>
+              </Flex>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
-                  <div className="flex items-center gap-2">
+              <Flex align="center" justify="space-between" className="text-sm">
+                <Flex wrap="wrap" align="center" gap={8} className="gap-x-4 gap-y-2">
+                  <Flex align="center" gap={8}>
                     <div className="h-3 w-3 rounded-sm bg-green-500" />
                     <Text className="text-xs">
                       Acquis: <Text strong>{totalAcquired}</Text>
@@ -135,8 +135,8 @@ export default function SuiviPage() {
                         ({Math.round((totalAcquired / totalCompetences) * 100)}%)
                       </Text>
                     </Text>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  </Flex>
+                  <Flex align="center" gap={8}>
                     <div className="h-3 w-3 rounded-sm bg-orange-500" />
                     <Text className="text-xs">
                       Vues: <Text strong>{totalSeen}</Text>
@@ -144,9 +144,9 @@ export default function SuiviPage() {
                         ({Math.round((totalSeen / totalCompetences) * 100)}%)
                       </Text>
                     </Text>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
+                  </Flex>
+                </Flex>
+                <Flex vertical align="end">
                   <Text strong className="text-2xl text-primary leading-none">
                     {overallProgress}%
                   </Text>
@@ -156,13 +156,13 @@ export default function SuiviPage() {
                   >
                     Acquis
                   </Text>
-                </div>
-              </div>
-            </div>
+                </Flex>
+              </Flex>
+            </Flex>
           </Card>
 
           {/* Progress by Domain */}
-          <div className="space-y-4">
+          <Flex vertical gap={16}>
             <SectionHeader title="Progression par domaine" icon={LayoutGrid} />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {progress.map((domain) => (
@@ -171,7 +171,7 @@ export default function SuiviPage() {
                   className="border border-border shadow-sm rounded-xl"
                   styles={{ body: { padding: "16px" } }}
                 >
-                  <div className="flex items-center gap-2 mb-3">
+                  <Flex align="center" gap={8} className="mb-3">
                     <div
                       className={cn(
                         "h-3 w-3 rounded-sm shrink-0",
@@ -181,10 +181,10 @@ export default function SuiviPage() {
                     <Text strong className="text-sm line-clamp-1">
                       {domain.name.split(" ").slice(0, 3).join(" ")}
                     </Text>
-                  </div>
+                  </Flex>
 
-                  <div className="space-y-3">
-                    <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden flex border border-gray-100 shadow-inner">
+                  <Flex vertical gap={12}>
+                    <Flex className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-100 shadow-inner">
                       <div
                         className="h-full bg-green-500 transition-all duration-500 ease-out"
                         style={{ width: `${(domain.acquired / domain.total) * 100}%` }}
@@ -193,37 +193,45 @@ export default function SuiviPage() {
                         className="h-full bg-orange-500 transition-all duration-500 ease-out"
                         style={{ width: `${(domain.seen / domain.total) * 100}%` }}
                       />
-                    </div>
+                    </Flex>
 
-                    <div className="flex items-center justify-between text-[10px] text-muted font-bold uppercase tracking-wider">
-                      <div className="flex gap-2">
+                    <Flex
+                      align="center"
+                      justify="space-between"
+                      className="text-[10px] text-muted font-bold uppercase tracking-wider"
+                    >
+                      <Flex gap={8}>
                         <Text className="text-green-600 m-0" style={{ fontSize: 10 }}>
                           {domain.acquired} Acquis
                         </Text>
                         <Text className="text-orange-600 m-0" style={{ fontSize: 10 }}>
                           {domain.seen} Vues
                         </Text>
-                      </div>
+                      </Flex>
                       <Text className="text-primary m-0" style={{ fontSize: 10 }}>
                         {domain.progress}%
                       </Text>
-                    </div>
-                  </div>
+                    </Flex>
+                  </Flex>
                 </Card>
               ))}
             </div>
-          </div>
+          </Flex>
 
           {/* Detailed tracking */}
-          <div className="space-y-4">
+          <Flex vertical gap={16}>
             <SectionHeader title="Suivi détaillé" icon={CheckSquare}>
-              <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 border border-primary/20">
+              <Flex
+                align="center"
+                gap={8}
+                className="rounded-lg bg-primary/10 px-3 py-1.5 border border-primary/20"
+              >
                 <Info size={14} className="text-primary shrink-0" />
                 <Text className="text-[11px] text-primary font-medium leading-tight">
                   <Text strong>Vue</Text> : Présenté &nbsp; | &nbsp; <Text strong>Acquis</Text> :
                   Maîtrisé
                 </Text>
-              </div>
+              </Flex>
             </SectionHeader>
 
             <Card
@@ -236,7 +244,7 @@ export default function SuiviPage() {
                 items={domains.map((domain) => ({
                   key: domain.id,
                   label: (
-                    <div className="flex items-center gap-2 px-2">
+                    <Flex align="center" gap={8} className="px-2">
                       <div
                         className={cn(
                           "h-2 w-2 rounded-sm shrink-0",
@@ -245,25 +253,27 @@ export default function SuiviPage() {
                       />
                       <span className="hidden sm:inline">{domain.name.split(" ")[0]}</span>
                       <span className="sm:hidden">{domain.name.split(" ")[0].slice(0, 4)}</span>
-                    </div>
+                    </Flex>
                   ),
                   children: (
-                    <div className="divide-y divide-border">
+                    <Flex vertical className="divide-y divide-border">
                       {domain.subdomains.map((subdomain) => (
-                        <div key={subdomain.id}>
+                        <Flex vertical key={subdomain.id}>
                           <div className="bg-surface-secondary px-4 py-3 border-b border-border">
                             <Text strong className="text-sm uppercase tracking-wider block">
                               {subdomain.name}
                             </Text>
                           </div>
-                          <div className="divide-y divide-border">
+                          <Flex vertical className="divide-y divide-border">
                             {subdomain.competences.map((competence) => {
                               const state = competenceStates[competence.id]
                               return (
-                                <div
+                                <Flex
+                                  vertical
+                                  gap={16}
                                   key={competence.id}
                                   className={cn(
-                                    "flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 transition-colors",
+                                    "sm:flex-row sm:items-center px-4 py-4 transition-colors",
                                     state.acquired && "bg-green-50/50",
                                     state.seen && !state.acquired && "bg-orange-50/30",
                                   )}
@@ -279,38 +289,38 @@ export default function SuiviPage() {
                                       {competence.description}
                                     </Text>
                                   </div>
-                                  <div className="flex items-center gap-6 shrink-0">
-                                    <div className="flex items-center gap-2">
+                                  <Flex align="center" gap={24} className="shrink-0">
+                                    <Flex align="center" gap={8}>
                                       <Switch
                                         size="small"
                                         checked={state.seen}
                                         onChange={(val) => handleSeenChange(competence.id, val)}
                                       />
                                       <Text className="text-sm font-medium text-muted">Vue</Text>
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                                    </Flex>
+                                    <Flex align="center" gap={8}>
                                       <Switch
                                         size="small"
                                         checked={state.acquired}
                                         onChange={(val) => handleAcquiredChange(competence.id, val)}
                                       />
                                       <Text className="text-sm font-medium text-muted">Acquis</Text>
-                                    </div>
-                                  </div>
-                                </div>
+                                    </Flex>
+                                  </Flex>
+                                </Flex>
                               )
                             })}
-                          </div>
-                        </div>
+                          </Flex>
+                        </Flex>
                       ))}
-                    </div>
+                    </Flex>
                   ),
                 }))}
               />
             </Card>
-          </div>
-        </div>
+          </Flex>
+        </Space>
       </div>
-    </div>
+    </Flex>
   )
 }

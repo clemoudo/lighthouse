@@ -1,37 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { App } from "antd"
-import { env } from "@/env"
-import { getGetDocumentsQueryKey } from "@/api/generated/lighthouse"
+import {
+  getGetDocumentsQueryKey,
+  postDocumentsUpload,
+  postDocumentsIdIngest,
+  deleteDocumentsId,
+} from "@/api/generated/lighthouse"
 
 export const useUploadDocument = () => {
   const { message } = App.useApp()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/upload`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      })
-
-      const text = await response.text()
-      let result
-      try {
-        result = JSON.parse(text)
-      } catch {
-        result = { error: text }
-      }
-
-      if (!response.ok) {
-        throw new Error(result.message || result.error || `Erreur HTTP ${response.status}`)
-      }
-
-      return result
-    },
+    mutationFn: (file: File) => postDocumentsUpload({ file }),
     onSuccess: () => {
       message.success("Document téléchargé avec succès")
       queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
@@ -48,20 +29,7 @@ export const useIngestDocument = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/${id}/ingest`, {
-        method: "POST",
-        credentials: "include",
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.message || result.error || "Échec de l'ingestion")
-      }
-
-      return result
-    },
+    mutationFn: (id: string) => postDocumentsIdIngest(id),
     onSuccess: () => {
       message.info("L'ingestion a démarré en arrière-plan.")
       queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })
@@ -78,20 +46,7 @@ export const useDeleteDocument = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.message || result.error || "Échec de la suppression")
-      }
-
-      return result
-    },
+    mutationFn: (id: string) => deleteDocumentsId(id),
     onSuccess: () => {
       message.success("Document supprimé avec succès")
       queryClient.invalidateQueries({ queryKey: getGetDocumentsQueryKey() })

@@ -1,11 +1,11 @@
 "use client"
 
-import { Button, Result } from "antd"
+import { Button, Result, Flex } from "antd"
 import Link from "next/link"
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <Flex align="center" justify="center" className="min-h-screen p-4">
       <Result
         status="404"
         title="404"
@@ -16,6 +16,6 @@ export default function NotFound() {
           </Link>
         }
       />
-    </div>
+    </Flex>
   )
 }

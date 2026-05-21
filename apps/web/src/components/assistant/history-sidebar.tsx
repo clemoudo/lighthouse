@@ -37,7 +37,7 @@ export function HistorySidebar({
   }
 
   return (
-    <div className="flex flex-col h-full w-72 border-r border-border bg-container">
+    <Flex vertical className="h-full w-72 border-r border-border bg-container">
       <div className="p-4 border-b border-border">
         <Button
           type="primary"
@@ -51,10 +51,10 @@ export function HistorySidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
-        <div className="px-3 py-4 flex items-center gap-2 opacity-50">
+        <Flex align="center" gap={8} className="px-3 py-4 opacity-50">
           <History size={14} />
           <Text className="text-[10px] uppercase font-bold tracking-wider">Historique</Text>
-        </div>
+        </Flex>
 
         {isLoading ? (
           <Flex justify="center" align="middle" className="py-8">
@@ -68,30 +68,34 @@ export function HistorySidebar({
             />
           </div>
         ) : (
-          <div className="flex flex-col gap-1">
+          <Flex vertical gap={4}>
             {conversations.map((conv) => (
-              <div
+              <Flex
                 key={conv.id}
                 onClick={() => onSelectConversation(conv.id)}
+                align="center"
+                gap={12}
                 className={cn(
-                  "group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all hover:bg-fill-secondary",
+                  "group px-3 py-3 rounded-xl cursor-pointer transition-all hover:bg-fill-secondary",
                   currentConversationId === conv.id
                     ? "bg-fill-secondary border-border shadow-sm"
                     : "border-transparent",
                 )}
               >
-                <div
+                <Flex
+                  align="center"
+                  justify="center"
                   className={cn(
-                    "shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                    "shrink-0 w-8 h-8 rounded-lg transition-colors",
                     currentConversationId === conv.id
                       ? "bg-primary text-white"
                       : "bg-fill-secondary text-text opacity-40 group-hover:opacity-100",
                   )}
                 >
                   <MessageSquare size={16} />
-                </div>
+                </Flex>
 
-                <div className="flex-1 min-w-0 flex flex-col">
+                <Flex vertical flex={1} className="min-w-0">
                   <Text
                     strong
                     className={cn(
@@ -104,7 +108,7 @@ export function HistorySidebar({
                   <Text className="text-[10px] opacity-40">
                     {dayjs(conv.updatedAt).format("D MMMM, HH:mm")}
                   </Text>
-                </div>
+                </Flex>
 
                 <Popconfirm
                   title="Supprimer la discussion ?"
@@ -126,11 +130,11 @@ export function HistorySidebar({
                     className="opacity-0 group-hover:opacity-40 hover:opacity-100! hover:text-error! transition-all"
                   />
                 </Popconfirm>
-              </div>
+              </Flex>
             ))}
-          </div>
+          </Flex>
         )}
       </div>
-    </div>
+    </Flex>
   )
 }

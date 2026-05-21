@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { Button, Result } from "antd"
+import { Button, Result, Flex } from "antd"
 import { logger } from "@repo/logger"
 
 export default function Error({ error }: { error: Error & { digest?: string } }) {
@@ -10,7 +10,7 @@ export default function Error({ error }: { error: Error & { digest?: string } })
   }, [error])
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <Flex align="center" justify="center" className="min-h-screen p-4">
       <Result
         status="error"
         title="Une erreur est survenue"
@@ -21,6 +21,6 @@ export default function Error({ error }: { error: Error & { digest?: string } })
           </Button>
         }
       />
-    </div>
+    </Flex>
   )
 }

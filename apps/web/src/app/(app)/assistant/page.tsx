@@ -181,7 +181,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-layout">
+    <Flex className="h-full w-full overflow-hidden bg-layout">
       <HistorySidebar
         currentConversationId={conversationId}
         onSelectConversation={handleSelectConversation}
@@ -191,7 +191,7 @@ export default function AssistantPage() {
       <Flex vertical className="flex-1 relative overflow-hidden h-full">
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
-          <div className="max-w-4xl mx-auto space-y-8">
+          <Space orientation="vertical" size={32} className="w-full max-w-4xl mx-auto">
             {messages.map((m) => {
               // Logic to find sources in message parts
               const sourcesPart = m.parts.find(
@@ -203,12 +203,11 @@ export default function AssistantPage() {
                   : undefined
 
               return (
-                <div
+                <Flex
                   key={m.id}
-                  className={cn(
-                    "flex w-full gap-4",
-                    m.role === "user" ? "flex-row-reverse" : "flex-row",
-                  )}
+                  gap={16}
+                  className="w-full"
+                  style={{ flexDirection: m.role === "user" ? "row-reverse" : "row" }}
                 >
                   <div className="shrink-0 pt-1">
                     <Avatar
@@ -227,11 +226,11 @@ export default function AssistantPage() {
                     />
                   </div>
 
-                  <div
-                    className={cn(
-                      "flex flex-col gap-2 max-w-[80%] min-w-0",
-                      m.role === "user" ? "items-end" : "items-start",
-                    )}
+                  <Flex
+                    vertical
+                    gap={8}
+                    className="max-w-[80%] min-w-0"
+                    align={m.role === "user" ? "end" : "start"}
                   >
                     <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
                       {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
@@ -258,13 +257,13 @@ export default function AssistantPage() {
 
                     {/* Citations UI Component */}
                     <Citations sources={messageSources} />
-                  </div>
-                </div>
+                  </Flex>
+                </Flex>
               )
             })}
 
             {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex gap-4">
+              <Flex gap={16}>
                 <div className="shrink-0">
                   <Avatar
                     size={40}
@@ -272,12 +271,16 @@ export default function AssistantPage() {
                     className="bg-container border border-border overflow-visible!"
                   />
                 </div>
-                <div className="flex flex-col gap-2">
+                <Flex vertical gap={8}>
                   <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
                     Félix
                   </Text>
-                  <div className="bg-container px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm flex items-center gap-2">
-                    <div className="flex gap-1">
+                  <Flex
+                    align="center"
+                    gap={8}
+                    className="bg-container px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm"
+                  >
+                    <Flex gap={4}>
                       <span
                         className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
                         style={{ animationDelay: "0ms" }}
@@ -290,22 +293,22 @@ export default function AssistantPage() {
                         className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
                         style={{ animationDelay: "300ms" }}
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </Flex>
             )}
 
             {error && (
-              <div className="flex justify-center">
+              <Flex justify="center">
                 <Space className="bg-error-bg text-error px-6 py-3 rounded-xl border border-error-border shadow-sm text-xs">
                   <AlertCircle size={16} />
                   <span>Une erreur est survenue : {error.message}</span>
                 </Space>
-              </div>
+              </Flex>
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </Space>
         </div>
 
         {/* Input Area */}
@@ -337,6 +340,6 @@ export default function AssistantPage() {
           </p>
         </div>
       </Flex>
-    </div>
+    </Flex>
   )
 }

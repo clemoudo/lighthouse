@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/page-header"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import { CurriculumSkeleton } from "@/components/skeletons"
 
-const { Text } = Typography
+const { Text, Title } = Typography
 
 export default function CurriculumPage() {
   const { data: documentsResponse, isLoading } = useGetDocuments()
@@ -44,9 +44,9 @@ export default function CurriculumPage() {
                     <FileText size={24} />
                   </div>
                   <div className="min-w-0">
-                    <Typography.Title level={5} className="m-0! truncate" title={doc.title}>
+                    <Title level={5} className="m-0! truncate" title={doc.title}>
                       {doc.title}
-                    </Typography.Title>
+                    </Title>
                     <Text type="secondary" className="text-xs">
                       {(doc.fileSize / 1024 / 1024).toFixed(2)} Mo
                     </Text>
