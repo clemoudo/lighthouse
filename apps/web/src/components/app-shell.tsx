@@ -258,6 +258,9 @@ const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  const isAssistantRoute = pathname === "/assistant" || pathname?.startsWith("/assistant/")
 
   return (
     <Flex className="h-screen bg-layout overflow-hidden">
@@ -297,7 +300,11 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         </Drawer>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 p-6 overflow-y-auto flex flex-col">{children}</main>
+        <main
+          className={cn("flex-1 min-w-0 overflow-y-auto flex flex-col", !isAssistantRoute && "p-6")}
+        >
+          {children}
+        </main>
       </Flex>
     </Flex>
   )

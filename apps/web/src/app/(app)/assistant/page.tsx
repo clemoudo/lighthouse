@@ -182,12 +182,6 @@ const AssistantPage = () => {
 
   return (
     <Flex className="h-full w-full overflow-hidden bg-layout">
-      <HistorySidebar
-        currentConversationId={conversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewChat={handleNewChat}
-      />
-
       <Flex vertical className="flex-1 relative overflow-hidden h-full">
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
@@ -340,6 +334,12 @@ const AssistantPage = () => {
           </p>
         </div>
       </Flex>
+
+      <HistorySidebar
+        currentConversationId={conversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewChat={handleNewChat}
+      />
     </Flex>
   )
 }

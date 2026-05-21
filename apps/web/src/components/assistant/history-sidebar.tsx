@@ -37,19 +37,7 @@ export const HistorySidebar = ({
   }
 
   return (
-    <Flex vertical className="h-full w-72 border-r border-border bg-container">
-      <div className="p-4 border-b border-border">
-        <Button
-          type="primary"
-          icon={<Plus size={16} />}
-          block
-          onClick={onNewChat}
-          className="flex items-center justify-center gap-2 h-10 rounded-xl"
-        >
-          Nouvelle discussion
-        </Button>
-      </div>
-
+    <Flex vertical className="h-full w-72 border-l border-border bg-container">
       <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
         <Flex align="center" gap={8} className="px-3 py-4 opacity-50">
           <History size={14} />
@@ -134,6 +122,18 @@ export const HistorySidebar = ({
             ))}
           </Flex>
         )}
+      </div>
+
+      <div className="p-4 border-t border-border">
+        <Button
+          type="primary"
+          icon={<Plus size={16} />}
+          block
+          onClick={onNewChat}
+          className="flex items-center justify-center gap-2 h-10 rounded-xl"
+        >
+          Nouvelle discussion
+        </Button>
       </div>
     </Flex>
   )

@@ -194,7 +194,7 @@ const AdminUsersPage = () => {
         ),
       },
       {
-        title: "Email Vérifié",
+        title: "Email vérifié",
         dataIndex: "emailVerified",
         key: "emailVerified",
         render: (verified) =>
@@ -285,7 +285,7 @@ const AdminUsersPage = () => {
   return (
     <>
       <PageHeader
-        title="Gestion des Utilisateurs"
+        title="Gestion des utilisateurs"
         description="Consultez et gérez les comptes utilisateurs de la plateforme."
         icon={UserIcon}
       />

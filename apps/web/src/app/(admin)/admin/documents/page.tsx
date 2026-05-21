@@ -37,7 +37,7 @@ const AdminDocumentsPage = () => {
   return (
     <>
       <PageHeader
-        title="Administration des Documents"
+        title="Administration des documents"
         description="Gérez les programmes scolaires et les ressources du RAG."
         icon={LayoutDashboard}
       />

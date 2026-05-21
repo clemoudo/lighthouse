@@ -16,7 +16,7 @@ const CurriculumPage = () => {
   return (
     <>
       <PageHeader
-        title="Référentiel & Programmes"
+        title="Référentiel & programmes"
         description="Consultez les programmes scolaires officiels disponibles pour l'assistant IA."
         icon={BookOpen}
       />
