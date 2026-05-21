@@ -9,8 +9,8 @@ datasource db {
 }
 
 enum UserRole {
-  ADMIN
-  USER
+  admin
+  user
 }
 
 model User {
@@ -19,7 +19,7 @@ model User {
   email         String    @unique
   emailVerified Boolean
   image         String?
-  role          UserRole? @default(USER)
+  role          UserRole? @default(user)
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
@@ -40,8 +40,8 @@ enum IngestionStatus {
 }
 
 enum MessageRole {
-  USER
-  ASSISTANT
+  user
+  assistant
 }
 
 enum MessageIntent {

@@ -9,6 +9,6 @@
 export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole]
 
 export const MessageRole = {
-  USER: "USER",
-  ASSISTANT: "ASSISTANT",
+  user: "user",
+  assistant: "assistant",
 } as const

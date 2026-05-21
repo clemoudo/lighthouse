@@ -148,7 +148,7 @@ export class ChatService {
       })
 
       // Update title if it's the first assistant response
-      if (data.role === MessageRole.ASSISTANT) {
+      if (data.role === MessageRole.assistant) {
         const messageCount = await prisma.message.count({
           where: { conversationId: data.conversationId },
         })

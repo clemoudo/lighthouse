@@ -16,7 +16,7 @@ const USE_CACHED_PARSING = true // Set to false to force a new LlamaParse call
 async function notifyAdmins(documentTitle: string, status: "SUCCESS" | "FAILURE", error?: string) {
   try {
     const admins = await prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.admin },
       select: { email: true },
     })
 

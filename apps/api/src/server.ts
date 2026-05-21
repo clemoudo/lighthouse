@@ -18,6 +18,12 @@ import chatRoutes from "./routes/chat.routes"
 export const createServer = (): Express => {
   const app = express()
 
+  // Standard Logging
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.path}`)
+    next()
+  })
+
   // Trust proxy for rate limiting (behind Traefik)
   app.set("trust proxy", 1)
 
@@ -54,12 +60,6 @@ export const createServer = (): Express => {
 
   // Authentication Middleware
   app.use(authMiddleware)
-
-  // Standard Logging
-  app.use((req: Request, _res: Response, next: NextFunction) => {
-    logger.info(`${req.method} ${req.path}`)
-    next()
-  })
 
   // API Routes
   app.use("/documents", documentRoutes)

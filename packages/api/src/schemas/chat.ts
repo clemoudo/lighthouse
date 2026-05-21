@@ -14,6 +14,29 @@ export const ChatSourceSchema = z
 
 export type ChatSource = z.infer<typeof ChatSourceSchema>
 
+/**
+ * Message roles used in the chat.
+ * Matches MessageRole enum in Prisma.
+ */
+export const MessageRole = {
+  user: "user",
+  assistant: "assistant",
+} as const
+
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole]
+
+/**
+ * Intent classification for messages.
+ * Matches MessageIntent enum in Prisma.
+ */
+export const MessageIntent = {
+  RAG: "RAG",
+  DIRECT: "DIRECT",
+  CLASSIFICATION: "CLASSIFICATION",
+} as const
+
+export type MessageIntent = (typeof MessageIntent)[keyof typeof MessageIntent]
+
 export const ChatMessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
   content: z.string(),
@@ -35,10 +58,10 @@ export const ChatResponseSchema = z.string().openapi("ChatResponse")
 export const MessageSchema = z
   .object({
     id: z.uuid(),
-    role: z.enum(["USER", "ASSISTANT"]),
+    role: z.enum(MessageRole),
     content: z.string(),
     model: z.string().optional().nullable(),
-    intent: z.enum(["RAG", "DIRECT", "CLASSIFICATION"]).optional().nullable(),
+    intent: z.enum(MessageIntent).optional().nullable(),
     sources: z.array(ChatSourceSchema).optional().nullable(),
     createdAt: z.iso.datetime(),
   })

@@ -29,7 +29,7 @@ export default function AdminDocumentsPage() {
   )
 
   // Verification simple du rôle
-  if (!isPending && session?.user.role !== UserRole.ADMIN) {
+  if (!isPending && session?.user.role !== UserRole.admin) {
     router.push("/")
     return null
   }

@@ -17,4 +17,6 @@ export interface Session {
   ipAddress?: string | null
   /** @nullable */
   userAgent?: string | null
+  /** @nullable */
+  impersonatedBy?: string | null
 }

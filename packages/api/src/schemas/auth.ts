@@ -9,8 +9,8 @@ extendZodWithOpenApi(z)
  * Matches the UserRole enum in the database.
  */
 export const UserRole = {
-  ADMIN: "ADMIN",
-  USER: "USER",
+  admin: "admin",
+  user: "user",
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
@@ -25,15 +25,15 @@ export const UserSchema = z
     email: z.email(),
     emailVerified: z.boolean(),
     image: z.url().nullable().optional(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
     role: z
       .enum(UserRole)
       .optional()
       .openapi({ enum: Object.values(UserRole) }),
     banned: z.boolean().nullable().optional(),
     banReason: z.string().nullable().optional(),
-    banExpires: z.date().nullable().optional(),
+    banExpires: z.iso.datetime().nullable().optional(),
   })
   .openapi("User")
 
@@ -44,12 +44,13 @@ export const SessionSchema = z
   .object({
     id: z.uuid(),
     userId: z.uuid(),
-    expiresAt: z.date(),
+    expiresAt: z.iso.datetime(),
     token: z.string(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
     ipAddress: z.string().nullable().optional(),
     userAgent: z.string().nullable().optional(),
+    impersonatedBy: z.string().nullable().optional(),
   })
   .openapi("Session")
 

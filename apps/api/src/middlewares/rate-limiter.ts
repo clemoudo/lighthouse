@@ -3,28 +3,23 @@ import type { Request } from "express"
 import { logger } from "@repo/logger"
 
 /**
- * Normalizes the client IP by removing IPv6 prefixes and potential port numbers.
- */
-const getClientIp = (req: Request): string => {
-  const ip = req.ip || req.socket.remoteAddress || "0.0.0.0"
-  // Remove IPv6 prefix and strip port if present (some proxies append it)
-  return ip.replace(/^::ffff:/, "").replace(/:\d+$/, "")
-}
-
-/**
  * Whitelist for localhost and private networks (Docker gateway)
  * to allow healthchecks and local development.
  */
 const isLocalhost = (req: Request) => {
-  const cleanIp = getClientIp(req)
+  const ip = req.ip || "0.0.0.0"
 
   return (
-    cleanIp === "127.0.0.1" ||
-    cleanIp === "::1" ||
+    ip === "127.0.0.1" ||
+    ip === "::ffff:127.0.0.1" ||
+    ip === "::1" ||
     // Private ranges common in Docker / Local networks
-    cleanIp.startsWith("172.") ||
-    cleanIp.startsWith("192.168.") ||
-    cleanIp.startsWith("10.")
+    ip.startsWith("172.") ||
+    ip.startsWith("::ffff:172.") ||
+    ip.startsWith("192.168.") ||
+    ip.startsWith("::ffff:192.168.") ||
+    ip.startsWith("10.") ||
+    ip.startsWith("::ffff:10.")
   )
 }
 
@@ -34,13 +29,12 @@ const isLocalhost = (req: Request) => {
  */
 export const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  limit: 100,
   standardHeaders: true,
   legacyHeaders: false,
   skip: isLocalhost,
-  keyGenerator: getClientIp,
   handler: (req, res, _next, options) => {
-    logger.warn(`[RATE LIMIT EXCEEDED] IP: ${getClientIp(req)} tried to access ${req.path}`)
+    logger.warn(`[RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
     res.status(options.statusCode).json({
       error: "Too Many Requests",
       message: options.message,
@@ -54,13 +48,12 @@ export const apiRateLimiter = rateLimit({
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  limit: 5,
   standardHeaders: true,
   legacyHeaders: false,
   skip: isLocalhost,
-  keyGenerator: getClientIp,
   handler: (req, res, _next, options) => {
-    logger.warn(`[AUTH RATE LIMIT EXCEEDED] IP: ${getClientIp(req)} tried to access ${req.path}`)
+    logger.warn(`[AUTH RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
     res.status(options.statusCode).json({
       error: "Too Many Requests",
       message: "Trop de tentatives. Veuillez réessayer plus tard.",
@@ -74,15 +67,12 @@ export const authRateLimiter = rateLimit({
  */
 export const expensiveRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
+  limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
   skip: isLocalhost,
-  keyGenerator: getClientIp,
   handler: (req, res, _next, options) => {
-    logger.warn(
-      `[EXPENSIVE RATE LIMIT EXCEEDED] IP: ${getClientIp(req)} tried to access ${req.path}`,
-    )
+    logger.warn(`[EXPENSIVE RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
     res.status(options.statusCode).json({
       error: "Too Many Requests",
       message: "Limite de requêtes atteinte pour cette opération coûteuse. Veuillez patienter.",

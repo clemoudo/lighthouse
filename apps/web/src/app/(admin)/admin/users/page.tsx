@@ -185,8 +185,8 @@ export default function AdminUsersPage() {
         key: "role",
         render: (role) => (
           <Tag
-            color={role === UserRole.ADMIN ? "gold" : "default"}
-            icon={role === UserRole.ADMIN ? <Shield size={12} /> : null}
+            color={role === UserRole.admin ? "gold" : "default"}
+            icon={role === UserRole.admin ? <Shield size={12} /> : null}
           >
             {role?.toUpperCase()}
           </Tag>

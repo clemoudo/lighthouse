@@ -166,7 +166,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     setMounted(true)
   }, [])
 
-  const isAdmin = mounted && session?.user.role === UserRole.ADMIN
+  const isAdmin = mounted && session?.user.role === UserRole.admin
 
   const renderLink = (item: NavItem) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")

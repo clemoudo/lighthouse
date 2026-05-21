@@ -45,8 +45,8 @@
           "role": {
             "type": "string",
             "enum": [
-              "ADMIN",
-              "USER"
+              "admin",
+              "user"
             ]
           },
           "banned": {
@@ -119,6 +119,10 @@
             "nullable": true
           },
           "userAgent": {
+            "type": "string",
+            "nullable": true
+          },
+          "impersonatedBy": {
             "type": "string",
             "nullable": true
           }
@@ -247,8 +251,8 @@
           "role": {
             "type": "string",
             "enum": [
-              "USER",
-              "ASSISTANT"
+              "user",
+              "assistant"
             ]
           },
           "content": {

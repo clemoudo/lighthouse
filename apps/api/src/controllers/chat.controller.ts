@@ -153,7 +153,7 @@ export const handleChat = async (req: Request, res: Response) => {
     if (messages && messages.length > 0) {
       await chatService.saveMessage({
         conversationId,
-        role: MessageRole.USER,
+        role: MessageRole.user,
         content: query,
       })
     }
@@ -213,7 +213,7 @@ export const handleChat = async (req: Request, res: Response) => {
 
             await chatService.saveMessage({
               conversationId,
-              role: MessageRole.ASSISTANT,
+              role: MessageRole.assistant,
               content: text,
               model,
               intent: needsRAG ? MessageIntent.RAG : MessageIntent.DIRECT,
