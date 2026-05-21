@@ -1,19 +1,18 @@
 "use client"
 
 import React, { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider, App } from "antd"
-import { Mail, Lock, ArrowRight, Send } from "lucide-react"
+import { Mail, Lock, ArrowRight, Send, UserPlus } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
-import { signIn, sendVerificationEmail } from "@/lib/auth-client"
+import { authClient, signIn, sendVerificationEmail } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
 
 const { Title, Text } = Typography
 
-// Corrected Zod 4 Schema
 const signInSchema = z.object({
   email: z.string().min(1, "L'email est requis").email("Veuillez saisir un email valide"),
   password: z.string().min(1, "Le mot de passe est requis"),
@@ -23,15 +22,19 @@ const signInSchema = z.object({
 export default function SignInPage() {
   const { message } = App.useApp()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { refetch } = useAuth()
-  const [error, setError] = useState<string | null>(null)
+
+  const [error, setError] = useState<React.ReactNode | null>(null)
   const [isPending, setIsPending] = useState(false)
   const [isUnverified, setIsUnverified] = useState(false)
   const [resendPending, setResendPending] = useState(false)
 
+  const initialEmail = searchParams.get("email") || ""
+
   const form = useForm({
     defaultValues: {
-      email: "",
+      email: initialEmail,
       password: "",
       remember: true,
     },
@@ -54,11 +57,31 @@ export default function SignInPage() {
           if (signInError.status === 403) {
             setIsUnverified(true)
           } else {
-            setError(signInError.message || "Email ou mot de passe incorrect.")
+            // Check if user exists for intelligent redirection
+            const { data: checkData } = await authClient.checkEmail({ email: value.email })
+
+            if (checkData && !checkData.exists) {
+              setError(
+                <div className="flex flex-col gap-2">
+                  <Text strong>Cet e-mail n'est pas reconnu.</Text>
+                  <Text className="text-sm">Il semble que vous n'ayez pas encore de compte.</Text>
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<UserPlus size={14} />}
+                    onClick={() => router.push(`/sign-up?email=${encodeURIComponent(value.email)}`)}
+                    className="w-fit"
+                  >
+                    Créer un compte
+                  </Button>
+                </div>,
+              )
+            } else {
+              setError(signInError.message || "Email ou mot de passe incorrect.")
+            }
           }
           setIsPending(false)
         } else {
-          // Refetch Better-Auth session context
           await refetch()
           router.push("/")
         }
@@ -99,7 +122,7 @@ export default function SignInPage() {
         <Text type="secondary">Ravi de vous revoir ! Connectez-vous à votre compte.</Text>
       </div>
 
-      {error && <Alert title="Erreur" description={error} type="error" showIcon className="mb-4" />}
+      {error && <Alert description={error} type="error" showIcon className="mb-4" />}
 
       {isUnverified && (
         <Alert

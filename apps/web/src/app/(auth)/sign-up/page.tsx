@@ -2,15 +2,17 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, Input, Button, Alert, Typography, Form, Divider, Result } from "antd"
-import { User, Mail, Lock, ArrowRight } from "lucide-react"
+import { User, Mail, Lock, ArrowRight, ShieldCheck, LogIn } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
-import { signUp } from "@/lib/auth-client"
+import { authClient, signUp, signIn } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
 
 const { Title, Text } = Typography
+const { OTP } = Input
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -19,15 +21,27 @@ const signUpSchema = z.object({
 })
 
 export default function SignUpPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { refetch } = useAuth()
-  const [error, setError] = useState<string | null>(null)
+
+  const [error, setError] = useState<React.ReactNode | null>(null)
   const [isPending, setIsPending] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [showOtp, setShowOtp] = useState(false)
+  const [otpValue, setOtpValue] = useState("")
+  const [isVerifying, setIsVerifying] = useState(false)
+
+  // States to keep info for automatic sign-in
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+  const initialEmail = searchParams.get("email") || ""
 
   const form = useForm({
     defaultValues: {
       name: "",
-      email: "",
+      email: initialEmail,
       password: "",
     },
     validators: {
@@ -36,6 +50,8 @@ export default function SignUpPage() {
     onSubmit: async ({ value }) => {
       setError(null)
       setIsPending(true)
+      setEmail(value.email)
+      setPassword(value.password)
 
       try {
         const { error: signUpError } = await signUp.email({
@@ -46,12 +62,29 @@ export default function SignUpPage() {
         })
 
         if (signUpError) {
-          setError(signUpError.message || "Une erreur est survenue lors de l'inscription.")
+          if (signUpError.code === "USER_ALREADY_EXISTS") {
+            setError(
+              <div className="flex flex-col gap-2">
+                <Text strong>Cet e-mail est déjà utilisé.</Text>
+                <Text className="text-sm">Il semble que vous ayez déjà un compte.</Text>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<LogIn size={14} />}
+                  onClick={() => router.push(`/sign-in?email=${encodeURIComponent(value.email)}`)}
+                  className="w-fit"
+                >
+                  Se connecter
+                </Button>
+              </div>,
+            )
+          } else {
+            setError(signUpError.message || "Une erreur est survenue lors de l'inscription.")
+          }
           setIsPending(false)
         } else {
-          setIsSuccess(true)
-          // Refetch Better-Auth session context
-          await refetch()
+          setShowOtp(true)
+          setIsPending(false)
         }
       } catch (err) {
         setError(`Une erreur inattendue est survenue : ${err}`)
@@ -60,29 +93,100 @@ export default function SignUpPage() {
     },
   })
 
+  const handleVerifyOtp = async () => {
+    if (otpValue.length < 6) return
+
+    setError(null)
+    setIsVerifying(true)
+
+    try {
+      const { error: verifyError } = await authClient.emailOtp.verifyEmail({
+        email: email,
+        otp: otpValue,
+      })
+
+      if (verifyError) {
+        setError(verifyError.message || "Code invalide ou expiré.")
+        setIsVerifying(false)
+      } else {
+        // Automatic sign-in after verification
+        const { error: signInError } = await signIn.email({
+          email,
+          password,
+          callbackURL: "/",
+        })
+
+        if (signInError) {
+          // If auto-signin fails (shouldn't happen here), redirect to sign-in anyway
+          router.push(`/sign-in?email=${encodeURIComponent(email)}`)
+        } else {
+          setIsSuccess(true)
+          await refetch()
+          setTimeout(() => {
+            router.push("/")
+          }, 2000)
+        }
+      }
+    } catch (err) {
+      setError(`Erreur lors de la vérification : ${err}`)
+      setIsVerifying(false)
+    }
+  }
+
   if (isSuccess) {
     return (
       <Card className="shadow-lg">
         <Result
           status="success"
           title="Inscription réussie !"
-          subTitle={
-            <div className="flex flex-col gap-2">
-              <Text>
-                Un e-mail de vérification a été envoyé à l'adresse indiquée. Veuillez cliquer sur le
-                lien qu'il contient pour activer votre compte.
-              </Text>
-              <Text type="secondary" className="text-xs">
-                N'oubliez pas de vérifier vos courriers indésirables (spams).
-              </Text>
-            </div>
-          }
-          extra={[
-            <Link href="/sign-in" key="login">
-              <Button type="primary">Retour à la connexion</Button>
-            </Link>,
-          ]}
+          subTitle="Votre compte a été vérifié avec succès. Redirection vers l'accueil..."
         />
+      </Card>
+    )
+  }
+
+  if (showOtp) {
+    return (
+      <Card className="shadow-lg">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck size={24} />
+          </div>
+          <Title level={2} style={{ margin: 0 }}>
+            Vérifiez votre e-mail
+          </Title>
+          <Text type="secondary">
+            Nous avons envoyé un code de 6 chiffres à <strong>{email}</strong>
+          </Text>
+        </div>
+
+        {error && <Alert description={error} type="error" showIcon className="mb-4" />}
+
+        <Form layout="vertical" size="large">
+          <Form.Item label="Code de vérification">
+            <OTP
+              value={otpValue}
+              onChange={(e) => setOtpValue(e)}
+              length={6}
+              className="text-center text-2xl tracking-[10px]"
+              autoFocus
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            block
+            onClick={handleVerifyOtp}
+            loading={isVerifying}
+            disabled={otpValue.length < 6}
+          >
+            Vérifier le code
+          </Button>
+
+          <Button type="link" block onClick={() => setShowOtp(false)} className="mt-2">
+            Retour
+          </Button>
+        </Form>
       </Card>
     )
   }
@@ -96,7 +200,7 @@ export default function SignUpPage() {
         <Text type="secondary">Inscrivez-vous pour accéder au programme scolaire</Text>
       </div>
 
-      {error && <Alert title="Erreur" description={error} type="error" showIcon className="mb-4" />}
+      {error && <Alert description={error} type="error" showIcon className="mb-4" />}
 
       <Form
         layout="vertical"
