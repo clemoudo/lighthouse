@@ -2,8 +2,8 @@
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport, isDataUIPart } from "ai"
-import { Input, Button, Typography, Space, Flex, Avatar, ConfigProvider, theme } from "antd"
-import { Send, User, AlertCircle } from "lucide-react"
+import { Input, Button, Typography, Space, Flex, Avatar, ConfigProvider, theme, Drawer } from "antd"
+import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen } from "lucide-react"
 import { env } from "@/env"
 import { useEffect, useRef, useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,7 @@ import { Citations } from "@/components/assistant/citations"
 import { type ChatSource } from "@repo/api"
 import { HistorySidebar } from "@/components/assistant/history-sidebar"
 import { getChatConversationsId } from "@/api/generated/lighthouse"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const { Text, Title, Paragraph } = Typography
 
@@ -93,6 +94,17 @@ const AssistantPage = () => {
   const { data: session } = useSession()
   const [input, setInput] = useState("")
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
+
+  const isMobile = useIsMobile()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false)
+    } else {
+      setIsSidebarOpen(true)
+    }
+  }, [isMobile])
 
   const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
 
@@ -181,8 +193,18 @@ const AssistantPage = () => {
   }
 
   return (
-    <Flex className="h-full w-full overflow-hidden bg-layout">
+    <Flex className="h-full w-full overflow-hidden bg-layout relative">
       <Flex vertical className="flex-1 relative overflow-hidden h-full">
+        {/* Toggle Sidebar Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            type="text"
+            icon={isSidebarOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="text-text/60 hover:text-text bg-container/50 backdrop-blur-sm shadow-sm"
+          />
+        </div>
+
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
           <Space orientation="vertical" size={32} className="w-full max-w-4xl mx-auto">
@@ -335,11 +357,44 @@ const AssistantPage = () => {
         </div>
       </Flex>
 
-      <HistorySidebar
-        currentConversationId={conversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewChat={handleNewChat}
-      />
+      {/* Sidebar Area */}
+      {isMobile ? (
+        <Drawer
+          title="Historique"
+          placement="right"
+          onClose={() => setIsSidebarOpen(false)}
+          open={isSidebarOpen}
+          width={320}
+          styles={{ body: { padding: 0 } }}
+        >
+          <HistorySidebar
+            currentConversationId={conversationId}
+            onSelectConversation={(id) => {
+              handleSelectConversation(id)
+              setIsSidebarOpen(false)
+            }}
+            onNewChat={() => {
+              handleNewChat()
+              setIsSidebarOpen(false)
+            }}
+          />
+        </Drawer>
+      ) : (
+        <div
+          className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden h-full border-l border-border bg-container shrink-0",
+            isSidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-none",
+          )}
+        >
+          <div className="w-72 h-full">
+            <HistorySidebar
+              currentConversationId={conversationId}
+              onSelectConversation={handleSelectConversation}
+              onNewChat={handleNewChat}
+            />
+          </div>
+        </div>
+      )}
     </Flex>
   )
 }

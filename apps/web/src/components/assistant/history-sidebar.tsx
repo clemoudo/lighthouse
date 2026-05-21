@@ -37,7 +37,7 @@ export const HistorySidebar = ({
   }
 
   return (
-    <Flex vertical className="h-full w-72 border-l border-border bg-container">
+    <Flex vertical className="h-full w-72 bg-container">
       <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
         <Flex align="center" gap={8} className="px-3 py-4 opacity-50">
           <History size={14} />
