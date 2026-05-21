@@ -4,6 +4,7 @@ import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@repo/db"
 import { sendEmail } from "../services/email.service"
+import { env } from "../env"
 import * as z from "zod"
 
 export const auth = betterAuth({
@@ -23,7 +24,19 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
-  socialProviders: {},
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID || "",
+      clientSecret: env.GOOGLE_CLIENT_SECRET || "",
+    },
+    microsoft: {
+      clientId: env.MICROSOFT_CLIENT_ID || "",
+      clientSecret: env.MICROSOFT_CLIENT_SECRET || "",
+      mapProfileToUser: (profile) => ({
+        email: profile.email ?? `${profile.oid}@entra.placeholder.local`,
+      }),
+    },
+  },
   plugins: [
     admin(),
     emailOTP({
