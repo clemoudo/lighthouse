@@ -8,7 +8,13 @@ import {
   ListDocumentsResponseSchema,
   IngestDocumentResponseSchema,
 } from "./schemas/document"
-import { ChatRequestSchema, ChatResponseSchema } from "./schemas/chat"
+import {
+  ChatRequestSchema,
+  ChatResponseSchema,
+  ConversationSchema,
+  MessageSchema,
+  ListConversationsResponseSchema,
+} from "./schemas/chat"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
@@ -17,6 +23,8 @@ const registry = new OpenAPIRegistry()
 registry.register("User", UserSchema)
 registry.register("AuthSession", AuthSessionSchema)
 registry.register("Document", DocumentSchema)
+registry.register("Conversation", ConversationSchema)
+registry.register("Message", MessageSchema)
 
 // --- Document Routes ---
 registry.registerPath({
@@ -128,7 +136,7 @@ registry.registerPath({
   },
 })
 
-// --- Chat Route ---
+// --- Chat Routes ---
 registry.registerPath({
   method: "post",
   path: "/chat",
@@ -152,6 +160,70 @@ registry.registerPath({
       },
     },
     401: { description: "Unauthorized" },
+  },
+})
+
+registry.registerPath({
+  method: "get",
+  path: "/chat/conversations",
+  summary: "List all conversations for the user",
+  responses: {
+    200: {
+      description: "Returns a list of conversations",
+      content: {
+        "application/json": {
+          schema: ListConversationsResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+  },
+})
+
+registry.registerPath({
+  method: "get",
+  path: "/chat/conversations/{id}",
+  summary: "Get a specific conversation with messages",
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string", format: "uuid" },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Returns the conversation object",
+      content: {
+        "application/json": {
+          schema: ConversationSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    404: { description: "Conversation not found" },
+  },
+})
+
+registry.registerPath({
+  method: "delete",
+  path: "/chat/conversations/{id}",
+  summary: "Delete a conversation",
+  parameters: [
+    {
+      name: "id",
+      in: "path",
+      required: true,
+      schema: { type: "string", format: "uuid" },
+    },
+  ],
+  responses: {
+    204: {
+      description: "Conversation deleted",
+    },
+    401: { description: "Unauthorized" },
+    404: { description: "Conversation not found" },
   },
 })
 

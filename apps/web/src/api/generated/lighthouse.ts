@@ -24,12 +24,14 @@ import type {
 import type {
   ChatRequest,
   ChatResponse,
+  Conversation,
   CreateDocumentRequest,
   CreateDocumentResponse,
   DeleteDocumentsId200,
   GetStatus200,
   GetStatus503,
   IngestDocumentResponse,
+  ListConversationsResponse,
   ListDocumentsResponse,
 } from "./model"
 
@@ -604,6 +606,426 @@ export const usePostChat = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getPostChatMutationOptions(options), queryClient)
+}
+
+export type getChatConversationsResponse200 = {
+  data: ListConversationsResponse
+  status: 200
+}
+
+export type getChatConversationsResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getChatConversationsResponseSuccess = getChatConversationsResponse200 & {
+  headers: Headers
+}
+export type getChatConversationsResponseError = getChatConversationsResponse401 & {
+  headers: Headers
+}
+
+export type getChatConversationsResponse =
+  | getChatConversationsResponseSuccess
+  | getChatConversationsResponseError
+
+export const getGetChatConversationsUrl = () => {
+  return `/chat/conversations`
+}
+
+/**
+ * @summary List all conversations for the user
+ */
+export const getChatConversations = async (
+  options?: RequestInit,
+): Promise<getChatConversationsResponse> => {
+  return customFetch<getChatConversationsResponse>(getGetChatConversationsUrl(), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetChatConversationsQueryKey = () => {
+  return [`/chat/conversations`] as const
+}
+
+export const getGetChatConversationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getChatConversations>>,
+  TError = void,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatConversations>>, TError, TData>>
+  request?: SecondParameter<typeof customFetch>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetChatConversationsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getChatConversations>>> = ({ signal }) =>
+    getChatConversations({ signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getChatConversations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetChatConversationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getChatConversations>>
+>
+export type GetChatConversationsQueryError = void
+
+export function useGetChatConversations<
+  TData = Awaited<ReturnType<typeof getChatConversations>>,
+  TError = void,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversations>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatConversations>>,
+          TError,
+          Awaited<ReturnType<typeof getChatConversations>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatConversations<
+  TData = Awaited<ReturnType<typeof getChatConversations>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversations>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatConversations>>,
+          TError,
+          Awaited<ReturnType<typeof getChatConversations>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatConversations<
+  TData = Awaited<ReturnType<typeof getChatConversations>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversations>>, TError, TData>
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List all conversations for the user
+ */
+
+export function useGetChatConversations<
+  TData = Awaited<ReturnType<typeof getChatConversations>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversations>>, TError, TData>
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetChatConversationsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type getChatConversationsIdResponse200 = {
+  data: Conversation
+  status: 200
+}
+
+export type getChatConversationsIdResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getChatConversationsIdResponse404 = {
+  data: void
+  status: 404
+}
+
+export type getChatConversationsIdResponseSuccess = getChatConversationsIdResponse200 & {
+  headers: Headers
+}
+export type getChatConversationsIdResponseError = (
+  | getChatConversationsIdResponse401
+  | getChatConversationsIdResponse404
+) & {
+  headers: Headers
+}
+
+export type getChatConversationsIdResponse =
+  | getChatConversationsIdResponseSuccess
+  | getChatConversationsIdResponseError
+
+export const getGetChatConversationsIdUrl = (id: string) => {
+  return `/chat/conversations/${id}`
+}
+
+/**
+ * @summary Get a specific conversation with messages
+ */
+export const getChatConversationsId = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getChatConversationsIdResponse> => {
+  return customFetch<getChatConversationsIdResponse>(getGetChatConversationsIdUrl(id), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetChatConversationsIdQueryKey = (id: string) => {
+  return [`/chat/conversations/${id}`] as const
+}
+
+export const getGetChatConversationsIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getChatConversationsId>>,
+  TError = void,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData>
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetChatConversationsIdQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getChatConversationsId>>> = ({ signal }) =>
+    getChatConversationsId(id, { signal, ...requestOptions })
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+}
+
+export type GetChatConversationsIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getChatConversationsId>>
+>
+export type GetChatConversationsIdQueryError = void
+
+export function useGetChatConversationsId<
+  TData = Awaited<ReturnType<typeof getChatConversationsId>>,
+  TError = void,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatConversationsId>>,
+          TError,
+          Awaited<ReturnType<typeof getChatConversationsId>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatConversationsId<
+  TData = Awaited<ReturnType<typeof getChatConversationsId>>,
+  TError = void,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatConversationsId>>,
+          TError,
+          Awaited<ReturnType<typeof getChatConversationsId>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatConversationsId<
+  TData = Awaited<ReturnType<typeof getChatConversationsId>>,
+  TError = void,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData>
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a specific conversation with messages
+ */
+
+export function useGetChatConversationsId<
+  TData = Awaited<ReturnType<typeof getChatConversationsId>>,
+  TError = void,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getChatConversationsId>>, TError, TData>
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetChatConversationsIdQueryOptions(id, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type deleteChatConversationsIdResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteChatConversationsIdResponse401 = {
+  data: void
+  status: 401
+}
+
+export type deleteChatConversationsIdResponse404 = {
+  data: void
+  status: 404
+}
+
+export type deleteChatConversationsIdResponseSuccess = deleteChatConversationsIdResponse204 & {
+  headers: Headers
+}
+export type deleteChatConversationsIdResponseError = (
+  | deleteChatConversationsIdResponse401
+  | deleteChatConversationsIdResponse404
+) & {
+  headers: Headers
+}
+
+export type deleteChatConversationsIdResponse =
+  | deleteChatConversationsIdResponseSuccess
+  | deleteChatConversationsIdResponseError
+
+export const getDeleteChatConversationsIdUrl = (id: string) => {
+  return `/chat/conversations/${id}`
+}
+
+/**
+ * @summary Delete a conversation
+ */
+export const deleteChatConversationsId = async (
+  id: string,
+  options?: RequestInit,
+): Promise<deleteChatConversationsIdResponse> => {
+  return customFetch<deleteChatConversationsIdResponse>(getDeleteChatConversationsIdUrl(id), {
+    ...options,
+    method: "DELETE",
+  })
+}
+
+export const getDeleteChatConversationsIdMutationOptions = <
+  TError = void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteChatConversationsId>>,
+    TError,
+    { id: string },
+    TContext
+  >
+  request?: SecondParameter<typeof customFetch>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteChatConversationsId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteChatConversationsId"]
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteChatConversationsId>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {}
+
+    return deleteChatConversationsId(id, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteChatConversationsIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteChatConversationsId>>
+>
+
+export type DeleteChatConversationsIdMutationError = void
+
+/**
+ * @summary Delete a conversation
+ */
+export const useDeleteChatConversationsId = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteChatConversationsId>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteChatConversationsId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteChatConversationsIdMutationOptions(options), queryClient)
 }
 
 export type getStatusResponse200 = {

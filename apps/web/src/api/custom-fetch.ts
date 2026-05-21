@@ -67,7 +67,15 @@ export const customFetch = async <T>(
   }
 
   // 4. Extraction des données
-  const responseData: unknown = await response.json()
+  let responseData: unknown = null
+
+  // On ne tente de parser le JSON que s'il y a du contenu (évite l'erreur sur 204 No Content)
+  if (
+    response.status !== 204 &&
+    response.headers.get("content-type")?.includes("application/json")
+  ) {
+    responseData = await response.json()
+  }
 
   // 5. Fulfillment du contrat Orval.
   const result: OrvalResponse = {

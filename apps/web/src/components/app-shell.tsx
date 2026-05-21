@@ -209,7 +209,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col bg-primary">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-8">
-        <Image src="/lighthouse.png" alt="Lighthouse" width={44} height={44} className="shrink-0" />
+        <Image
+          src="/lighthouse-64.png"
+          alt="Lighthouse"
+          width={44}
+          height={44}
+          className="shrink-0"
+        />
         <div className="flex flex-col">
           <Title level={4} className="m-0! text-white! font-bold!">
             Lighthouse

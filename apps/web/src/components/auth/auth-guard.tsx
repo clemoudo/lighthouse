@@ -15,7 +15,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (isPending) {
     return (
       <div className="flex h-[80vh] w-full items-center justify-center">
-        <Spin size="large" tip="Vérification de l'authentification..." />
+        <Spin size="large" description="Vérification de l'authentification..." />
       </div>
     )
   }

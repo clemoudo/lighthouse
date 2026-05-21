@@ -1,8 +1,9 @@
-import { type ChunkSearchResult } from "@repo/db"
+import { prisma, MessageRole, MessageIntent, type ChunkSearchResult } from "@repo/db"
 import { type ChatSource } from "@repo/api"
-import { generateText, Output } from "ai"
+import { generateText, Output, type ModelMessage } from "ai"
 import { mistral } from "@ai-sdk/mistral"
 import { z } from "zod"
+import { logger } from "@repo/logger"
 
 /**
  * Service to handle chat-related logic like prompt assembly and RAG formatting.
@@ -114,6 +115,72 @@ export class ChatService {
       id: chunk.id,
       source: chunk.metadata.source,
       page: chunk.metadata.pdfPageNumber,
+    }))
+  }
+
+  /**
+   * Persists a message to the database.
+   */
+  async saveMessage(data: {
+    conversationId: string
+    role: MessageRole
+    content: string
+    model?: string
+    intent?: MessageIntent
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
+    sources?: ChatSource[]
+  }) {
+    try {
+      const message = await prisma.message.create({
+        data: {
+          conversationId: data.conversationId,
+          role: data.role,
+          content: data.content,
+          model: data.model,
+          intent: data.intent,
+          promptTokens: data.promptTokens,
+          completionTokens: data.completionTokens,
+          totalTokens: data.totalTokens,
+          sources: data.sources,
+        },
+      })
+
+      // Update title if it's the first assistant response
+      if (data.role === MessageRole.ASSISTANT) {
+        const messageCount = await prisma.message.count({
+          where: { conversationId: data.conversationId },
+        })
+        if (messageCount <= 2 && data.content) {
+          const title = data.content.split(/[.!?]/)[0].substring(0, 50).trim()
+          await prisma.conversation.update({
+            where: { id: data.conversationId },
+            data: { title: title || "Discussion" },
+          })
+        }
+      }
+
+      return message
+    } catch (err) {
+      logger.error("[CHAT_SERVICE] Failed to save message", err)
+      throw err
+    }
+  }
+
+  /**
+   * Loads conversation history from the database.
+   */
+  async getHistory(conversationId: string, limit = 10): Promise<ModelMessage[]> {
+    const dbMessages = await prisma.message.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    })
+
+    return dbMessages.reverse().map((m) => ({
+      role: m.role.toLowerCase() as "user" | "assistant",
+      content: m.content,
     }))
   }
 }
