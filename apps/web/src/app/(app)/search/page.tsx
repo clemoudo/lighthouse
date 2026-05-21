@@ -8,7 +8,7 @@ import { searchCompetences, type Competence } from "@/lib/data"
 const { Text, Title } = Typography
 const { Search } = Input
 
-function StatusChip({ status }: { status: Competence["status"] }) {
+const StatusChip = ({ status }: { status: Competence["status"] }) => {
   if (status === "acquired") {
     return <Tag color="success">Acquis</Tag>
   }
@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: Competence["status"] }) {
   return null
 }
 
-export default function RecherchePage() {
+const RecherchePage = () => {
   const [query, setQuery] = useState("")
   const [hasSearched, setHasSearched] = useState(false)
 
@@ -173,3 +173,5 @@ export default function RecherchePage() {
     </Flex>
   )
 }
+
+export default RecherchePage

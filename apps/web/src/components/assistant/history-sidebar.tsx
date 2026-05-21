@@ -17,11 +17,11 @@ interface HistorySidebarProps {
   onNewChat: () => void
 }
 
-export function HistorySidebar({
+export const HistorySidebar = ({
   currentConversationId,
   onSelectConversation,
   onNewChat,
-}: HistorySidebarProps) {
+}: HistorySidebarProps) => {
   const { data: conversationsResponse, isLoading, refetch } = useGetChatConversations()
   const deleteMutation = useDeleteChatConversationsId()
 

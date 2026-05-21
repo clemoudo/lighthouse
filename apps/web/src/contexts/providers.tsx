@@ -27,7 +27,7 @@ interface ApiError {
   }
 }
 
-function AntdThemeProvider({ children }: { children: ReactNode }) {
+const AntdThemeProvider = ({ children }: { children: ReactNode }) => {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -69,7 +69,7 @@ function AntdThemeProvider({ children }: { children: ReactNode }) {
  * Component to catch and display global errors via Ant Design App context
  * It populates the global references for use outside of React components (like QueryClient)
  */
-function GlobalErrorHandler() {
+const GlobalErrorHandler = () => {
   const staticApp = App.useApp()
 
   useEffect(() => {
@@ -81,7 +81,7 @@ function GlobalErrorHandler() {
   return null
 }
 
-export function Providers({ children }: Readonly<{ children: ReactNode }>) {
+export const Providers = ({ children }: Readonly<{ children: ReactNode }>) => {
   const [queryClient] = useState(
     () =>
       new QueryClient({

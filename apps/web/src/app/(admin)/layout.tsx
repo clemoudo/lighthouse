@@ -1,10 +1,12 @@
 import { AppShell } from "@/components/app-shell"
 import { AuthGuard } from "@/components/auth/auth-guard"
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <AuthGuard>
       <AppShell>{children}</AppShell>
     </AuthGuard>
   )
 }
+
+export default AdminLayout

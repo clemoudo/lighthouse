@@ -8,7 +8,7 @@ import { CurriculumSkeleton } from "@/components/skeletons"
 
 const { Text, Title } = Typography
 
-export default function CurriculumPage() {
+const CurriculumPage = () => {
   const { data: documentsResponse, isLoading } = useGetDocuments()
 
   const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
@@ -81,3 +81,5 @@ export default function CurriculumPage() {
     </>
   )
 }
+
+export default CurriculumPage

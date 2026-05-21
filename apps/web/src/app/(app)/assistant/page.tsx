@@ -42,7 +42,7 @@ const WELCOME_MESSAGE: ChatUIMessage = {
  * Component to render the markdown content of a message.
  * It uses Ant Design Typography components for consistent styling.
  */
-function MessageContent({ role, parts }: { role: string; parts: UIMessage["parts"] }) {
+const MessageContent = ({ role, parts }: { role: string; parts: UIMessage["parts"] }) => {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -88,7 +88,7 @@ function MessageContent({ role, parts }: { role: string; parts: UIMessage["parts
   )
 }
 
-export default function AssistantPage() {
+const AssistantPage = () => {
   const { resolvedTheme } = useTheme()
   const { data: session } = useSession()
   const [input, setInput] = useState("")
@@ -343,3 +343,5 @@ export default function AssistantPage() {
     </Flex>
   )
 }
+
+export default AssistantPage

@@ -23,7 +23,7 @@ type CompetenceState = {
   acquired: boolean
 }
 
-export default function SuiviPage() {
+const SuiviPage = () => {
   const [competenceStates, setCompetenceStates] = useState<Record<string, CompetenceState>>(() => {
     const initial: Record<string, CompetenceState> = {}
     domains.forEach((domain) => {
@@ -324,3 +324,5 @@ export default function SuiviPage() {
     </Flex>
   )
 }
+
+export default SuiviPage

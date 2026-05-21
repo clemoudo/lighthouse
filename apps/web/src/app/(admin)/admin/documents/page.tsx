@@ -7,11 +7,11 @@ import { PageHeader } from "@/components/page-header"
 import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
 import { useGetDocuments } from "@/api/generated/lighthouse"
-import UploadCard from "./_components/UploadCard"
-import { DocumentsTable } from "./_components/DocumentsTable"
+import UploadCard from "@/components/admin/documents/UploadCard"
+import { DocumentsTable } from "@/components/admin/documents/DocumentsTable"
 import { UserRole } from "@/api/generated/model"
 
-export default function AdminDocumentsPage() {
+const AdminDocumentsPage = () => {
   const { data: session, isPending } = useSession()
   const router = useRouter()
 
@@ -66,3 +66,5 @@ export default function AdminDocumentsPage() {
     </>
   )
 }
+
+export default AdminDocumentsPage

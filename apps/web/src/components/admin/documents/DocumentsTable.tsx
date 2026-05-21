@@ -4,7 +4,7 @@ import { Table, Space, Tag, Tooltip, Popconfirm, Button } from "antd"
 import { BrainCircuit, Loader2, RefreshCw, Trash2, CheckCircle2, AlertCircle } from "lucide-react"
 import type { Document } from "@/api/generated/model/document"
 import type { DocumentStatus } from "@/api/generated/model/documentStatus"
-import { useIngestDocument, useDeleteDocument } from "../_hooks/use-document-mutations"
+import { useIngestDocument, useDeleteDocument } from "../../../hooks/use-document-mutations"
 
 interface DocumentsTableProps {
   documents: Document[]

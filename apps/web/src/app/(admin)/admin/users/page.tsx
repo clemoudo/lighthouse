@@ -35,7 +35,7 @@ import type { ColumnsType } from "antd/es/table"
 
 const { Text } = Typography
 
-export default function AdminUsersPage() {
+const AdminUsersPage = () => {
   const { message } = App.useApp()
   const { data: session } = useSession()
 
@@ -355,3 +355,5 @@ export default function AdminUsersPage() {
     </>
   )
 }
+
+export default AdminUsersPage

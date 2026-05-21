@@ -1,89 +1,93 @@
 "use client"
 
 import React, { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Card, Input, Button, Alert, Typography, Checkbox, Form, Divider, App } from "antd"
-import { Mail, Lock, ArrowRight, Send, UserPlus } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Card, Input, Button, Alert, Typography, Form, Divider, Result } from "antd"
+import { User, Mail, Lock, ArrowRight, ShieldCheck, LogIn } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
-import { authClient, signIn, sendVerificationEmail } from "@/lib/auth-client"
+import { authClient, signUp, signIn } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
-import { FormField } from "@/components/ui/form-field"
+import { FormField } from "@/components/form-field"
 
 const { Title, Text } = Typography
+const { OTP } = Input
 
-const signInSchema = z.object({
+const signUpSchema = z.object({
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   email: z.string().min(1, "L'email est requis").email("Veuillez saisir un email valide"),
-  password: z.string().min(1, "Le mot de passe est requis"),
-  remember: z.boolean(),
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 })
 
-export default function SignInPage() {
-  const { message } = App.useApp()
+const SignUpPage = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refetch } = useAuth()
 
   const [error, setError] = useState<React.ReactNode | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const [isUnverified, setIsUnverified] = useState(false)
-  const [resendPending, setResendPending] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [showOtp, setShowOtp] = useState(false)
+  const [otpValue, setOtpValue] = useState("")
+  const [isVerifying, setIsVerifying] = useState(false)
+
+  // Only keep email for OTP step
+  const [email, setEmail] = useState("")
 
   const initialEmail = searchParams.get("email") || ""
 
   const form = useForm({
     defaultValues: {
+      name: "",
       email: initialEmail,
       password: "",
-      remember: true,
     },
     validators: {
-      onChange: signInSchema,
+      onChange: signUpSchema,
     },
     onSubmit: async ({ value }) => {
       setError(null)
-      setIsUnverified(false)
       setIsPending(true)
+      setEmail(value.email)
 
       try {
-        const { error: signInError } = await signIn.email({
+        const { error: signUpError } = await signUp.email({
           email: value.email,
           password: value.password,
+          name: value.name,
           callbackURL: "/",
         })
 
-        if (signInError) {
-          if (signInError.status === 403) {
-            setIsUnverified(true)
+        if (signUpError) {
+          if (signUpError.code === "USER_ALREADY_EXISTS") {
+            setError(
+              <div className="flex flex-col gap-2">
+                <Text strong>Cet e-mail est déjà utilisé.</Text>
+                <Text className="text-sm">Il semble que vous ayez déjà un compte.</Text>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<LogIn size={14} />}
+                  onClick={() => router.push(`/sign-in?email=${encodeURIComponent(value.email)}`)}
+                  className="w-fit"
+                >
+                  Se connecter
+                </Button>
+              </div>,
+            )
           } else {
-            // Check if user exists for intelligent redirection
-            const { data: checkData } = await authClient.checkEmail({ email: value.email })
-
-            if (checkData && !checkData.exists) {
-              setError(
-                <div className="flex flex-col gap-2">
-                  <Text strong>Cet e-mail n'est pas reconnu.</Text>
-                  <Text className="text-sm">Il semble que vous n'ayez pas encore de compte.</Text>
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<UserPlus size={14} />}
-                    onClick={() => router.push(`/sign-up?email=${encodeURIComponent(value.email)}`)}
-                    className="w-fit"
-                  >
-                    Créer un compte
-                  </Button>
-                </div>,
-              )
-            } else {
-              setError(signInError.message || "Email ou mot de passe incorrect.")
-            }
+            setError(signUpError.message || "Une erreur est survenue lors de l'inscription.")
           }
           setIsPending(false)
         } else {
-          await refetch()
-          router.push("/")
+          // Manual send OTP with type 'sign-in' to allow session creation later
+          await authClient.emailOtp.sendVerificationOtp({
+            email: value.email,
+            type: "sign-in",
+          })
+          setShowOtp(true)
+          setIsPending(false)
         }
       } catch (err) {
         setError(`Une erreur inattendue est survenue : ${err}`)
@@ -92,63 +96,103 @@ export default function SignInPage() {
     },
   })
 
-  const handleResendEmail = async () => {
-    setResendPending(true)
+  const handleVerifyOtp = async () => {
+    if (otpValue.length < 6) return
+
+    setError(null)
+    setIsVerifying(true)
+
     try {
-      const { error: resendError } = await sendVerificationEmail({
-        email: form.getFieldValue("email"),
-        callbackURL: "/",
+      // Use signIn.emailOtp: it verifies the email AND logs the user in (creates session)
+      const { error: signInError } = await authClient.signIn.emailOtp({
+        email: email,
+        otp: otpValue,
       })
 
-      if (resendError) {
-        message.error(resendError.message || "Erreur lors de l'envoi de l'email.")
+      if (signInError) {
+        setError(signInError.message || "Code invalide ou expiré.")
+        setIsVerifying(false)
       } else {
-        message.success("Email de vérification envoyé avec succès !")
+        setIsSuccess(true)
+        await refetch()
+        setTimeout(() => {
+          router.push("/")
+        }, 2000)
       }
     } catch (err) {
-      message.error("Une erreur est survenue.")
-      console.error(err)
-    } finally {
-      setResendPending(false)
+      setError(`Erreur lors de la vérification : ${err}`)
+      setIsVerifying(false)
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <Card className="shadow-lg">
+        <Result
+          status="success"
+          title="Inscription réussie !"
+          subTitle="Votre compte a été vérifié avec succès. Redirection vers l'accueil..."
+        />
+      </Card>
+    )
+  }
+
+  if (showOtp) {
+    return (
+      <Card className="shadow-lg">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck size={24} />
+          </div>
+          <Title level={2} style={{ margin: 0 }}>
+            Vérifiez votre e-mail
+          </Title>
+          <Text type="secondary">
+            Nous avons envoyé un code de 6 chiffres à <strong>{email}</strong>
+          </Text>
+        </div>
+
+        {error && <Alert description={error} type="error" showIcon className="mb-4" />}
+
+        <Form layout="vertical" size="large">
+          <Form.Item label="Code de vérification">
+            <OTP
+              value={otpValue}
+              onChange={(e) => setOtpValue(e)}
+              length={6}
+              className="flex justify-center"
+              autoFocus
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            block
+            onClick={handleVerifyOtp}
+            loading={isVerifying}
+            disabled={otpValue.length < 6}
+          >
+            Vérifier le code
+          </Button>
+
+          <Button type="link" block onClick={() => setShowOtp(false)} className="mt-2">
+            Retour
+          </Button>
+        </Form>
+      </Card>
+    )
   }
 
   return (
     <Card className="shadow-lg">
       <div className="mb-6 text-center">
         <Title level={2} style={{ margin: 0 }}>
-          Connexion
+          Créer un compte
         </Title>
-        <Text type="secondary">Ravi de vous revoir ! Connectez-vous à votre compte.</Text>
+        <Text type="secondary">Inscrivez-vous pour accéder au programme scolaire</Text>
       </div>
 
       {error && <Alert description={error} type="error" showIcon className="mb-4" />}
-
-      {isUnverified && (
-        <Alert
-          message="Email non vérifié"
-          description={
-            <div className="flex flex-col gap-3">
-              <Text className="text-sm">
-                Votre adresse e-mail n'a pas encore été vérifiée. Veuillez consulter votre boîte de
-                réception ou cliquer sur le bouton ci-dessous pour renvoyer le lien.
-              </Text>
-              <Button
-                size="small"
-                icon={<Send size={14} />}
-                onClick={handleResendEmail}
-                loading={resendPending}
-                className="w-fit"
-              >
-                Renvoyer l'email
-              </Button>
-            </div>
-          }
-          type="warning"
-          showIcon
-          className="mb-4"
-        />
-      )}
 
       <Form
         layout="vertical"
@@ -156,6 +200,18 @@ export default function SignInPage() {
         onFinish={() => form.handleSubmit()}
         requiredMark="optional"
       >
+        <FormField form={form} name="name" label="Nom complet" required>
+          {(field) => (
+            <Input
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              prefix={<User size={18} style={{ opacity: 0.45 }} />}
+              placeholder="Jean Dupont"
+            />
+          )}
+        </FormField>
+
         <FormField form={form} name="email" label="Email" required>
           {(field) => (
             <Input
@@ -180,34 +236,23 @@ export default function SignInPage() {
           )}
         </FormField>
 
-        <FormField form={form} name="remember" valuePropName="checked">
-          {(field) => (
-            <Checkbox
-              checked={field.state.value}
-              onChange={(e) => field.handleChange(e.target.checked)}
-            >
-              Se souvenir de moi
-            </Checkbox>
-          )}
-        </FormField>
-
         <Form.Item style={{ marginBottom: 0 }}>
-          <Button type="primary" htmlType="submit" block loading={isPending} className="mt-2">
-            Se connecter
+          <Button type="primary" htmlType="submit" block loading={isPending} className="mt-4">
+            S'inscrire
           </Button>
         </Form.Item>
       </Form>
 
       <div style={{ textAlign: "center", marginTop: 16 }}>
         <Text type="secondary" className="text-sm">
-          Pas encore de compte ?{" "}
-          <Link href="/sign-up" className="font-medium text-primary">
-            S'inscrire
+          Déjà un compte ?{" "}
+          <Link href="/sign-in" className="font-medium text-primary">
+            Se connecter
           </Link>
         </Text>
       </div>
 
-      <Divider plain>Ou continuer avec</Divider>
+      <Divider plain>Ou s'inscrire avec</Divider>
 
       <div className="flex flex-col gap-3">
         <Button
@@ -279,7 +324,7 @@ export default function SignInPage() {
       <Divider plain>Ou</Divider>
 
       <Link href="/">
-        <Button block className="flex items-center justify-center" type="text">
+        <Button block className="flex items-center justify-center">
           <span className="flex items-center gap-2">
             Continuer sans compte
             <ArrowRight size={18} />
@@ -289,3 +334,5 @@ export default function SignInPage() {
     </Card>
   )
 }
+
+export default SignUpPage

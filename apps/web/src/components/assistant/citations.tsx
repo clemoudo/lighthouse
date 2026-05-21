@@ -8,7 +8,7 @@ interface CitationsProps {
   sources?: ChatSource[]
 }
 
-export function Citations({ sources }: CitationsProps) {
+export const Citations = ({ sources }: CitationsProps) => {
   if (!sources || sources.length === 0) return null
 
   return (

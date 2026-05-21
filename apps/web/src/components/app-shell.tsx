@@ -85,7 +85,7 @@ const adminItems = [
   },
 ]
 
-function UserProfile() {
+const UserProfile = () => {
   const { data: session, isPending } = useSession()
   const [mounted, setMounted] = useState(false)
 
@@ -162,7 +162,7 @@ function UserProfile() {
   )
 }
 
-function NavContent({ onNavigate }: { onNavigate?: () => void }) {
+const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mounted, setMounted] = useState(false)
@@ -256,7 +256,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
 
   return (

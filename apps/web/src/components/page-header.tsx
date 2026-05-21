@@ -13,7 +13,7 @@ interface PageHeaderProps {
   className?: string
 }
 
-export function PageHeader({ title, description, icon: Icon, className }: PageHeaderProps) {
+export const PageHeader = ({ title, description, icon: Icon, className }: PageHeaderProps) => {
   return (
     <Flex vertical gap={4} className={cn("px-1 mb-6", className)}>
       <Flex align="center" gap={12}>

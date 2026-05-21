@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { Button, Result, Flex } from "antd"
 import { logger } from "@repo/logger"
 
-export default function Error({ error }: { error: Error & { digest?: string } }) {
+const Error = ({ error }: { error: Error & { digest?: string } }) => {
   useEffect(() => {
     logger.error("Global Frontend Error:", error)
   }, [error])
@@ -24,3 +24,5 @@ export default function Error({ error }: { error: Error & { digest?: string } })
     </Flex>
   )
 }
+
+export default Error

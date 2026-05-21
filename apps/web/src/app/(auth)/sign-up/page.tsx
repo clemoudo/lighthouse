@@ -9,7 +9,7 @@ import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { authClient, signUp, signIn } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
-import { FormField } from "@/components/ui/form-field"
+import { FormField } from "@/components/form-field"
 
 const { Title, Text } = Typography
 const { OTP } = Input
@@ -20,7 +20,7 @@ const signUpSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 })
 
-export default function SignUpPage() {
+const SignUpPage = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refetch } = useAuth()
@@ -334,3 +334,5 @@ export default function SignUpPage() {
     </Card>
   )
 }
+
+export default SignUpPage

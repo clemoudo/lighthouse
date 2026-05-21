@@ -3,7 +3,7 @@
 import { Button, Result, Flex } from "antd"
 import Link from "next/link"
 
-export default function NotFound() {
+const NotFound = () => {
   return (
     <Flex align="center" justify="center" className="min-h-screen p-4">
       <Result
@@ -19,3 +19,5 @@ export default function NotFound() {
     </Flex>
   )
 }
+
+export default NotFound

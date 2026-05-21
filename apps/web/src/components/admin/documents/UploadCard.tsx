@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Upload, Button, Card, App, Space } from "antd"
 import { Upload as UploadIcon, FileText } from "lucide-react"
 import type { UploadFile } from "antd/es/upload/interface"
-import { useUploadDocument } from "../_hooks/use-document-mutations"
+import { useUploadDocument } from "../../../hooks/use-document-mutations"
 
 const UploadCard = () => {
   const { message } = App.useApp()

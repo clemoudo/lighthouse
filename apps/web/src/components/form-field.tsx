@@ -82,7 +82,7 @@ interface FormFieldProps<
  * A helper component to wrap TanStack Form fields with Ant Design Form.Item.
  * This ensures consistent styling, error messaging, and required indicators.
  */
-export function FormField<
+export const FormField = <
   TData,
   TName extends DeepKeys<TData>,
   TOnMount extends undefined | FormValidateOrFn<TData>,
@@ -118,7 +118,7 @@ export function FormField<
   TOnDynamicAsync,
   TOnServer,
   TSubmitMeta
->) {
+>) => {
   return (
     <form.Field name={name}>
       {(field) => {

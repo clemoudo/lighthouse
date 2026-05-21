@@ -7,7 +7,7 @@ import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { PageHeader } from "@/components/page-header"
 import { SectionHeader } from "@/components/section-header"
-import { FormField } from "@/components/ui/form-field"
+import { FormField } from "@/components/form-field"
 import { useSession, updateUser, changePassword, deleteUser, authClient } from "@/lib/auth-client"
 import { AuthGuard } from "@/components/auth/auth-guard"
 
@@ -29,7 +29,7 @@ const passwordSchema = z
     path: ["confirmPassword"],
   })
 
-function SettingsContent() {
+const SettingsContent = () => {
   const { message, modal } = App.useApp()
   const { data: session, isPending: isSessionPending, refetch } = useSession()
   const [infoPending, setInfoPending] = useState(false)
@@ -388,10 +388,12 @@ function SettingsContent() {
   )
 }
 
-export default function SettingsPage() {
+const SettingsPage = () => {
   return (
     <AuthGuard>
       <SettingsContent />
     </AuthGuard>
   )
 }
+
+export default SettingsPage
