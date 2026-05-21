@@ -7,7 +7,7 @@ import { Card, Input, Button, Alert, Typography, Form, Divider, Result } from "a
 import { User, Mail, Lock, ArrowRight, ShieldCheck, LogIn } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
-import { authClient, signUp, signIn } from "@/lib/auth-client"
+import { authClient, signUp } from "@/lib/auth-client"
 import { useAuth } from "@/contexts/AuthContext"
 import { FormField } from "@/components/ui/form-field"
 
@@ -32,9 +32,8 @@ export default function SignUpPage() {
   const [otpValue, setOtpValue] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
 
-  // States to keep info for automatic sign-in
+  // Only keep email for OTP step
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
 
   const initialEmail = searchParams.get("email") || ""
 
@@ -51,7 +50,6 @@ export default function SignUpPage() {
       setError(null)
       setIsPending(true)
       setEmail(value.email)
-      setPassword(value.password)
 
       try {
         const { error: signUpError } = await signUp.email({
@@ -83,6 +81,11 @@ export default function SignUpPage() {
           }
           setIsPending(false)
         } else {
+          // Manual send OTP with type 'sign-in' to allow session creation later
+          await authClient.emailOtp.sendVerificationOtp({
+            email: value.email,
+            type: "sign-in",
+          })
           setShowOtp(true)
           setIsPending(false)
         }
@@ -100,32 +103,21 @@ export default function SignUpPage() {
     setIsVerifying(true)
 
     try {
-      const { error: verifyError } = await authClient.emailOtp.verifyEmail({
+      // Use signIn.emailOtp: it verifies the email AND logs the user in (creates session)
+      const { error: signInError } = await authClient.signIn.emailOtp({
         email: email,
         otp: otpValue,
       })
 
-      if (verifyError) {
-        setError(verifyError.message || "Code invalide ou expiré.")
+      if (signInError) {
+        setError(signInError.message || "Code invalide ou expiré.")
         setIsVerifying(false)
       } else {
-        // Automatic sign-in after verification
-        const { error: signInError } = await signIn.email({
-          email,
-          password,
-          callbackURL: "/",
-        })
-
-        if (signInError) {
-          // If auto-signin fails (shouldn't happen here), redirect to sign-in anyway
-          router.push(`/sign-in?email=${encodeURIComponent(email)}`)
-        } else {
-          setIsSuccess(true)
-          await refetch()
-          setTimeout(() => {
-            router.push("/")
-          }, 2000)
-        }
+        setIsSuccess(true)
+        await refetch()
+        setTimeout(() => {
+          router.push("/")
+        }, 2000)
       }
     } catch (err) {
       setError(`Erreur lors de la vérification : ${err}`)
@@ -168,7 +160,7 @@ export default function SignUpPage() {
               value={otpValue}
               onChange={(e) => setOtpValue(e)}
               length={6}
-              className="text-center text-2xl tracking-[10px]"
+              className="flex justify-center"
               autoFocus
             />
           </Form.Item>

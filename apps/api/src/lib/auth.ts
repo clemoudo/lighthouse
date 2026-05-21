@@ -16,7 +16,7 @@ export const auth = betterAuth({
     requireEmailVerification: true,
   },
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: false,
   },
   socialProviders: {},
   plugins: [
