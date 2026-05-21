@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { admin, emailOTP } from "better-auth/plugins"
-import { createAuthEndpoint } from "better-auth/api"
+import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@repo/db"
 import { sendEmail } from "../services/email.service"
@@ -17,6 +17,11 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendOnSignUp: false,
+  },
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
   },
   socialProviders: {},
   plugins: [
@@ -70,6 +75,21 @@ export const auth = betterAuth({
               where: { email: ctx.query.email },
             })
             return ctx.json({ exists: !!user })
+          },
+        ),
+        clearData: createAuthEndpoint(
+          "/clear-data",
+          {
+            method: "POST",
+            use: [sessionMiddleware],
+          },
+          async (ctx) => {
+            const userId = ctx.context.session.user.id
+            // Delete all user conversations (messages will be deleted by cascade if configured in Prisma)
+            await prisma.conversation.deleteMany({
+              where: { userId },
+            })
+            return ctx.json({ success: true })
           },
         ),
       },

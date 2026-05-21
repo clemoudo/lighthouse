@@ -4,13 +4,7 @@ import { useEffect } from "react"
 import { Button, Result } from "antd"
 import { logger } from "@repo/logger"
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
+export default function Error({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
     logger.error("Global Frontend Error:", error)
   }, [error])
@@ -20,15 +14,12 @@ export default function Error({
       <Result
         status="error"
         title="Une erreur est survenue"
-        subTitle={error.message || "Désolé, quelque chose s'est mal passé."}
-        extra={[
-          <Button type="primary" key="retry" onClick={() => reset()}>
-            Réessayer
-          </Button>,
-          <Button key="home" onClick={() => (window.location.href = "/")}>
+        subTitle={"Désolé, quelque chose s'est mal passé."}
+        extra={
+          <Button type="primary" key="home" onClick={() => (window.location.href = "/")}>
             Retour à l'accueil
-          </Button>,
-        ]}
+          </Button>
+        }
       />
     </div>
   )

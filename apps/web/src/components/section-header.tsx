@@ -8,10 +8,17 @@ interface SectionHeaderProps {
   title: string
   icon?: LucideIcon
   className?: string
+  iconClassName?: string
   children?: ReactNode
 }
 
-export function SectionHeader({ title, icon: Icon, className, children }: SectionHeaderProps) {
+export function SectionHeader({
+  title,
+  icon: Icon,
+  className,
+  iconClassName,
+  children,
+}: SectionHeaderProps) {
   return (
     <div
       className={cn(
@@ -20,7 +27,7 @@ export function SectionHeader({ title, icon: Icon, className, children }: Sectio
       )}
     >
       <div className="flex items-center gap-2">
-        {Icon && <Icon className="h-5 w-5 text-primary shrink-0" />}
+        {Icon && <Icon className={cn("h-5 w-5 text-primary shrink-0", iconClassName)} />}
         <h2 className="text-xl font-bold text-foreground">{title}</h2>
       </div>
       {children}

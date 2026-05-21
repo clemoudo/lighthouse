@@ -19,6 +19,11 @@ const authClient = createAuthClient({
             query: { email },
           })
         },
+        clearData: async () => {
+          return $fetch<{ success: boolean }>("/clear-data", {
+            method: "POST",
+          })
+        },
       }),
     },
   ],
@@ -31,6 +36,7 @@ export const {
   useSession,
   updateUser,
   changePassword,
+  deleteUser,
   sendVerificationEmail,
 } = authClient
 
