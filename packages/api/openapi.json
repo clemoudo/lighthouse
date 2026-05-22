@@ -460,6 +460,177 @@
           "conversations",
           "meta"
         ]
+      },
+      "TokenUsageResponse": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "totalTokens": {
+                "type": "number",
+                "example": 150000
+              },
+              "promptTokens": {
+                "type": "number",
+                "example": 100000
+              },
+              "completionTokens": {
+                "type": "number",
+                "example": 50000
+              },
+              "totalMessages": {
+                "type": "number",
+                "example": 450
+              },
+              "estimatedCost": {
+                "type": "number",
+                "example": 12.5,
+                "description": "Coût estimé en EUR/USD"
+              },
+              "activeUsers": {
+                "type": "number",
+                "example": 25
+              }
+            },
+            "required": [
+              "totalTokens",
+              "promptTokens",
+              "completionTokens",
+              "totalMessages",
+              "estimatedCost",
+              "activeUsers"
+            ]
+          },
+          "dailyUsage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyUsage"
+            }
+          },
+          "byModel": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageByModel"
+            }
+          },
+          "byIntent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageByIntent"
+            }
+          }
+        },
+        "required": [
+          "summary",
+          "dailyUsage",
+          "byModel",
+          "byIntent"
+        ]
+      },
+      "DailyUsage": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2024-05-22"
+          },
+          "promptTokens": {
+            "type": "number",
+            "example": 1200
+          },
+          "completionTokens": {
+            "type": "number",
+            "example": 800
+          },
+          "totalTokens": {
+            "type": "number",
+            "example": 2000
+          },
+          "count": {
+            "type": "number",
+            "example": 15,
+            "description": "Nombre de messages"
+          }
+        },
+        "required": [
+          "date",
+          "promptTokens",
+          "completionTokens",
+          "totalTokens",
+          "count"
+        ]
+      },
+      "UsageByModel": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-4o"
+          },
+          "totalTokens": {
+            "type": "number",
+            "example": 50000
+          },
+          "count": {
+            "type": "number",
+            "example": 120
+          }
+        },
+        "required": [
+          "model",
+          "totalTokens",
+          "count"
+        ]
+      },
+      "UsageByIntent": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "string",
+            "enum": [
+              "RAG",
+              "DIRECT",
+              "CLASSIFICATION"
+            ],
+            "example": "RAG"
+          },
+          "totalTokens": {
+            "type": "number",
+            "example": 45000
+          },
+          "count": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "intent",
+          "totalTokens",
+          "count"
+        ]
+      },
+      "UserUsageSummary": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalTokens": {
+            "type": "number",
+            "example": 2500
+          },
+          "count": {
+            "type": "number",
+            "example": 12
+          }
+        },
+        "required": [
+          "userId",
+          "totalTokens",
+          "count"
+        ]
       }
     },
     "parameters": {}
@@ -706,6 +877,92 @@
           },
           "404": {
             "description": "Conversation not found"
+          }
+        }
+      }
+    },
+    "/admin/stats/usage": {
+      "get": {
+        "summary": "Get token usage statistics (Admin only)",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns usage statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenUsageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/admin/stats/users": {
+      "get": {
+        "summary": "Get usage summary for all users (Admin only)",
+        "responses": {
+          "200": {
+            "description": "Returns a list of usage summaries per user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserUsageSummary"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }

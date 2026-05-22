@@ -14,6 +14,7 @@ import { ApiError, type ApiErrorResponse, type ErrorCode } from "./types/error"
 // Routers
 import documentRoutes from "./routes/document.routes"
 import chatRoutes from "./routes/chat.routes"
+import adminRoutes from "./routes/admin.routes"
 
 export const createServer = (): Express => {
   const app = express()
@@ -64,6 +65,7 @@ export const createServer = (): Express => {
   // API Routes
   app.use("/documents", documentRoutes)
   app.use("/chat", chatRoutes)
+  app.use("/admin", adminRoutes)
 
   // Health / Status Route
   app.get("/status", async (_req: Request, res: Response) => {

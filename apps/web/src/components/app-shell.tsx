@@ -32,6 +32,7 @@ import { useSession, signOut } from "@/lib/auth-client"
 import { UserRole } from "@/api/generated/model"
 
 const { Text, Title } = Typography
+const { Avatar: SkeletonAvatar } = Skeleton
 
 interface NavItem {
   name: string
@@ -83,6 +84,12 @@ const adminItems = [
     icon: UserIcon,
     description: "Gestion des comptes",
   },
+  {
+    name: "Consommation",
+    href: "/admin/usage",
+    icon: BarChart3,
+    description: "Suivi des tokens IA",
+  },
 ]
 
 const UserProfile = () => {
@@ -96,7 +103,7 @@ const UserProfile = () => {
   if (!mounted || isPending) {
     return (
       <Flex align="center" gap={12} className="px-4 py-4">
-        <Skeleton.Avatar active size="small" shape="circle" />
+        <SkeletonAvatar active size="small" shape="circle" />
         <Flex vertical flex={1} gap={4}>
           <div className="h-3 w-20 rounded bg-white/10" />
           <div className="h-2 w-24 rounded bg-white/5" />

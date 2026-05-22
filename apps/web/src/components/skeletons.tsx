@@ -2,24 +2,26 @@
 
 import { Card, Skeleton, Space } from "antd"
 
+const { Button: SkeletonButton, Input: SkeletonInput } = Skeleton
+
 export const CurriculumSkeleton = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <Card key={i} className="shadow-sm">
           <div className="flex items-start gap-4 mb-4">
-            <Skeleton.Button active shape="square" size="large" />
+            <SkeletonButton active shape="square" size="large" />
             <div className="flex-1">
               <Skeleton active paragraph={{ rows: 1 }} title={true} />
             </div>
           </div>
           <Space className="mb-4">
-            <Skeleton.Button active size="small" />
-            <Skeleton.Button active size="small" />
+            <SkeletonButton active size="small" />
+            <SkeletonButton active size="small" />
           </Space>
           <div className="pt-4 border-t border-border flex justify-between">
-            <Skeleton.Input active size="small" />
-            <Skeleton.Button active size="small" />
+            <SkeletonInput active size="small" />
+            <SkeletonButton active size="small" />
           </div>
         </Card>
       ))}
@@ -38,12 +40,12 @@ export const SearchResultSkeleton = () => {
               <div className="flex-1">
                 <Skeleton active title={{ width: "60%" }} paragraph={{ rows: 1 }} />
               </div>
-              <Skeleton.Button active size="small" />
+              <SkeletonButton active size="small" />
             </div>
             <Skeleton active paragraph={{ rows: 2 }} title={false} />
             <div className="mt-4 pt-4 border-t border-border flex justify-between">
-              <Skeleton.Button active size="small" />
-              <Skeleton.Button active size="small" />
+              <SkeletonButton active size="small" />
+              <SkeletonButton active size="small" />
             </div>
           </Card>
         ))}

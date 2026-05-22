@@ -28,11 +28,14 @@ import type {
   CreateDocumentRequest,
   CreateDocumentResponse,
   DeleteDocumentsId200,
+  GetAdminStatsUsageParams,
   GetStatus200,
   GetStatus503,
   IngestDocumentResponse,
   ListConversationsResponse,
   ListDocumentsResponse,
+  TokenUsageResponse,
+  UserUsageSummary,
 } from "./model"
 
 import { customFetch } from "../custom-fetch"
@@ -1026,6 +1029,318 @@ export const useDeleteChatConversationsId = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getDeleteChatConversationsIdMutationOptions(options), queryClient)
+}
+
+export type getAdminStatsUsageResponse200 = {
+  data: TokenUsageResponse
+  status: 200
+}
+
+export type getAdminStatsUsageResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getAdminStatsUsageResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getAdminStatsUsageResponseSuccess = getAdminStatsUsageResponse200 & {
+  headers: Headers
+}
+export type getAdminStatsUsageResponseError = (
+  | getAdminStatsUsageResponse401
+  | getAdminStatsUsageResponse403
+) & {
+  headers: Headers
+}
+
+export type getAdminStatsUsageResponse =
+  | getAdminStatsUsageResponseSuccess
+  | getAdminStatsUsageResponseError
+
+export const getGetAdminStatsUsageUrl = (params?: GetAdminStatsUsageParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString())
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0
+    ? `/admin/stats/usage?${stringifiedParams}`
+    : `/admin/stats/usage`
+}
+
+/**
+ * @summary Get token usage statistics (Admin only)
+ */
+export const getAdminStatsUsage = async (
+  params?: GetAdminStatsUsageParams,
+  options?: RequestInit,
+): Promise<getAdminStatsUsageResponse> => {
+  return customFetch<getAdminStatsUsageResponse>(getGetAdminStatsUsageUrl(params), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetAdminStatsUsageQueryKey = (params?: GetAdminStatsUsageParams) => {
+  return [`/admin/stats/usage`, ...(params ? [params] : [])] as const
+}
+
+export const getGetAdminStatsUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminStatsUsage>>,
+  TError = void,
+>(
+  params?: GetAdminStatsUsageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsage>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminStatsUsageQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminStatsUsage>>> = ({ signal }) =>
+    getAdminStatsUsage(params, { signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminStatsUsage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminStatsUsageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminStatsUsage>>
+>
+export type GetAdminStatsUsageQueryError = void
+
+export function useGetAdminStatsUsage<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsage>>,
+  TError = void,
+>(
+  params: undefined | GetAdminStatsUsageParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsage>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminStatsUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminStatsUsage>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminStatsUsage<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsage>>,
+  TError = void,
+>(
+  params?: GetAdminStatsUsageParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsage>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminStatsUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminStatsUsage>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminStatsUsage<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsage>>,
+  TError = void,
+>(
+  params?: GetAdminStatsUsageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsage>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get token usage statistics (Admin only)
+ */
+
+export function useGetAdminStatsUsage<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsage>>,
+  TError = void,
+>(
+  params?: GetAdminStatsUsageParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsage>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetAdminStatsUsageQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+export type getAdminStatsUsersResponse200 = {
+  data: UserUsageSummary[]
+  status: 200
+}
+
+export type getAdminStatsUsersResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getAdminStatsUsersResponse403 = {
+  data: void
+  status: 403
+}
+
+export type getAdminStatsUsersResponseSuccess = getAdminStatsUsersResponse200 & {
+  headers: Headers
+}
+export type getAdminStatsUsersResponseError = (
+  | getAdminStatsUsersResponse401
+  | getAdminStatsUsersResponse403
+) & {
+  headers: Headers
+}
+
+export type getAdminStatsUsersResponse =
+  | getAdminStatsUsersResponseSuccess
+  | getAdminStatsUsersResponseError
+
+export const getGetAdminStatsUsersUrl = () => {
+  return `/admin/stats/users`
+}
+
+/**
+ * @summary Get usage summary for all users (Admin only)
+ */
+export const getAdminStatsUsers = async (
+  options?: RequestInit,
+): Promise<getAdminStatsUsersResponse> => {
+  return customFetch<getAdminStatsUsersResponse>(getGetAdminStatsUsersUrl(), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetAdminStatsUsersQueryKey = () => {
+  return [`/admin/stats/users`] as const
+}
+
+export const getGetAdminStatsUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminStatsUsers>>,
+  TError = void,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsers>>, TError, TData>>
+  request?: SecondParameter<typeof customFetch>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminStatsUsersQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminStatsUsers>>> = ({ signal }) =>
+    getAdminStatsUsers({ signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminStatsUsers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminStatsUsersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminStatsUsers>>
+>
+export type GetAdminStatsUsersQueryError = void
+
+export function useGetAdminStatsUsers<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsers>>,
+  TError = void,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsers>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminStatsUsers>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminStatsUsers>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminStatsUsers<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsers>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsers>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminStatsUsers>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminStatsUsers>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminStatsUsers<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsers>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsers>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get usage summary for all users (Admin only)
+ */
+
+export function useGetAdminStatsUsers<
+  TData = Awaited<ReturnType<typeof getAdminStatsUsers>>,
+  TError = void,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminStatsUsers>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetAdminStatsUsersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
 }
 
 export type getStatusResponse200 = {

@@ -26,12 +26,16 @@ import {
   Trash2,
   Shield,
   Calendar,
+  Activity,
 } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useSession, authClient } from "@/lib/auth-client"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { UserRole } from "@/api/generated/model"
+import { useGetAdminStatsUsers } from "@/api/generated/lighthouse"
+import type { UserUsageSummary } from "@/api/generated/model"
 import type { ColumnsType } from "antd/es/table"
+import Link from "next/link"
 
 const { Text } = Typography
 
@@ -88,6 +92,21 @@ const AdminUsersPage = () => {
       return response.data
     },
   })
+
+  // Fetch users usage summary
+  const { data: usageResponse, isLoading: isLoadingUsage } = useGetAdminStatsUsers()
+
+  const usageMap = useMemo(() => {
+    if (usageResponse?.status !== 200 || !usageResponse.data) {
+      return new Map<string, { totalTokens: number; count: number }>()
+    }
+    return new Map(
+      (usageResponse.data as UserUsageSummary[]).map((u) => [
+        u.userId,
+        { totalTokens: u.totalTokens, count: u.count },
+      ]),
+    )
+  }, [usageResponse])
 
   // Mutations with authClient
   const { mutate: banUser, isPending: isBanning } = useMutation({
@@ -222,6 +241,23 @@ const AdminUsersPage = () => {
         ),
       },
       {
+        title: "Consommation",
+        key: "usage",
+        render: (_, record) => {
+          const usage = usageMap.get(record.id)
+          return (
+            <Flex vertical>
+              <Text className="text-xs font-semibold">
+                {usage?.totalTokens.toLocaleString() ?? 0} tokens
+              </Text>
+              <Text type="secondary" className="text-[10px]">
+                {usage?.count ?? 0} requêtes
+              </Text>
+            </Flex>
+          )
+        },
+      },
+      {
         title: "Statut",
         key: "status",
         render: (_, record) => {
@@ -244,42 +280,52 @@ const AdminUsersPage = () => {
         title: "Actions",
         key: "actions",
         render: (_, record) => {
-          if (record.id === session?.user.id) return null
+          const isMe = record.id === session?.user.id
 
           return (
             <Space>
-              {record.banned ? (
-                <Button size="small" onClick={() => handleUnban(record.id)}>
-                  Débannir
-                </Button>
-              ) : (
-                <Popconfirm
-                  title="Bannir l'utilisateur ?"
-                  description="L'utilisateur ne pourra plus se connecter et ses sessions seront révoquées."
-                  onConfirm={() => handleBan(record.id)}
-                  okText="Bannir"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Button size="small" danger icon={<Ban size={14} />}>
-                    Bannir
-                  </Button>
-                </Popconfirm>
+              <Tooltip title="Voir les statistiques détaillées">
+                <Link href={`/admin/usage?userId=${record.id}`}>
+                  <Button size="small" icon={<Activity size={14} />} />
+                </Link>
+              </Tooltip>
+
+              {!isMe && (
+                <>
+                  {record.banned ? (
+                    <Button size="small" onClick={() => handleUnban(record.id)}>
+                      Débannir
+                    </Button>
+                  ) : (
+                    <Popconfirm
+                      title="Bannir l'utilisateur ?"
+                      description="L'utilisateur ne pourra plus se connecter et ses sessions seront révoquées."
+                      onConfirm={() => handleBan(record.id)}
+                      okText="Bannir"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button size="small" danger icon={<Ban size={14} />}>
+                        Bannir
+                      </Button>
+                    </Popconfirm>
+                  )}
+                  <Popconfirm
+                    title="Supprimer définitivement ?"
+                    description="Cette action est irréversible."
+                    onConfirm={() => handleRemove(record.id)}
+                    okText="Supprimer"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button size="small" type="primary" danger icon={<Trash2 size={14} />} />
+                  </Popconfirm>
+                </>
               )}
-              <Popconfirm
-                title="Supprimer définitivement ?"
-                description="Cette action est irréversible."
-                onConfirm={() => handleRemove(record.id)}
-                okText="Supprimer"
-                okButtonProps={{ danger: true }}
-              >
-                <Button size="small" type="text" danger icon={<Trash2 size={14} />} />
-              </Popconfirm>
             </Space>
           )
         },
       },
     ],
-    [session?.user.id, handleBan, handleUnban, handleRemove],
+    [session?.user.id, handleBan, handleUnban, handleRemove, usageMap],
   )
 
   return (
@@ -335,7 +381,7 @@ const AdminUsersPage = () => {
 
         <Table
           dataSource={users}
-          loading={isLoading || isBanning || isUnbanning || isRemoving}
+          loading={isLoading || isBanning || isUnbanning || isRemoving || isLoadingUsage}
           rowKey="id"
           columns={columns}
           pagination={{

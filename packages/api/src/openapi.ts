@@ -15,6 +15,7 @@ import {
   MessageSchema,
   ListConversationsResponseSchema,
 } from "./schemas/chat"
+import { TokenUsageResponseSchema, UserUsageSummarySchema } from "./schemas/admin"
 import { OpenAPIObject } from "openapi3-ts/oas30"
 
 const registry = new OpenAPIRegistry()
@@ -224,6 +225,69 @@ registry.registerPath({
     },
     401: { description: "Unauthorized" },
     404: { description: "Conversation not found" },
+  },
+})
+
+// --- Admin Routes ---
+registry.registerPath({
+  method: "get",
+  path: "/admin/stats/usage",
+  summary: "Get token usage statistics (Admin only)",
+  parameters: [
+    {
+      name: "from",
+      in: "query",
+      required: false,
+      schema: { type: "string", format: "date-time" },
+    },
+    {
+      name: "to",
+      in: "query",
+      required: false,
+      schema: { type: "string", format: "date-time" },
+    },
+    {
+      name: "userId",
+      in: "query",
+      required: false,
+      schema: { type: "string", format: "uuid" },
+    },
+    {
+      name: "model",
+      in: "query",
+      required: false,
+      schema: { type: "string" },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Returns usage statistics",
+      content: {
+        "application/json": {
+          schema: TokenUsageResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    403: { description: "Forbidden" },
+  },
+})
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/stats/users",
+  summary: "Get usage summary for all users (Admin only)",
+  responses: {
+    200: {
+      description: "Returns a list of usage summaries per user",
+      content: {
+        "application/json": {
+          schema: z.array(UserUsageSummarySchema),
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    403: { description: "Forbidden" },
   },
 })
 
