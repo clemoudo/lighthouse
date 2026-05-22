@@ -14,6 +14,7 @@ import {
   ConversationSchema,
   MessageSchema,
   ListConversationsResponseSchema,
+  ChatUsageSchema,
 } from "./schemas/chat"
 import { TokenUsageResponseSchema, UserUsageSummarySchema } from "./schemas/admin"
 import { OpenAPIObject } from "openapi3-ts/oas30"
@@ -225,6 +226,23 @@ registry.registerPath({
     },
     401: { description: "Unauthorized" },
     404: { description: "Conversation not found" },
+  },
+})
+
+registry.registerPath({
+  method: "get",
+  path: "/chat/usage",
+  summary: "Get daily message usage statistics",
+  responses: {
+    200: {
+      description: "Returns usage statistics",
+      content: {
+        "application/json": {
+          schema: ChatUsageSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
   },
 })
 

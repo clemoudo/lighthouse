@@ -1,8 +1,12 @@
 "use client"
 
-import { useGetChatConversations, useDeleteChatConversationsId } from "@/api/generated/lighthouse"
-import { Button, Typography, Popconfirm, Flex, Spin, Empty } from "antd"
-import { MessageSquare, Plus, Trash2, History } from "lucide-react"
+import {
+  useGetChatConversations,
+  useDeleteChatConversationsId,
+  useGetChatUsage,
+} from "@/api/generated/lighthouse"
+import { Button, Typography, Popconfirm, Flex, Spin, Empty, Progress } from "antd"
+import { MessageSquare, Plus, Trash2, History, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import dayjs from "dayjs"
 import "dayjs/locale/fr"
@@ -24,6 +28,9 @@ export const HistorySidebar = ({
 }: HistorySidebarProps) => {
   const { data: conversationsResponse, isLoading, refetch } = useGetChatConversations()
   const deleteMutation = useDeleteChatConversationsId()
+  const { data: usageResponse, isLoading: isLoadingUsage } = useGetChatUsage()
+
+  const usage = usageResponse?.status === 200 ? usageResponse.data : undefined
 
   const conversations =
     conversationsResponse?.status === 200 ? conversationsResponse.data.conversations : []
@@ -86,8 +93,9 @@ export const HistorySidebar = ({
                 <Flex vertical flex={1} className="min-w-0">
                   <Text
                     strong
+                    ellipsis={{ tooltip: true }}
                     className={cn(
-                      "truncate text-sm transition-colors",
+                      "text-sm transition-colors",
                       currentConversationId === conv.id ? "text-primary" : "text-text",
                     )}
                   >
@@ -124,13 +132,45 @@ export const HistorySidebar = ({
         )}
       </div>
 
-      <div className="p-4 border-t border-border">
+      {/* FOOTER - USAGE & ACTION */}
+      <div className="p-4 border-t border-border shrink-0 bg-container shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+        {/* Usage Quota Display */}
+        {isLoadingUsage ? (
+          <div className="px-1 text-center opacity-40 mb-4">
+            <Spin size="small" className="mb-1" />
+            <div className="text-[9px] uppercase font-bold">Mise à jour...</div>
+          </div>
+        ) : usage ? (
+          <div className="px-1 mb-4">
+            <Flex justify="space-between" align="center" className="mb-2">
+              <Flex align="center" gap={6}>
+                <Zap size={12} className="text-primary fill-primary" />
+                <Text className="text-[10px] uppercase font-bold opacity-60">Usage quotidien</Text>
+              </Flex>
+              <Text className="text-[11px] font-bold">
+                {usage.count} / {usage.limit}
+              </Text>
+            </Flex>
+            <Progress
+              percent={Math.min(100, (usage.count / usage.limit) * 100)}
+              showInfo={false}
+              size="small"
+              strokeColor={usage.count >= usage.limit ? "#ff4d4f" : "#1677ff"}
+              className="m-0"
+            />
+          </div>
+        ) : (
+          <div className="px-1 text-center opacity-30 italic text-[10px] mb-4">
+            Quota indisponible ({usageResponse?.status || "ERR"})
+          </div>
+        )}
+
         <Button
           type="primary"
           icon={<Plus size={16} />}
           block
           onClick={onNewChat}
-          className="flex items-center justify-center gap-2 h-10 rounded-xl"
+          className="flex items-center justify-center gap-2 h-11 rounded-xl shadow-sm"
         >
           Nouvelle discussion
         </Button>

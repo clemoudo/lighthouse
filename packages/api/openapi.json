@@ -461,6 +461,28 @@
           "meta"
         ]
       },
+      "ChatUsage": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Nombre de messages envoyés aujourd'hui."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Limite quotidienne de messages."
+          },
+          "remaining": {
+            "type": "number",
+            "description": "Nombre de messages restants."
+          }
+        },
+        "required": [
+          "count",
+          "limit",
+          "remaining"
+        ]
+      },
       "TokenUsageResponse": {
         "type": "object",
         "properties": {
@@ -877,6 +899,26 @@
           },
           "404": {
             "description": "Conversation not found"
+          }
+        }
+      }
+    },
+    "/chat/usage": {
+      "get": {
+        "summary": "Get daily message usage statistics",
+        "responses": {
+          "200": {
+            "description": "Returns usage statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatUsage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

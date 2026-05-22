@@ -13,6 +13,7 @@ import { PaginationQuerySchema } from "@repo/api"
 import { vectorService } from "../services/vector.service"
 import { storageService } from "../services/storage.service"
 import { chatService } from "../services/chat.service"
+import { usageService } from "../services/usage.service"
 import { ApiError } from "../types/error"
 
 const MAX_MESSAGES = 10
@@ -91,6 +92,21 @@ export const deleteConversation = async (req: Request, res: Response) => {
 }
 
 /**
+ * Controller to get user usage statistics.
+ */
+export const getChatUsage = async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  if (!userId) throw new ApiError(401, "UNAUTHORIZED", "Utilisateur non authentifié")
+
+  const usage = await usageService.checkQuota(userId)
+  res.json({
+    count: usage.limit - usage.remaining,
+    limit: usage.limit,
+    remaining: usage.remaining,
+  })
+}
+
+/**
  * Controller to handle RAG-based chat interactions with persistence and monitoring.
  */
 export const handleChat = async (req: Request, res: Response) => {
@@ -163,6 +179,27 @@ export const handleChat = async (req: Request, res: Response) => {
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
+      // 3.5 Quota Check Phase
+      const { allowed, limit } = await usageService.checkQuota(userId)
+
+      if (!allowed) {
+        logger.warn(`[CHAT] Quota reached for user ${userId} (${limit}/${limit})`)
+        writer.write({
+          type: "text-start",
+          id: "quota-limit",
+        })
+        writer.write({
+          type: "text-delta",
+          delta: `Désolé, vous avez atteint votre limite quotidienne de **${limit} messages**. Votre quota sera réinitialisé demain ! 🕊️`,
+          id: "quota-limit",
+        })
+        writer.write({
+          type: "text-end",
+          id: "quota-limit",
+        })
+        return
+      }
+
       if (!query) {
         logger.warn("[CHAT] No user query found.")
         const result = await streamText({
@@ -206,6 +243,9 @@ export const handleChat = async (req: Request, res: Response) => {
         messages: modelMessages,
         onFinish: async ({ text, usage }) => {
           try {
+            // Increment usage counter
+            await usageService.incrementUsage(userId)
+
             const promptTokens = (usage.inputTokens ?? 0) + (classificationUsage.inputTokens ?? 0)
             const completionTokens =
               (usage.outputTokens ?? 0) + (classificationUsage.outputTokens ?? 0)

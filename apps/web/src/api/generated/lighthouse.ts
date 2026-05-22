@@ -24,6 +24,7 @@ import type {
 import type {
   ChatRequest,
   ChatResponse,
+  ChatUsage,
   Conversation,
   CreateDocumentRequest,
   CreateDocumentResponse,
@@ -1029,6 +1030,124 @@ export const useDeleteChatConversationsId = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getDeleteChatConversationsIdMutationOptions(options), queryClient)
+}
+
+export type getChatUsageResponse200 = {
+  data: ChatUsage
+  status: 200
+}
+
+export type getChatUsageResponse401 = {
+  data: void
+  status: 401
+}
+
+export type getChatUsageResponseSuccess = getChatUsageResponse200 & {
+  headers: Headers
+}
+export type getChatUsageResponseError = getChatUsageResponse401 & {
+  headers: Headers
+}
+
+export type getChatUsageResponse = getChatUsageResponseSuccess | getChatUsageResponseError
+
+export const getGetChatUsageUrl = () => {
+  return `/chat/usage`
+}
+
+/**
+ * @summary Get daily message usage statistics
+ */
+export const getChatUsage = async (options?: RequestInit): Promise<getChatUsageResponse> => {
+  return customFetch<getChatUsageResponse>(getGetChatUsageUrl(), {
+    ...options,
+    method: "GET",
+  })
+}
+
+export const getGetChatUsageQueryKey = () => {
+  return [`/chat/usage`] as const
+}
+
+export const getGetChatUsageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getChatUsage>>,
+  TError = void,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatUsage>>, TError, TData>>
+  request?: SecondParameter<typeof customFetch>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetChatUsageQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getChatUsage>>> = ({ signal }) =>
+    getChatUsage({ signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getChatUsage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetChatUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getChatUsage>>>
+export type GetChatUsageQueryError = void
+
+export function useGetChatUsage<TData = Awaited<ReturnType<typeof getChatUsage>>, TError = void>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatUsage>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getChatUsage>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatUsage<TData = Awaited<ReturnType<typeof getChatUsage>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatUsage>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChatUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getChatUsage>>
+        >,
+        "initialData"
+      >
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChatUsage<TData = Awaited<ReturnType<typeof getChatUsage>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatUsage>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get daily message usage statistics
+ */
+
+export function useGetChatUsage<TData = Awaited<ReturnType<typeof getChatUsage>>, TError = void>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatUsage>>, TError, TData>>
+    request?: SecondParameter<typeof customFetch>
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetChatUsageQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
 }
 
 export type getAdminStatsUsageResponse200 = {

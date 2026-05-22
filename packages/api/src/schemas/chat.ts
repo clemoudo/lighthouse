@@ -78,6 +78,16 @@ export const ConversationSchema = z
   })
   .openapi("Conversation")
 
+export const ChatUsageSchema = z
+  .object({
+    count: z.number().openapi({ description: "Nombre de messages envoyés aujourd'hui." }),
+    limit: z.number().openapi({ description: "Limite quotidienne de messages." }),
+    remaining: z.number().openapi({ description: "Nombre de messages restants." }),
+  })
+  .openapi("ChatUsage")
+
+export type ChatUsage = z.infer<typeof ChatUsageSchema>
+
 export const ListConversationsResponseSchema = z
   .object({
     conversations: z.array(ConversationSchema),

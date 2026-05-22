@@ -23,6 +23,11 @@ model User {
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
+
+  // Quotas & Usage
+  dailyMessageCount Int       @default(0)
+  lastMessageAt     DateTime? @default(now())
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]

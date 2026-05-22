@@ -164,16 +164,15 @@ Raison en 10 mots maximum.`,
         },
       })
 
-      // Update title if it's the first assistant response
-      if (data.role === MessageRole.assistant) {
+      // Update title if it's the first message (from user)
+      if (data.role === MessageRole.user) {
         const messageCount = await prisma.message.count({
           where: { conversationId: data.conversationId },
         })
-        if (messageCount <= 2 && data.content) {
-          const title = data.content.split(/[.!?]/)[0].substring(0, 50).trim()
+        if (messageCount === 1 && data.content) {
           await prisma.conversation.update({
             where: { id: data.conversationId },
-            data: { title: title || "Discussion" },
+            data: { title: data.content },
           })
         }
       }

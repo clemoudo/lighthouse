@@ -50,8 +50,8 @@ export const getUsageStats = async (req: Request, res: Response) => {
     distinct: ["userId"],
   })
 
-  // Estimated cost (Rough estimation: $0.01 per 1k tokens average)
-  const estimatedCost = ((summary._sum.totalTokens || 0) / 1000) * 0.01
+  // Estimated cost (Rough estimation: $0.50 per 1M tokens average)
+  const estimatedCost = ((summary._sum.totalTokens || 0) / 1000000) * 0.5
 
   // 2. Daily Usage (Aggregation by date)
   const fromDate = from ? new Date(from) : new Date(0)

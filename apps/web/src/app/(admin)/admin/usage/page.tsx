@@ -183,7 +183,7 @@ const UsageDashboard = () => {
               prefix={<TrendingUp size={18} className="text-emerald-500 mr-2" />}
             />
             <div className="mt-2 text-xs text-muted-foreground">
-              Basé sur $0.01 / 1k tokens (moyenne)
+              Basé sur $0.50 / 1M tokens (moyenne)
             </div>
           </Card>
         </Col>

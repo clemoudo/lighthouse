@@ -14,8 +14,13 @@ import { useSession } from "@/lib/auth-client"
 import { Citations } from "@/components/assistant/citations"
 import { type ChatSource } from "@repo/api"
 import { HistorySidebar } from "@/components/assistant/history-sidebar"
-import { getChatConversationsId } from "@/api/generated/lighthouse"
+import {
+  getChatConversationsId,
+  getGetChatUsageQueryKey,
+  getGetChatConversationsQueryKey,
+} from "@/api/generated/lighthouse"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useQueryClient } from "@tanstack/react-query"
 
 const { Text, Title, Paragraph } = Typography
 
@@ -90,6 +95,7 @@ const MessageContent = ({ role, parts }: { role: string; parts: UIMessage["parts
 }
 
 const AssistantPage = () => {
+  const queryClient = useQueryClient()
   const { resolvedTheme } = useTheme()
   const { data: session } = useSession()
   const [input, setInput] = useState("")
@@ -122,13 +128,25 @@ const AssistantPage = () => {
 
         const id = response.headers.get("x-conversation-id")
         if (id) {
+          const isNew = !conversationId
           setConversationId((prev) => (id !== prev ? id : prev))
+
+          if (isNew) {
+            // Refresh history immediately if it's a new conversation
+            queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
+          }
         }
 
         return response
       },
     }),
     messages: [WELCOME_MESSAGE],
+    onFinish: () => {
+      // Invalidate usage query to refresh the progress bar
+      queryClient.invalidateQueries({ queryKey: getGetChatUsageQueryKey() })
+      // Refresh history to update the last updated time
+      queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
+    },
   })
 
   const isLoading = status !== "ready"
