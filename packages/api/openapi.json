@@ -258,20 +258,6 @@
           "content": {
             "type": "string"
           },
-          "model": {
-            "type": "string",
-            "nullable": true
-          },
-          "intent": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "RAG",
-              "DIRECT",
-              "CLASSIFICATION",
-              null
-            ]
-          },
           "sources": {
             "type": "array",
             "nullable": true,

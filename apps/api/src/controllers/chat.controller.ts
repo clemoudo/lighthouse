@@ -168,6 +168,7 @@ export const handleChat = async (req: Request, res: Response) => {
     // Persist user message only if it's new
     if (messages && messages.length > 0) {
       await chatService.saveMessage({
+        userId,
         conversationId,
         role: MessageRole.user,
         content: query,
@@ -252,6 +253,7 @@ export const handleChat = async (req: Request, res: Response) => {
             const totalTokens = (usage.totalTokens ?? 0) + (classificationUsage.totalTokens ?? 0)
 
             await chatService.saveMessage({
+              userId,
               conversationId,
               role: MessageRole.assistant,
               content: text,

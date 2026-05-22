@@ -136,9 +136,10 @@ Raison en 10 mots maximum.`,
   }
 
   /**
-   * Persists a message to the database.
+   * Persists a message and its usage metadata to the database.
    */
   async saveMessage(data: {
+    userId: string
     conversationId: string
     role: MessageRole
     content: string
@@ -155,12 +156,18 @@ Raison en 10 mots maximum.`,
           conversationId: data.conversationId,
           role: data.role,
           content: data.content,
-          model: data.model,
-          intent: data.intent,
-          promptTokens: data.promptTokens,
-          completionTokens: data.completionTokens,
-          totalTokens: data.totalTokens,
           sources: data.sources,
+          usageRecord: {
+            create: {
+              userId: data.userId,
+              role: data.role,
+              model: data.model,
+              intent: data.intent,
+              promptTokens: data.promptTokens,
+              completionTokens: data.completionTokens,
+              totalTokens: data.totalTokens,
+            },
+          },
         },
       })
 

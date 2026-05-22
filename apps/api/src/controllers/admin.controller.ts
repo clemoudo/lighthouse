@@ -17,11 +17,11 @@ export const getUsageStats = async (req: Request, res: Response) => {
     role: MessageRole.assistant,
     createdAt: dateFilter,
     model: model || undefined,
-    conversation: userId ? { userId } : undefined,
+    userId: userId || undefined,
   }
 
   // 1. Summary Statistics
-  const summary = await prisma.message.aggregate({
+  const summary = await prisma.usageRecord.aggregate({
     where: whereClause,
     _sum: {
       promptTokens: true,
@@ -34,15 +34,10 @@ export const getUsageStats = async (req: Request, res: Response) => {
   })
 
   // Count active users in this period
-  // We use findMany with distinct to avoid groupBy issues on conversations which was adding a syntax error
-  const activeUsers = await prisma.conversation.findMany({
+  const activeUsers = await prisma.usageRecord.findMany({
     where: {
-      messages: {
-        some: {
-          role: MessageRole.assistant,
-          createdAt: dateFilter,
-        },
-      },
+      role: MessageRole.assistant,
+      createdAt: dateFilter,
     },
     select: {
       userId: true,
@@ -66,48 +61,28 @@ export const getUsageStats = async (req: Request, res: Response) => {
   }
 
   // Use Prisma.sql fragments to correctly build dynamic queries without nesting errors
-  const modelFragment = model ? Prisma.sql`AND m."model" = ${model}` : Prisma.empty
+  const modelFragment = model ? Prisma.sql`AND u."model" = ${model}` : Prisma.empty
+  const userFragment = userId ? Prisma.sql`AND u."userId" = ${userId}::uuid` : Prisma.empty
 
-  let dailyRaw: DailyUsageRow[] = []
-
-  if (userId) {
-    dailyRaw = await prisma.$queryRaw<DailyUsageRow[]>`
-      SELECT 
-        TO_CHAR(m."createdAt", 'YYYY-MM-DD') as "date",
-        SUM(m."promptTokens")::int as "promptTokens",
-        SUM(m."completionTokens")::int as "completionTokens",
-        SUM(m."totalTokens")::int as "totalTokens",
-        COUNT(m."id")::int as "count"
-      FROM "message" m
-      JOIN "conversation" c ON m."conversationId" = c."id"
-      WHERE c."userId" = ${userId}::uuid
-      AND m."role" = ${MessageRole.assistant}::"MessageRole"
-      AND m."createdAt" >= ${fromDate}
-      AND m."createdAt" <= ${toDate}
-      ${modelFragment}
-      GROUP BY "date"
-      ORDER BY "date" ASC
-    `
-  } else {
-    dailyRaw = await prisma.$queryRaw<DailyUsageRow[]>`
-      SELECT 
-        TO_CHAR(m."createdAt", 'YYYY-MM-DD') as "date",
-        SUM(m."promptTokens")::int as "promptTokens",
-        SUM(m."completionTokens")::int as "completionTokens",
-        SUM(m."totalTokens")::int as "totalTokens",
-        COUNT(m."id")::int as "count"
-      FROM "message" m
-      WHERE m."role" = ${MessageRole.assistant}::"MessageRole"
-      AND m."createdAt" >= ${fromDate}
-      AND m."createdAt" <= ${toDate}
-      ${modelFragment}
-      GROUP BY "date"
-      ORDER BY "date" ASC
-    `
-  }
+  const dailyRaw = await prisma.$queryRaw<DailyUsageRow[]>`
+    SELECT 
+      TO_CHAR(u."createdAt", 'YYYY-MM-DD') as "date",
+      SUM(u."promptTokens")::int as "promptTokens",
+      SUM(u."completionTokens")::int as "completionTokens",
+      SUM(u."totalTokens")::int as "totalTokens",
+      COUNT(u."id")::int as "count"
+    FROM "usage_record" u
+    WHERE u."role" = ${MessageRole.assistant}::"MessageRole"
+    AND u."createdAt" >= ${fromDate}
+    AND u."createdAt" <= ${toDate}
+    ${modelFragment}
+    ${userFragment}
+    GROUP BY "date"
+    ORDER BY "date" ASC
+  `
 
   // 3. Usage by Model
-  const byModel = await prisma.message.groupBy({
+  const byModel = await prisma.usageRecord.groupBy({
     by: ["model"],
     where: whereClause,
     _sum: {
@@ -119,7 +94,7 @@ export const getUsageStats = async (req: Request, res: Response) => {
   })
 
   // 4. Usage by Intent
-  const byIntent = await prisma.message.groupBy({
+  const byIntent = await prisma.usageRecord.groupBy({
     by: ["intent"],
     where: whereClause,
     _sum: {
@@ -174,13 +149,12 @@ export const getUsersUsageSummary = async (req: Request, res: Response) => {
   // Aggregate tokens per user
   const usersUsage = await prisma.$queryRaw<UserUsageRow[]>`
     SELECT 
-      c."userId",
-      SUM(m."totalTokens")::int as "totalTokens",
-      COUNT(m."id")::int as "count"
-    FROM "message" m
-    JOIN "conversation" c ON m."conversationId" = c."id"
-    WHERE m."role" = ${MessageRole.assistant}::"MessageRole"
-    GROUP BY c."userId"
+      "userId",
+      SUM("totalTokens")::int as "totalTokens",
+      COUNT("id")::int as "count"
+    FROM "usage_record"
+    WHERE "role" = ${MessageRole.assistant}::"MessageRole"
+    GROUP BY "userId"
   `
 
   res.json(usersUsage)

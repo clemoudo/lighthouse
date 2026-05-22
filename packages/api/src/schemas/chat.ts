@@ -60,8 +60,6 @@ export const MessageSchema = z
     id: z.uuid(),
     role: z.enum(MessageRole),
     content: z.string(),
-    model: z.string().optional().nullable(),
-    intent: z.enum(MessageIntent).optional().nullable(),
     sources: z.array(ChatSourceSchema).optional().nullable(),
     createdAt: z.iso.datetime(),
   })

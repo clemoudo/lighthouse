@@ -12,7 +12,7 @@ import remarkGfm from "remark-gfm"
 import { useTheme } from "next-themes"
 import { useSession } from "@/lib/auth-client"
 import { Citations } from "@/components/assistant/citations"
-import { type ChatSource } from "@repo/api"
+import { MessageRole, type ChatSource } from "@repo/api"
 import { HistorySidebar } from "@/components/assistant/history-sidebar"
 import {
   getChatConversationsId,
@@ -48,7 +48,13 @@ const WELCOME_MESSAGE: ChatUIMessage = {
  * Component to render the markdown content of a message.
  * It uses Ant Design Typography components for consistent styling.
  */
-const MessageContent = ({ role, parts }: { role: string; parts: UIMessage["parts"] }) => {
+const MessageContent = ({
+  role,
+  parts,
+}: {
+  role: UIMessage["role"]
+  parts: UIMessage["parts"]
+}) => {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -78,7 +84,7 @@ const MessageContent = ({ role, parts }: { role: string; parts: UIMessage["parts
           <code
             className={cn(
               "px-1.5 py-0.5 rounded text-xs font-mono",
-              role === "user" ? "bg-white/20" : "bg-fill-secondary text-text",
+              role === MessageRole.user ? "bg-white/20" : "bg-fill-secondary text-text",
             )}
           >
             {children}
@@ -180,7 +186,7 @@ const AssistantPage = () => {
         if (conv && conv.messages) {
           const uiMessages: ChatUIMessage[] = conv.messages.map((m) => ({
             id: m.id,
-            role: m.role.toLowerCase() as "user" | "assistant",
+            role: m.role,
             content: m.content,
             parts: [
               { type: "text", text: m.content },

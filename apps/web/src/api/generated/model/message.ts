@@ -6,17 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ChatSource } from "./chatSource"
-import type { MessageIntent } from "./messageIntent"
 import type { MessageRole } from "./messageRole"
 
 export interface Message {
   id: string
   role: MessageRole
   content: string
-  /** @nullable */
-  model?: string | null
-  /** @nullable */
-  intent?: MessageIntent
   /** @nullable */
   sources?: ChatSource[] | null
   createdAt: string
