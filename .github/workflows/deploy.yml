@@ -1,8 +1,13 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [published]
+
+# Prevent concurrent deployments to avoid Ansible/Docker conflicts
+concurrency:
+  group: deployment-production
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
@@ -48,6 +53,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}
           tags: |
             type=sha,prefix=sha-,format=short
+            type=semver,pattern={{version}}
+            type=raw,value=latest
 
       - name: Build and push Web image
         uses: docker/build-push-action@v7
@@ -74,6 +81,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
           tags: |
             type=sha,prefix=sha-,format=short
+            type=semver,pattern={{version}}
+            type=raw,value=latest
 
       - name: Build and push API image
         uses: docker/build-push-action@v7
@@ -125,12 +134,15 @@ jobs:
       - name: Run Ansible Deploy Playbook
         working-directory: infra/ansible
         run: |
-          # Récupération du SHA court pour le tag d'image
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          # Use the tag from the release or SHA as fallback
+          IMAGE_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$IMAGE_TAG" ]; then
+            IMAGE_TAG="sha-$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
 
           ansible-playbook deploy.yml \
             -e "ghcr_username=${{ github.actor }}" \
             -e "ghcr_pat=${{ secrets.GITHUB_TOKEN }}" \
-            -e "web_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:sha-${SHORT_SHA}" \
-            -e "api_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:sha-${SHORT_SHA}" \
+            -e "web_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:${IMAGE_TAG}" \
+            -e "api_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${IMAGE_TAG}" \
             --private-key ~/.ssh/ansible
