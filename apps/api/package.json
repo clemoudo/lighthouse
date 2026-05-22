@@ -3,11 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js --external:express --external:cors --external:helmet --external:@prisma/client",
+    "build": "esbuild src/index.ts src/scripts/*.ts --bundle --outdir=dist --platform=node --target=node24 --external:express --external:cors --external:helmet --external:@prisma/client",
     "clean": "rm -rf dist",
     "dev": "concurrently --restart-tries -1 --restart-after 3000 --color -n \"DB,Build,TSC,API,OAS\" -c \"magenta.bold,bgBlue.bold,bgCyan.bold,bgGreen.bold,bgYellow.bold\" \"pnpm --filter @repo/db db:generate-watch\" \"pnpm build --watch\" \"tsc --noEmit --watch\" \"nodemon --watch dist/index.js --delay 0.5 dist/index.js\" \"pnpm --filter @repo/api generate-openapi-watch\"",
     "lint": "eslint \"src/**/*.ts*\" --max-warnings 0",
     "lint:fix": "eslint \"src/**/*.ts*\" --fix",
+    "promote-admin": "node dist/scripts/promote-admin.js",
     "start": "node dist/index.js",
     "tsc": "tsc --noEmit",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
