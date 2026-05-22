@@ -37,7 +37,7 @@ export const HistorySidebar = ({
   }
 
   return (
-    <Flex vertical className="h-full w-72 bg-container">
+    <Flex vertical className="h-full bg-container">
       <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
         <Flex align="center" gap={8} className="px-3 py-4 opacity-50">
           <History size={14} />
@@ -115,7 +115,7 @@ export const HistorySidebar = ({
                     size="small"
                     icon={<Trash2 size={14} />}
                     onClick={(e) => e.stopPropagation()}
-                    className="opacity-0 group-hover:opacity-40 hover:opacity-100! hover:text-error! transition-all"
+                    className="opacity-40 md:opacity-0 md:group-hover:opacity-40 hover:opacity-100! hover:text-error! transition-all"
                   />
                 </Popconfirm>
               </Flex>

@@ -207,7 +207,7 @@ const AssistantPage = () => {
 
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
-          <Space orientation="vertical" size={32} className="w-full max-w-4xl mx-auto">
+          <Space orientation="vertical" size={32} className="w-full max-w-5xl mx-auto flex">
             {messages.map((m) => {
               // Logic to find sources in message parts
               const sourcesPart = m.parts.find(
@@ -328,8 +328,8 @@ const AssistantPage = () => {
         </div>
 
         {/* Input Area */}
-        <div className="px-10 pt-4 bg-layout/80 backdrop-blur-sm sticky bottom-0">
-          <form onSubmit={onFinish} className="relative group max-w-3xl mx-auto">
+        <div className="px-4 pt-4 bg-layout/80 backdrop-blur-sm sticky bottom-0 border-t border-border/20 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
+          <form onSubmit={onFinish} className="relative group max-w-4xl mx-auto">
             <Input.TextArea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -364,7 +364,7 @@ const AssistantPage = () => {
           placement="right"
           onClose={() => setIsSidebarOpen(false)}
           open={isSidebarOpen}
-          width={320}
+          size="75%"
           styles={{ body: { padding: 0 } }}
         >
           <HistorySidebar

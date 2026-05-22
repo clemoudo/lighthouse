@@ -24,13 +24,28 @@ export class ChatService {
   }
 
   /**
-   * Analyzes the query to decide if RAG is needed (Minimalist version).
+   * Analyzes the query to decide if RAG is needed.
+   * This ensures pedagogical questions are grounded in the official curriculum.
    */
   async classifyIntent(query: string) {
     const { output, usage } = await generateText({
       model: mistral("mistral-small-latest"),
-      system:
-        "Détermine si la requête nécessite le référentiel scolaire belge (Pacte d'excellence). Raison en 5 mots max.",
+      system: `Tu es un expert en classification d'intentions pour l'assistant "Félix" du projet Lighthouse.
+Ton rôle est de déterminer si la question d'une institutrice maternelle nécessite de consulter le référentiel officiel du programme scolaire belge (Pacte d'excellence).
+
+CAS "RAG" (needsRAG: true) :
+- La question porte sur des compétences, des attendus ou des domaines d'apprentissage.
+- L'utilisateur demande des idées d'activités pédagogiques (ex: "idées pour l'autonomie", "activités de psychomotricité").
+- La question demande des précisions sur le programme scolaire maternel.
+- Recherche d'informations théoriques ou pratiques liées à l'enseignement en Belgique.
+
+CAS "DIRECT" (needsRAG: false) :
+- Salutations (ex: "Bonjour", "Coucou", "Hello").
+- Remerciements ou clôture (ex: "Merci beaucoup", "C'est tout pour aujourd'hui").
+- Questions sur l'identité de l'assistant (ex: "Qui es-tu ?", "Comment tu t'appelles ?").
+- Bavardage général sans lien direct avec les apprentissages scolaires (ex: "Quel temps fait-il ?").
+
+Raison en 10 mots maximum.`,
       output: Output.object({
         schema: z.object({
           needsRAG: z.boolean(),
@@ -60,7 +75,8 @@ export class ChatService {
   # RÈGLES DE COMPORTEMENT
   1. VÉRACITÉ : Ne génère aucune information non présente dans les sources. Si l'info manque, dis-le poliment.
   2. AMBIGUÏTÉ : Si une question est trop vague, demande des précisions avec enthousiasme pour mieux aider.
-  3. TON & STYLE :
+  3. CONCISION (IDÉES) : Lorsque tu proposes des idées d'activités, des pistes ou des exemples, limite-toi à un maximum de 3 propositions claires et qualitatives.
+  4. TON & STYLE :
    - Positif et encourageant : Utilise un ton chaleureux qui donne envie d'agir.
    - Direct et pragmatique : Réponds clairement à la question, mais avec une énergie positive.
    - Professionnel : Pas de jeux de mots ou de métaphores sur la mer, les oiseaux ou les phares.
@@ -104,7 +120,8 @@ export class ChatService {
   # RÈGLES
   - Reste très positif, professionnel et direct.
   - Évite absolument les métaphores sur la mer, les oiseaux ou les phares.
-  - Transmets de l'enthousiasme dans tes réponses tout en restant factuel.`
+  - Transmets de l'enthousiasme dans tes réponses tout en restant factuel.
+  - CONCISION (IDÉES) : Si tu proposes des idées ou des suggestions, limite-toi à un maximum de 3 propositions.`
   }
 
   /**
