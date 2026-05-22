@@ -31,9 +31,20 @@ const SignUpPage = () => {
   const [showOtp, setShowOtp] = useState(false)
   const [otpValue, setOtpValue] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+  const [resendCountdown, setResendCountdown] = useState(0)
+  const [isResending, setIsResending] = useState(false)
 
   // Only keep email for OTP step
   const [email, setEmail] = useState("")
+
+  // Handle countdown for resend button
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (resendCountdown > 0) {
+      timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [resendCountdown])
 
   const initialEmail = searchParams.get("email") || ""
 
@@ -96,8 +107,34 @@ const SignUpPage = () => {
     },
   })
 
-  const handleVerifyOtp = async () => {
-    if (otpValue.length < 6) return
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0 || isResending) return
+
+    setIsResending(true)
+    setError(null)
+
+    try {
+      const { error: resendError } = await authClient.emailOtp.sendVerificationOtp({
+        email: email,
+        type: "sign-in",
+      })
+
+      if (resendError) {
+        setError(resendError.message || "Impossible de renvoyer le code.")
+      } else {
+        setResendCountdown(60) // 1 minute cooldown
+        setOtpValue("") // Clear previous OTP
+      }
+    } catch (err) {
+      setError(`Erreur lors du renvoi : ${err}`)
+    } finally {
+      setIsResending(false)
+    }
+  }
+
+  const handleVerifyOtp = async (value?: string) => {
+    const currentOtp = value || otpValue
+    if (currentOtp.length < 6 || isVerifying) return
 
     setError(null)
     setIsVerifying(true)
@@ -106,7 +143,7 @@ const SignUpPage = () => {
       // Use signIn.emailOtp: it verifies the email AND logs the user in (creates session)
       const { error: signInError } = await authClient.signIn.emailOtp({
         email: email,
-        otp: otpValue,
+        otp: currentOtp,
       })
 
       if (signInError) {
@@ -148,7 +185,8 @@ const SignUpPage = () => {
             Vérifiez votre e-mail
           </Title>
           <Text type="secondary">
-            Nous avons envoyé un code de 6 chiffres à <strong>{email}</strong>
+            Nous avons envoyé un code de 6 chiffres à <strong>{email}</strong>. Ce code est valide
+            pendant 5 minutes.
           </Text>
         </div>
 
@@ -158,7 +196,12 @@ const SignUpPage = () => {
           <Form.Item label="Code de vérification">
             <OTP
               value={otpValue}
-              onChange={(e) => setOtpValue(e)}
+              onChange={(val) => {
+                setOtpValue(val)
+                if (val.length === 6) {
+                  handleVerifyOtp(val)
+                }
+              }}
               length={6}
               className="flex justify-center"
               autoFocus
@@ -168,12 +211,28 @@ const SignUpPage = () => {
           <Button
             type="primary"
             block
-            onClick={handleVerifyOtp}
+            onClick={() => handleVerifyOtp()}
             loading={isVerifying}
             disabled={otpValue.length < 6}
           >
             Vérifier le code
           </Button>
+
+          <div className="mt-4 text-center">
+            <Text type="secondary" className="text-sm">
+              Vous n'avez pas reçu le code ?{" "}
+            </Text>
+            <Button
+              type="link"
+              size="small"
+              onClick={handleResendOtp}
+              disabled={resendCountdown > 0}
+              loading={isResending}
+              className="p-0 font-medium"
+            >
+              {resendCountdown > 0 ? `Renvoyer (${resendCountdown}s)` : "Renvoyer un code"}
+            </Button>
+          </div>
 
           <Button type="link" block onClick={() => setShowOtp(false)} className="mt-2">
             Retour
