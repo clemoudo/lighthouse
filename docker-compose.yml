@@ -83,7 +83,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
@@ -128,7 +128,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${BASE_DOMAIN}`) && PathPrefix(`/api`)"

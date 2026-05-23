@@ -13,8 +13,10 @@ import {
   theme,
   Drawer,
   Skeleton,
+  Tooltip,
+  Tag,
 } from "antd"
-import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen } from "lucide-react"
+import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen, ShieldCheck } from "lucide-react"
 import { env } from "@/env"
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { cn } from "@/lib/utils"
@@ -317,9 +319,27 @@ const AssistantPage = () => {
                     className="max-w-[80%] min-w-0"
                     align={m.role === "user" ? "end" : "start"}
                   >
-                    <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
-                      {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
-                    </Text>
+                    <Flex align="center" gap={8}>
+                      <Text
+                        strong
+                        className="text-[11px] uppercase tracking-widest opacity-40 px-1"
+                      >
+                        {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
+                      </Text>
+
+                      {m.role === "assistant" && m.id !== "welcome" && messageSources && (
+                        <Tooltip title="Cette réponse s'appuie directement sur le référentiel officiel.">
+                          <Tag
+                            color="processing"
+                            variant="filled"
+                            icon={<ShieldCheck size={12} className="mr-1" />}
+                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-none shadow-none"
+                          >
+                            Vérifié
+                          </Tag>
+                        </Tooltip>
+                      )}
+                    </Flex>
 
                     <div
                       className={cn(
