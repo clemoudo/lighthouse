@@ -22,7 +22,7 @@ Les messages de commit doivent respecter la convention **Conventional Commits**.
 Format : `type(scope): description`
 
 - **Types** : `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`, `style`.
-- **Scopes** : `web`, `api`, `ai`, `ui`, `db`, `infra`.
+- **Scopes** : `web`, `api`, `ai`, `ui`, `ci`, `db`, `infra`.
 - **Description** : En minuscule, pas de point final.
 
 ## 3. Conventions de Nommage

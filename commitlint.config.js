@@ -8,7 +8,7 @@ module.exports = {
       ["feat", "fix", "docs", "style", "refactor", "test", "chore", "build", "ci", "perf", "style"],
     ],
     // Allowed scopes regarding CONTRIBUTING.md
-    "scope-enum": [2, "always", ["web", "api", "ai", "ui", "db", "infra"]],
+    "scope-enum": [2, "always", ["web", "api", "ai", "ui", "ci", "db", "infra"]],
     // Description in lowercase (subject) - Disabled to allow uppercase (e.g. GEMINI.md)
     "subject-case": [0],
     // No full stop
