@@ -2,12 +2,24 @@
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport, isDataUIPart } from "ai"
-import { Input, Button, Typography, Space, Flex, Avatar, ConfigProvider, theme, Drawer } from "antd"
+import {
+  Input,
+  Button,
+  Typography,
+  Space,
+  Flex,
+  Avatar,
+  ConfigProvider,
+  theme,
+  Drawer,
+  Skeleton,
+} from "antd"
 import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen } from "lucide-react"
 import { env } from "@/env"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { cn } from "@/lib/utils"
-import ReactMarkdown from "react-markdown"
+import dynamic from "next/dynamic"
+import Image from "next/image"
 import remarkGfm from "remark-gfm"
 import { useTheme } from "next-themes"
 import { useSession } from "@/lib/auth-client"
@@ -23,6 +35,14 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useQueryClient } from "@tanstack/react-query"
 
 const { Text, Title, Paragraph } = Typography
+
+// Dynamic import of heavy markdown components
+const ReactMarkdown = dynamic(() => import("react-markdown"), {
+  ssr: false,
+  loading: () => <SkeletonMarkdown />,
+})
+
+const SkeletonMarkdown = () => <Skeleton active title={false} paragraph={{ rows: 2 }} />
 
 // Define the data types for type safety in message parts
 interface ChatDataTypes {
@@ -55,6 +75,15 @@ const MessageContent = ({
   role: UIMessage["role"]
   parts: UIMessage["parts"]
 }) => {
+  const content = useMemo(
+    () =>
+      parts
+        .filter((part) => part.type === "text")
+        .map((part) => (part.type === "text" ? part.text : ""))
+        .join(""),
+    [parts],
+  )
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -92,10 +121,7 @@ const MessageContent = ({
         ),
       }}
     >
-      {parts
-        .filter((part) => part.type === "text")
-        .map((part) => (part.type === "text" ? part.text : ""))
-        .join("")}
+      {content}
     </ReactMarkdown>
   )
 }
@@ -252,14 +278,33 @@ const AssistantPage = () => {
                   <div className="shrink-0 pt-1">
                     <Avatar
                       size={40}
-                      src={m.role === "user" ? session?.user.image : assistantAvatar}
                       icon={
-                        m.role === "user" && !session?.user.image ? <User size={18} /> : undefined
+                        m.role === "user" ? (
+                          session?.user.image ? (
+                            <Image
+                              src={session.user.image}
+                              alt={session.user.name ?? "User"}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <User size={18} />
+                          )
+                        ) : (
+                          <Image
+                            src={assistantAvatar}
+                            alt="Félix"
+                            width={40}
+                            height={40}
+                            priority={m.id === "welcome"}
+                          />
+                        )
                       }
                       className={cn(
                         m.role === "user"
                           ? session?.user.image
-                            ? "border-none"
+                            ? "bg-transparent border-none"
                             : "bg-primary"
                           : "bg-container border border-border overflow-visible!",
                       )}
@@ -307,7 +352,15 @@ const AssistantPage = () => {
                 <div className="shrink-0">
                   <Avatar
                     size={40}
-                    src={assistantAvatar}
+                    icon={
+                      <Image
+                        src={assistantAvatar}
+                        alt="Félix"
+                        width={40}
+                        height={40}
+                        className="animate-pulse"
+                      />
+                    }
                     className="bg-container border border-border overflow-visible!"
                   />
                 </div>
