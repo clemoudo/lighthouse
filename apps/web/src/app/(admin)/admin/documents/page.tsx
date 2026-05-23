@@ -4,17 +4,13 @@ import { useMemo } from "react"
 import { Card, Button } from "antd"
 import { LayoutDashboard, RefreshCw } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
-import { useSession } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import UploadCard from "@/components/admin/documents/UploadCard"
 import { DocumentsTable } from "@/components/admin/documents/DocumentsTable"
-import { UserRole } from "@/api/generated/model"
+
+export const dynamic = "force-dynamic"
 
 const AdminDocumentsPage = () => {
-  const { data: session, isPending } = useSession()
-  const router = useRouter()
-
   // Récupération des documents
   const {
     data: documentsResponse,
@@ -27,12 +23,6 @@ const AdminDocumentsPage = () => {
     () => (documentsResponse?.status === 200 ? documentsResponse.data.documents : []),
     [documentsResponse],
   )
-
-  // Verification simple du rôle
-  if (!isPending && session?.user.role !== UserRole.admin) {
-    router.push("/")
-    return null
-  }
 
   return (
     <>

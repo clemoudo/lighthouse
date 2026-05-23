@@ -1,11 +1,11 @@
 import { AppShell } from "@/components/app-shell"
-import { AuthGuard } from "@/components/auth/auth-guard"
+import { AdminGuard } from "@/components/admin/admin-guard"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <AuthGuard>
+    <AdminGuard>
       <AppShell>{children}</AppShell>
-    </AuthGuard>
+    </AdminGuard>
   )
 }
 

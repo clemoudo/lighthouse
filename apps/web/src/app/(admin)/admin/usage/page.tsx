@@ -1,22 +1,26 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, Suspense } from "react"
 import { Card, Row, Col, Statistic, DatePicker, Select, Space, Button, Empty, Flex } from "antd"
 import { Activity, Calendar, Zap, Cpu, RefreshCw, TrendingUp, User as UserIcon } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useGetAdminStatsUsage } from "@/api/generated/lighthouse"
 import type { DailyUsage, UsageByModel, UsageByIntent } from "@/api/generated/model"
-import dynamic from "next/dynamic"
+import dynamicImport from "next/dynamic"
 import dayjs from "dayjs"
 import { useSearchParams } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 // Dynamically import charts to avoid SSR issues
-const Line = dynamic(() => import("@ant-design/plots").then((mod) => mod.Line), { ssr: false })
-const Pie = dynamic(() => import("@ant-design/plots").then((mod) => mod.Pie), { ssr: false })
+const Line = dynamicImport(() => import("@ant-design/plots").then((mod) => mod.Line), {
+  ssr: false,
+})
+const Pie = dynamicImport(() => import("@ant-design/plots").then((mod) => mod.Pie), { ssr: false })
 
 const { RangePicker } = DatePicker
 
-const UsageDashboard = () => {
+const UsageDashboardContent = () => {
   const searchParams = useSearchParams()
   const initialUserId = searchParams.get("userId")
 
@@ -255,5 +259,11 @@ const UsageDashboard = () => {
     </div>
   )
 }
+
+const UsageDashboard = () => (
+  <Suspense fallback={<div>Chargement des statistiques...</div>}>
+    <UsageDashboardContent />
+  </Suspense>
+)
 
 export default UsageDashboard
