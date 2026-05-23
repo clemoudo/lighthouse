@@ -1,5 +1,4 @@
-import { prisma, UserRole } from "@repo/db"
-import { logger } from "@repo/logger"
+import { prisma, UserRole, MessageRole } from "@repo/db"
 import dayjs from "dayjs"
 
 const LIMITS = {
@@ -13,14 +12,14 @@ const LIMITS = {
 export class UsageService {
   /**
    * Checks if a user has reached their daily message limit.
-   * Automatically resets the counter if it's a new day.
+   * Based on the real-time count in UsageRecord table.
    *
    * @returns {Object} { allowed: boolean, remaining: number, limit: number }
    */
   async checkQuota(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { dailyMessageCount: true, lastMessageAt: true, role: true },
+      select: { role: true },
     })
 
     if (!user) {
@@ -29,46 +28,24 @@ export class UsageService {
 
     const role = user.role || UserRole.user
     const limit = LIMITS[role]
-    const now = dayjs()
-    const lastAt = dayjs(user.lastMessageAt || 0)
+    const startOfDay = dayjs().startOf("day").toDate()
 
-    // Check if it's a new day
-    const isNewDay = !now.isSame(lastAt, "day")
-
-    if (isNewDay) {
-      // Reset for new day
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          dailyMessageCount: 0,
-          lastMessageAt: now.toDate(),
+    // Count assistant messages sent to this user today
+    const dailyCount = await prisma.usageRecord.count({
+      where: {
+        userId,
+        role: MessageRole.assistant,
+        createdAt: {
+          gte: startOfDay,
         },
-      })
-      return { allowed: true, remaining: limit, limit }
-    }
+      },
+    })
 
-    const remaining = limit - user.dailyMessageCount
+    const remaining = limit - dailyCount
     return {
-      allowed: user.dailyMessageCount < limit,
+      allowed: dailyCount < limit,
       remaining: Math.max(0, remaining),
       limit,
-    }
-  }
-
-  /**
-   * Increments the daily message count for a user.
-   */
-  async incrementUsage(userId: string) {
-    try {
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          dailyMessageCount: { increment: 1 },
-          lastMessageAt: new Date(),
-        },
-      })
-    } catch (err) {
-      logger.error(`[USAGE_SERVICE] Failed to increment usage for user ${userId}`, err)
     }
   }
 }

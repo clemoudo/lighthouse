@@ -244,9 +244,6 @@ export const handleChat = async (req: Request, res: Response) => {
         messages: modelMessages,
         onFinish: async ({ text, usage }) => {
           try {
-            // Increment usage counter
-            await usageService.incrementUsage(userId)
-
             const promptTokens = (usage.inputTokens ?? 0) + (classificationUsage.inputTokens ?? 0)
             const completionTokens =
               (usage.outputTokens ?? 0) + (classificationUsage.outputTokens ?? 0)
