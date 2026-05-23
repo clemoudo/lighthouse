@@ -10,8 +10,6 @@ import dynamicImport from "next/dynamic"
 import dayjs from "dayjs"
 import { useSearchParams } from "next/navigation"
 
-export const dynamic = "force-dynamic"
-
 // Dynamically import charts to avoid SSR issues
 const Line = dynamicImport(() => import("@ant-design/plots").then((mod) => mod.Line), {
   ssr: false,

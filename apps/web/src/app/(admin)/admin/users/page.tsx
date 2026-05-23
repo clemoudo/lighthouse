@@ -37,8 +37,6 @@ import type { UserUsageSummary } from "@/api/generated/model"
 import type { ColumnsType } from "antd/es/table"
 import Link from "next/link"
 
-export const dynamic = "force-dynamic"
-
 const { Text } = Typography
 
 const AdminUsersPage = () => {

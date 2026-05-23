@@ -8,10 +8,7 @@ import { useGetDocuments } from "@/api/generated/lighthouse"
 import UploadCard from "@/components/admin/documents/UploadCard"
 import { DocumentsTable } from "@/components/admin/documents/DocumentsTable"
 
-export const dynamic = "force-dynamic"
-
 const AdminDocumentsPage = () => {
-  // Récupération des documents
   const {
     data: documentsResponse,
     isLoading: isLoadingDocuments,
