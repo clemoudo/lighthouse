@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -12,12 +12,37 @@ import {
   MessageSquare,
   LogOut,
   User as UserIcon,
+  ShieldCheck,
+  LucideIcon,
 } from "lucide-react"
-import { Button, Drawer, Divider, Avatar, Dropdown, type MenuProps, Skeleton } from "antd"
+import {
+  Button,
+  Drawer,
+  Divider,
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Skeleton,
+  Typography,
+  Tooltip,
+  Flex,
+} from "antd"
 import { cn } from "@/lib/utils"
 import { useSession, signOut } from "@/lib/auth-client"
+import { UserRole } from "@/api/generated/model"
 
-const navItems = [
+const { Text, Title } = Typography
+const { Avatar: SkeletonAvatar } = Skeleton
+
+interface NavItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  description: string
+  disabled?: boolean
+}
+
+const navItems: NavItem[] = [
   {
     name: "Assistant IA",
     href: "/assistant",
@@ -29,6 +54,7 @@ const navItems = [
     href: "/search",
     icon: Search,
     description: "Recherche sémantique",
+    disabled: true,
   },
   {
     name: "Référentiel",
@@ -41,21 +67,48 @@ const navItems = [
     href: "/tracking",
     icon: BarChart3,
     description: "Progression",
+    disabled: true,
   },
 ]
 
-function UserProfile() {
-  const { data: session, isPending } = useSession()
+const adminItems = [
+  {
+    name: "Documents",
+    href: "/admin/documents",
+    icon: ShieldCheck,
+    description: "Gestion du RAG",
+  },
+  {
+    name: "Utilisateurs",
+    href: "/admin/users",
+    icon: UserIcon,
+    description: "Gestion des comptes",
+  },
+  {
+    name: "Consommation",
+    href: "/admin/usage",
+    icon: BarChart3,
+    description: "Suivi des tokens IA",
+  },
+]
 
-  if (isPending) {
+const UserProfile = () => {
+  const { data: session, isPending } = useSession()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted || isPending) {
     return (
-      <div className="flex items-center gap-3 px-4 py-4">
-        <Skeleton.Avatar active size="small" shape="circle" />
-        <div className="flex flex-1 flex-col gap-1">
+      <Flex align="center" gap={12} className="px-4 py-4">
+        <SkeletonAvatar active size="small" shape="circle" />
+        <Flex vertical flex={1} gap={4}>
           <div className="h-3 w-20 rounded bg-white/10" />
           <div className="h-2 w-24 rounded bg-white/5" />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     )
   }
 
@@ -96,86 +149,137 @@ function UserProfile() {
   return (
     <div className="px-3 py-4">
       <Dropdown menu={{ items }} placement="topRight" trigger={["click"]}>
-        <div className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-white/10">
+        <Flex
+          align="center"
+          gap={12}
+          className="cursor-pointer rounded-lg px-3 py-2 transition-colors hover:bg-white/10"
+        >
           <Avatar
             src={session.user.image}
             icon={!session.user.image && <UserIcon size={18} />}
             className="bg-white/20 shrink-0 border-none"
           />
-          <div className="flex flex-1 flex-col min-w-0">
-            <span className="truncate text-sm font-medium text-white">{session.user.name}</span>
-            <span className="truncate text-[10px] text-white/50">{session.user.email}</span>
-          </div>
-        </div>
+          <Flex vertical flex={1} className="min-w-0">
+            <Text className="truncate text-sm font-medium text-white">{session.user.name}</Text>
+            <Text className="truncate text-[10px] text-white/50">{session.user.email}</Text>
+          </Flex>
+        </Flex>
       </Dropdown>
     </div>
   )
 }
 
-function NavContent({ onNavigate }: { onNavigate?: () => void }) {
+const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isAdmin = mounted && session?.user.role === UserRole.admin
+
+  const renderLink = (item: NavItem) => {
+    const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+
+    const content = (
+      <Flex
+        align="center"
+        gap={12}
+        className={cn(
+          "rounded-lg px-3 py-3 text-sm font-medium transition-all w-full",
+          item.disabled
+            ? "opacity-50 cursor-not-allowed text-white/40"
+            : isActive
+              ? "bg-white/20 text-white"
+              : "text-white/80 hover:bg-white/10 hover:text-white",
+        )}
+      >
+        <item.icon className="h-5 w-5 shrink-0" />
+        <Flex vertical className="overflow-hidden">
+          <span className="truncate">{item.name}</span>
+          <span className="text-[11px] font-normal opacity-70 truncate">{item.description}</span>
+        </Flex>
+      </Flex>
+    )
+
+    if (item.disabled) {
+      return (
+        <Tooltip title="Prochainement disponible" placement="right" key={item.href}>
+          {content}
+        </Tooltip>
+      )
+    }
+
+    return (
+      <Link key={item.href} href={item.href} onClick={onNavigate} className="block">
+        {content}
+      </Link>
+    )
+  }
 
   return (
-    <div className="flex h-full flex-col">
+    <Flex vertical className="h-full bg-primary">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-6">
-        <Image src="/lighthouse.png" alt="Lighthouse" width={48} height={48} className="shrink-0" />
-        <div>
-          <h1 className="text-lg font-semibold text-white">Lighthouse</h1>
-          <p className="text-xs text-white/70">Programme Scolaire</p>
-        </div>
-      </div>
+      <Flex align="center" gap={12} className="px-4 py-8">
+        <Image
+          src="/lighthouse-64.png"
+          alt="Lighthouse"
+          width={44}
+          height={44}
+          className="shrink-0"
+        />
+        <Flex vertical>
+          <Title level={4} className="m-0! text-white! font-bold!">
+            Lighthouse
+          </Title>
+          <Text className="text-[11px] text-white/60 font-medium uppercase tracking-wider">
+            Programme Scolaire
+          </Text>
+        </Flex>
+      </Flex>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all",
-                isActive
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white",
-              )}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              <div className="flex flex-col">
-                <span>{item.name}</span>
-                <span className="text-xs font-normal opacity-70">{item.description}</span>
-              </div>
-            </Link>
-          )
-        })}
+        {navItems.map(renderLink)}
+
+        {isAdmin && (
+          <>
+            <div className="px-3 pt-6 pb-2">
+              <Text className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                Administration
+              </Text>
+            </div>
+            {adminItems.map(renderLink)}
+          </>
+        )}
       </nav>
 
       {/* Footer / User Profile */}
       <Divider className="bg-white/10 m-0" />
       <UserProfile />
-    </div>
+    </Flex>
   )
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  const isAssistantRoute = pathname === "/assistant" || pathname?.startsWith("/assistant/")
 
   return (
-    <div className="flex min-h-screen bg-surface-secondary">
+    <Flex className="h-screen bg-layout overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside
-        className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block"
-        style={{ background: "var(--color-sidebar-bg)" }}
-      >
+      <aside className="hidden h-full w-64 shrink-0 lg:block border-r border-border">
         <NavContent />
       </aside>
 
       {/* Mobile Header + Content */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <Flex vertical flex={1} className="min-w-0 h-full">
         {/* Mobile Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background px-4 lg:hidden">
+        <header className="flex h-16 items-center gap-4 border-b border-border bg-container px-4 lg:hidden shrink-0">
           <Button
             type="text"
             onClick={() => setOpen(true)}
@@ -184,10 +288,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Image src="/lighthouse.png" alt="Lighthouse" width={32} height={32} />
-            <span className="font-semibold text-foreground">Lighthouse</span>
-          </div>
+          <Flex align="center" gap={8}>
+            <Image src="/lighthouse-64.png" alt="Lighthouse" width={32} height={32} />
+            <span className="font-semibold text-text">Lighthouse</span>
+          </Flex>
         </header>
 
         {/* Mobile Drawer */}
@@ -196,15 +300,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClose={() => setOpen(false)}
           open={open}
           closable={false}
-          styles={{ body: { padding: 0, background: "var(--color-sidebar-bg)" } }}
+          styles={{ body: { padding: 0 } }}
           size={256}
         >
           <NavContent onNavigate={() => setOpen(false)} />
         </Drawer>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0">{children}</main>
-      </div>
-    </div>
+        <main
+          className={cn("flex-1 min-w-0 overflow-y-auto flex flex-col", !isAssistantRoute && "p-6")}
+        >
+          {children}
+        </main>
+      </Flex>
+    </Flex>
   )
 }

@@ -1,9 +1,20 @@
 import { env } from "@/env"
 
 /**
- * Custom fetch client for Orval
- * Matches the signature: (url, config)
- * Using native Fetch types for maximum compatibility
+ * Interface représentant la structure attendue par Orval pour ses réponses.
+ */
+export interface OrvalResponse<TData = unknown> {
+  data: TData
+  status: number
+  headers: Headers
+}
+
+/**
+ * Custom fetch client for Orval.
+ *
+ * @param url - L'URL relative de l'endpoint (ex: /documents)
+ * @param config - Options de fetch incluant les paramètres de requête et les données
+ * @returns Une promesse résolvant vers le type T (le contrat Orval)
  */
 export const customFetch = async <T>(
   url: string,
@@ -14,7 +25,7 @@ export const customFetch = async <T>(
 ): Promise<T> => {
   const { method, params, data, headers, signal, ...rest } = config
 
-  // Construct query string from params object safely
+  // 1. Construction de l'URL avec les query params
   let queryParams = ""
   if (params && Object.keys(params).length > 0) {
     const searchParams = new URLSearchParams()
@@ -32,6 +43,7 @@ export const customFetch = async <T>(
   const baseUrl = env.NEXT_PUBLIC_API_URL
   const fullUrl = `${baseUrl}${url}${queryParams}`
 
+  // 2. Exécution de la requête
   const response = await fetch(fullUrl, {
     ...rest,
     method: method?.toUpperCase(),
@@ -41,16 +53,38 @@ export const customFetch = async <T>(
     },
     ...(data ? { body: JSON.stringify(data) } : {}),
     signal,
-    // Crucial for Better Auth (cross-origin cookies)
     credentials: "include",
   })
 
+  // 3. Gestion des erreurs HTTP
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}))
-    throw new Error(errorBody.message || `HTTP error! status: ${response.status}`)
+    const errorBody: unknown = await response.json().catch(() => ({}))
+    const message =
+      errorBody && typeof errorBody === "object" && "message" in errorBody
+        ? String(errorBody.message)
+        : `HTTP error! status: ${response.status}`
+    throw new Error(message)
   }
 
-  return response.json()
+  // 4. Extraction des données
+  let responseData: unknown = null
+
+  // On ne tente de parser le JSON que s'il y a du contenu (évite l'erreur sur 204 No Content)
+  if (
+    response.status !== 204 &&
+    response.headers.get("content-type")?.includes("application/json")
+  ) {
+    responseData = await response.json()
+  }
+
+  // 5. Fulfillment du contrat Orval.
+  const result: OrvalResponse = {
+    data: responseData,
+    status: response.status,
+    headers: response.headers,
+  }
+
+  return result as T
 }
 
 export default customFetch

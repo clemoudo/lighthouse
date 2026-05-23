@@ -2,13 +2,13 @@
 
 import { useState, useMemo } from "react"
 import { FileText, Sparkles } from "lucide-react"
-import { Button, Card, Tag, Typography, Input, Divider } from "antd"
+import { Button, Card, Tag, Typography, Input, Divider, Flex, Space } from "antd"
 import { searchCompetences, type Competence } from "@/lib/data"
 
 const { Text, Title } = Typography
 const { Search } = Input
 
-function StatusChip({ status }: { status: Competence["status"] }) {
+const StatusChip = ({ status }: { status: Competence["status"] }) => {
   if (status === "acquired") {
     return <Tag color="success">Acquis</Tag>
   }
@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: Competence["status"] }) {
   return null
 }
 
-export default function RecherchePage() {
+const RecherchePage = () => {
   const [query, setQuery] = useState("")
   const [hasSearched, setHasSearched] = useState(false)
 
@@ -35,17 +35,17 @@ export default function RecherchePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] lg:min-h-screen">
+    <Flex vertical className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
       {/* Search Area */}
       <div className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 py-6 lg:px-8">
-        <div className="mx-auto max-w-4xl space-y-4">
-          <div className="flex items-center gap-2.5">
+        <Space orientation="vertical" size={16} className="mx-auto max-w-4xl w-full">
+          <Flex align="center" gap={10}>
             <Sparkles className="h-5 w-5 text-primary shrink-0" />
             <Title level={4} style={{ margin: 0 }} className="tracking-tight">
               Rechercher une compétence
             </Title>
-          </div>
-          <div className="space-y-1.5">
+          </Flex>
+          <Flex vertical gap={6}>
             <Search
               placeholder="Ex: 'compter jusqu'à 10', 'raconter une histoire'..."
               allowClear
@@ -59,15 +59,15 @@ export default function RecherchePage() {
             <Text type="secondary" className="text-sm">
               Trouvez rapidement les compétences du programme par sens ou mot-clé
             </Text>
-          </div>
-        </div>
+          </Flex>
+        </Space>
       </div>
 
       {/* Results */}
       <div className="flex-1 px-4 py-8 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {!hasSearched ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Flex vertical align="center" justify="center" className="py-20 text-center">
               <div className="mb-6 rounded-2xl bg-primary/5 p-6 border border-primary/10 shadow-inner">
                 <Sparkles className="h-10 w-10 text-primary" />
               </div>
@@ -78,7 +78,7 @@ export default function RecherchePage() {
                 Tapez un mot-clé ou une phrase pour trouver les compétences correspondantes dans le
                 programme scolaire maternel.
               </Text>
-              <div className="flex flex-wrap justify-center gap-3">
+              <Flex wrap="wrap" justify="center" gap={12}>
                 {["oral", "compter", "formes", "couleurs", "chansons"].map((suggestion) => (
                   <Button
                     key={suggestion}
@@ -89,10 +89,10 @@ export default function RecherchePage() {
                     {suggestion}
                   </Button>
                 ))}
-              </div>
-            </div>
+              </Flex>
+            </Flex>
           ) : results.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Flex vertical align="center" justify="center" className="py-20 text-center">
               <div className="mb-6 rounded-2xl bg-surface-secondary p-6 border border-border">
                 <FileText className="h-10 w-10 text-muted" />
               </div>
@@ -100,15 +100,15 @@ export default function RecherchePage() {
                 Aucun résultat
               </Title>
               <Text type="secondary">{"Essayez avec d'autres termes de recherche"}</Text>
-            </div>
+            </Flex>
           ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-1">
+            <Flex vertical gap={24}>
+              <Flex align="center" justify="space-between" className="px-1">
                 <Text strong type="secondary" className="text-sm">
                   {results.length} résultat{results.length > 1 ? "s" : ""} trouvé
                   {results.length > 1 ? "s" : ""}
                 </Text>
-              </div>
+              </Flex>
 
               <div className="grid gap-4">
                 {results.map((competence) => (
@@ -118,7 +118,7 @@ export default function RecherchePage() {
                     className="transition-all hover:shadow-lg hover:border-primary/30 border border-border shadow-sm overflow-hidden group rounded-xl"
                     styles={{ body: { padding: "24px" } }}
                   >
-                    <div className="flex items-start justify-between gap-6 mb-4">
+                    <Flex align="start" justify="space-between" gap={24} className="mb-4">
                       <div className="flex-1 min-w-0">
                         <Title
                           level={4}
@@ -127,19 +127,19 @@ export default function RecherchePage() {
                         >
                           {competence.title}
                         </Title>
-                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <Flex wrap="wrap" align="center" gap={12} className="mt-3">
                           <Tag className="font-bold m-0">{competence.domain}</Tag>
                           <Text strong className="text-[10px] text-muted uppercase tracking-wider">
                             {competence.subdomain}
                           </Text>
-                        </div>
+                        </Flex>
                       </div>
-                      <div className="shrink-0 flex flex-col items-end gap-2">
+                      <Flex vertical align="end" gap={8} className="shrink-0">
                         <Tag color="blue" className="font-bold m-0 px-2 py-0.5 rounded-full">
                           {competence.score}% pertinent
                         </Tag>
-                      </div>
-                    </div>
+                      </Flex>
+                    </Flex>
 
                     <Text
                       type="secondary"
@@ -150,7 +150,7 @@ export default function RecherchePage() {
 
                     <Divider className="my-4" />
 
-                    <div className="flex items-center justify-between gap-4">
+                    <Flex align="center" justify="space-between" gap={16}>
                       <StatusChip status={competence.status} />
                       {competence.pdfPage && (
                         <Button
@@ -162,14 +162,16 @@ export default function RecherchePage() {
                           Voir page {competence.pdfPage}
                         </Button>
                       )}
-                    </div>
+                    </Flex>
                   </Card>
                 ))}
               </div>
-            </div>
+            </Flex>
           )}
         </div>
       </div>
-    </div>
+    </Flex>
   )
 }
+
+export default RecherchePage

@@ -25,7 +25,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
     "eslint": "^9.39.4",
     "jest": "^30.4.2",
     "typescript": "5.9.3"

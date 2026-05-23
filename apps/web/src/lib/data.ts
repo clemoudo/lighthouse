@@ -333,7 +333,9 @@ export function searchCompetences(query: string): (Competence & { score: number 
 
     if (score > 0) {
       // Add some randomness to simulate semantic search
-      score = Math.min(99, score + Math.floor(Math.random() * 10))
+      // Use a deterministic value during SSR to avoid hydration mismatch and Next.js pre-rendering errors
+      const randomness = typeof window !== "undefined" ? Math.floor(Math.random() * 10) : 5
+      score = Math.min(99, score + randomness)
       results.push({ ...competence, score })
     }
   }

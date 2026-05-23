@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation"
 
-export default function Home() {
-  redirect("/search")
+const Home = () => {
+  redirect("/assistant")
 }
+
+export default Home

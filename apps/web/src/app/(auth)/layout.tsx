@@ -1,9 +1,12 @@
 import React from "react"
+import { Flex } from "antd"
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-primary p-4">
+    <Flex align="center" justify="center" className="min-h-screen bg-primary p-4">
       <div className="w-full max-w-md">{children}</div>
-    </div>
+    </Flex>
   )
 }
+
+export default AuthLayout

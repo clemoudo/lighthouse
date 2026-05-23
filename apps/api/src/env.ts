@@ -12,6 +12,13 @@ const envSchema = z.object({
     .string()
     .default("")
     .transform((s) => (s ? s.split(",").map((o) => o.trim()) : [])),
+  UPLOAD_DIR: z.string().default("./uploads"),
+  MISTRAL_API_KEY: z.string().optional(),
+  LLAMA_CLOUD_API_KEY: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  MICROSOFT_CLIENT_ID: z.string().optional(),
+  MICROSOFT_CLIENT_SECRET: z.string().optional(),
 })
 
 const serverSchema = z.object({
@@ -19,6 +26,12 @@ const serverSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET est requis"),
   BETTER_AUTH_URL: z.url("BETTER_AUTH_URL doit être une URL valide"),
   RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY est requise"),
+  MISTRAL_API_KEY: z.string().min(1, "MISTRAL_API_KEY est requise"),
+  LLAMA_CLOUD_API_KEY: z.string().min(1, "LLAMA_CLOUD_API_KEY est requise"),
+  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID est requise"),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET est requise"),
+  MICROSOFT_CLIENT_ID: z.string().min(1, "MICROSOFT_CLIENT_ID est requise"),
+  MICROSOFT_CLIENT_SECRET: z.string().min(1, "MICROSOFT_CLIENT_SECRET est requise"),
 })
 
 export type Env = z.infer<typeof envSchema>

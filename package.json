@@ -26,7 +26,7 @@
     "release": "turbo run build && changeset publish",
     "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
     "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml",
-    "db:generate": "pnpm --filter @repo/db generate",
+    "db:generate": "pnpm --filter @repo/db db:generate",
     "db:push": "pnpm --filter @repo/db db:push",
     "db:reset": "pnpm --filter @repo/db db:reset",
     "db:migrate": "pnpm --filter @repo/db db:migrate",
@@ -45,16 +45,16 @@
     "@typescript-eslint/parser": "^8.59.3",
     "eslint": "^9.39.4",
     "eslint-plugin-jest": "^29.15.2",
-    "eslint-plugin-turbo": "^2.9.12",
+    "eslint-plugin-turbo": "^2.9.14",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "prettier": "^3.8.3",
-    "turbo": "^2.9.12",
+    "turbo": "^2.9.14",
     "typescript-eslint": "^8.59.3"
   },
   "engines": {
     "node": ">=24.0.0",
     "pnpm": ">=11.0.0"
   },
-  "packageManager": "pnpm@11.1.1"
+  "packageManager": "pnpm@11.2.2+sha512.36e6621fad506178936455e70247b8808ef4ec25797a9f437a93281a020484e2607f6a469a22e982987c3dbb8866e3071514ab10a4a1749e06edcd1ec118436f"
 }

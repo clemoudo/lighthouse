@@ -8,28 +8,161 @@ datasource db {
   extensions = [vector]
 }
 
+enum UserRole {
+  admin
+  user
+}
+
 model User {
   id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   name          String
   email         String    @unique
   emailVerified Boolean
   image         String?
+  role          UserRole? @default(user)
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+
+  // Quotas & Usage
+  dailyMessageCount Int       @default(0)
+  lastMessageAt     DateTime? @default(now())
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  conversations Conversation[]
+  usageRecords  UsageRecord[]
 
   @@map("user")
 }
 
+enum IngestionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+enum MessageIntent {
+  RAG
+  DIRECT
+  CLASSIFICATION
+}
+
+model Conversation {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title     String?
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("conversation")
+}
+
+model Message {
+  id               String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  role             MessageRole
+  content          String         @db.Text
+  sources          Json?
+
+  conversationId   String       @db.Uuid
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  usageRecord      UsageRecord?
+
+  createdAt        DateTime     @default(now())
+
+  @@map("message")
+}
+
+model UsageRecord {
+  id               String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  
+  userId           String?        @db.Uuid
+  user             User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  messageId        String?        @unique @db.Uuid
+  message          Message?       @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  role             MessageRole
+  model            String?
+  intent           MessageIntent?
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  
+  createdAt        DateTime       @default(now())
+
+  @@map("usage_record")
+}
+
+model Document {
+  id            String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title         String          @unique
+  filename      String
+  filePath      String
+  fileSize      Int
+  mimeType      String
+  status        IngestionStatus @default(PENDING)
+  parsedContent Json?           // Cache for LlamaParse results
+  error         String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  chapters      Chapter[]
+
+  @@map("document")
+}
+
+model Chapter {
+  id         String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  title      String
+  order      Int
+  metadata   Json?     // Will store startPage and endPage
+  documentId String    @db.Uuid
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  parentId   String?   @db.Uuid
+  parent     Chapter?  @relation("ChapterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subSections Chapter[] @relation("ChapterHierarchy")
+
+  chunks     Chunk[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("chapter")
+}
+
+model Chunk {
+  id        String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  content   String?                     @db.Text
+  embedding Unsupported("vector(1024)")?
+  metadata  Json?
+  chapterId String                      @db.Uuid
+  chapter   Chapter                     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt DateTime                    @default(now())
+  updatedAt DateTime                    @updatedAt
+
+  @@map("chunk")
+}
+
 model Session {
-  id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
+  id             String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime
+  updatedAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
 
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

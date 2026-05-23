@@ -1,0 +1,22 @@
+---
+- name: Promote User to Admin
+  hosts: app
+  vars:
+    # Usage: ansible-playbook promote_admin.yml -e "admin_email=user@example.com"
+    admin_email: "{{ admin_email | default('') }}"
+
+  tasks:
+    - name: Validate admin_email variable
+      fail:
+        msg: "Please provide the admin_email variable. Example: -e 'admin_email=user@example.com'"
+      when: admin_email == ""
+
+    - name: Run promote-admin script inside API container
+      shell: "docker exec api pnpm promote-admin {{ admin_email }}"
+      register: promotion_output
+      changed_when: "'successfully promoted' in promotion_output.stdout"
+      failed_when: promotion_output.rc != 0 or 'User with email' in promotion_output.stdout
+
+    - name: Show promotion output
+      debug:
+        var: promotion_output.stdout

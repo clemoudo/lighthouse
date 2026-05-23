@@ -1,0 +1,86 @@
+name: Verify (CI & SonarCloud)
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: ["**"]
+
+# Prevent duplicate runs on the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, Typecheck, Test & Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Needed for SonarCloud
+
+      - name: Fetch Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID_PIPELINE }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_PIPELINE }}
+          env-slug: "dev"
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
+          domain: "https://eu.infisical.com"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Generate Prisma Client to provide types for tsc
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Next.js Cache
+        uses: actions/cache@v5
+        with:
+          path: apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('apps/web/src/**/*.{ts,tsx,css}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Format Check
+        run: pnpm format:check
+
+      - name: Linting
+        run: pnpm turbo run lint
+
+      - name: Type Checking
+        run: pnpm turbo run tsc
+
+      - name: Run Tests with Coverage
+        run: pnpm turbo run test:coverage
+
+      - name: Build
+        run: pnpm turbo run build
+        env:
+          SKIP_ENV_VALIDATION: 1
+          NODE_ENV: "production"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

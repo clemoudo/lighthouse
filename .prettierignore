@@ -14,8 +14,35 @@ coverage
 # Nextjs
 next-env.d.ts
 
-#pnpm
+# Generated
+**/generated/**
+**/openapi.json
+
+# pnpm
 pnpm-lock.yaml
 
-# Cercificate
+# Infrastructure
+infra
 acme.json
+
+# Media & Uploads
+uploads
+
+# Documentation
+docs
+
+# Agentic Tools
+.agents
+.antigravitycli
+.gemini
+.geminiignore
+
+# Secrets
+.env
+.env.*
+.infisical.json
+*.pem
+*.key
+*.cert
+*.crt
+*.pub

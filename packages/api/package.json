@@ -5,20 +5,26 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "lint": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts*\" --max-warnings 0",
+    "lint:fix": "eslint \"src/**/*.ts*\" --fix",
     "tsc": "tsc --noEmit",
     "generate-openapi": "tsx src/generate.ts",
-    "generate-openapi-watch": "node --watch --no-warnings --import tsx src/generate.ts"
+    "generate-openapi-watch": "node --watch --no-warnings --import tsx src/generate.ts",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore",
+    "format": "prettier --write . --ignore-path ../../.prettierignore --list-different"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.8.0",
+    "eslint": "^9.39.4",
     "openapi3-ts": "^4.5.0",
-    "tsx": "^4.21.0",
+    "prettier": "^3.5.2",
+    "tsx": "^4.22.0",
     "typescript": "5.9.3"
   }
 }

@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description:
     "Application pour les institutrices maternelles - Recherche sémantique, référentiel et suivi des compétences",
   icons: {
-    icon: "/lighthouse-32x32.ico",
-    apple: "/lighthouse.png",
+    icon: "/lighthouse-32.ico",
+    apple: "/lighthouse-64.png",
   },
 }
 
@@ -25,11 +25,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
-}>) {
+}>) => {
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
@@ -40,3 +40,5 @@ export default function RootLayout({
     </html>
   )
 }
+
+export default RootLayout

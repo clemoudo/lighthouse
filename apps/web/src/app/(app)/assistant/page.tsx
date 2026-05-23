@@ -1,190 +1,479 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Send, User, Sparkles, FileText } from "lucide-react"
-import { Input, Button, Card, Tag, Avatar, Typography } from "antd"
+import { useChat, type UIMessage } from "@ai-sdk/react"
+import { DefaultChatTransport, isDataUIPart } from "ai"
+import {
+  Input,
+  Button,
+  Typography,
+  Space,
+  Flex,
+  Avatar,
+  ConfigProvider,
+  theme,
+  Drawer,
+  Skeleton,
+} from "antd"
+import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen } from "lucide-react"
+import { env } from "@/env"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { cn } from "@/lib/utils"
+import dynamic from "next/dynamic"
+import Image from "next/image"
+import remarkGfm from "remark-gfm"
+import { useTheme } from "next-themes"
+import { useSession } from "@/lib/auth-client"
+import { Citations } from "@/components/assistant/citations"
+import { MessageRole, type ChatSource } from "@repo/api"
+import { HistorySidebar } from "@/components/assistant/history-sidebar"
+import {
+  getChatConversationsId,
+  getGetChatUsageQueryKey,
+  getGetChatConversationsQueryKey,
+} from "@/api/generated/lighthouse"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useQueryClient } from "@tanstack/react-query"
 
-const { Text } = Typography
+const { Text, Title, Paragraph } = Typography
 
-type Message = {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  sources?: { id: string; title: string; page: number }[]
+// Dynamic import of heavy markdown components
+const ReactMarkdown = dynamic(() => import("react-markdown"), {
+  ssr: false,
+  loading: () => <SkeletonMarkdown />,
+})
+
+const SkeletonMarkdown = () => <Skeleton active title={false} paragraph={{ rows: 2 }} />
+
+// Define the data types for type safety in message parts
+interface ChatDataTypes {
+  sources: ChatSource[]
+  [key: string]: unknown
 }
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content:
-      "Bonjour ! Je suis votre assistant pédagogique Lighthouse. Je peux vous aider à explorer le programme scolaire maternel et à planifier vos activités. Que souhaitez-vous savoir aujourd'hui ?",
-  },
-  {
-    id: "2",
-    role: "user",
-    content:
-      "Quelles sont les compétences liées à l'observation de la nature et du vivant en cycle 1 ?",
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content:
-      "Pour le cycle 1 (maternelle), les compétences liées à la nature et au vivant se trouvent principalement dans le domaine 'Explorer le monde'. Voici les points clés identifiés dans le référentiel :",
-    sources: [
-      {
-        id: "vivant-1",
-        title: "Reconnaître et classer les animaux selon leurs caractéristiques",
-        page: 85,
-      },
-      {
-        id: "vivant-2",
-        title: "Connaître les besoins essentiels de quelques animaux et végétaux",
-        page: 86,
-      },
-    ],
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content:
-      "Vous pouvez par exemple organiser des activités d'observation dans le jardin de l'école ou créer un petit potager pour travailler la compétence sur les besoins des végétaux.",
-  },
-]
+// Custom UIMessage type with our data parts
+type ChatUIMessage = UIMessage<never, ChatDataTypes>
 
-export default function AssistantPage() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
+const WELCOME_MESSAGE: ChatUIMessage = {
+  id: "welcome",
+  role: "assistant",
+  parts: [
+    {
+      type: "text",
+      text: "Bonjour ! Je suis **Félix**, votre assistant **Lighthouse**. 🕊️\n\nEn tant qu'expert du programme scolaire belge (*Pacte pour un Enseignement d'excellence*), je suis là pour prendre de la hauteur et vous éclairer dans la planification de vos activités en maternelle.\n\nPosez-moi vos questions, je chercherai les réponses directement dans le référentiel officiel pour vous aider à garder le cap !",
+    },
+  ],
+}
+
+/**
+ * Component to render the markdown content of a message.
+ * It uses Ant Design Typography components for consistent styling.
+ */
+const MessageContent = ({
+  role,
+  parts,
+}: {
+  role: UIMessage["role"]
+  parts: UIMessage["parts"]
+}) => {
+  const content = useMemo(
+    () =>
+      parts
+        .filter((part) => part.type === "text")
+        .map((part) => (part.type === "text" ? part.text : ""))
+        .join(""),
+    [parts],
+  )
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <Paragraph className="m-0 last:mb-0 mb-4">{children}</Paragraph>,
+        h1: ({ children }) => (
+          <Title level={4} className="mt-2 mb-4">
+            {children}
+          </Title>
+        ),
+        h2: ({ children }) => (
+          <Title level={5} className="mt-2 mb-3">
+            {children}
+          </Title>
+        ),
+        h3: ({ children }) => (
+          <Text strong className="block mt-2 mb-2">
+            {children}
+          </Text>
+        ),
+        ul: ({ children }) => <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>,
+        ol: ({ children }) => <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>,
+        li: ({ children }) => <li className="mb-1">{children}</li>,
+        strong: ({ children }) => <Text strong>{children}</Text>,
+        em: ({ children }) => <Text italic>{children}</Text>,
+        code: ({ children }) => (
+          <code
+            className={cn(
+              "px-1.5 py-0.5 rounded text-xs font-mono",
+              role === MessageRole.user ? "bg-white/20" : "bg-fill-secondary text-text",
+            )}
+          >
+            {children}
+          </code>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  )
+}
+
+const AssistantPage = () => {
+  const queryClient = useQueryClient()
+  const { resolvedTheme } = useTheme()
+  const { data: session } = useSession()
   const [input, setInput] = useState("")
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined)
 
-  // Mock user data
-  const user = {
-    name: "Utilisateur",
-    avatar: null,
-  }
+  const isMobile = useIsMobile()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    if (isMobile) {
+      setIsSidebarOpen(false)
+    } else {
+      setIsSidebarOpen(true)
     }
-  }, [messages])
+  }, [isMobile])
 
-  const handleSend = () => {
-    if (!input.trim()) return
+  const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
+  const { messages, sendMessage, status, error, setMessages } = useChat<ChatUIMessage>({
+    transport: new DefaultChatTransport({
+      api: env.NEXT_PUBLIC_API_URL + "/chat",
+      body: {
+        conversationId,
+      },
+      fetch: async (url, options) => {
+        const response = await fetch(url, {
+          ...options,
+          credentials: "include",
+        })
+
+        const id = response.headers.get("x-conversation-id")
+        if (id) {
+          const isNew = !conversationId
+          setConversationId((prev) => (id !== prev ? id : prev))
+
+          if (isNew) {
+            // Refresh history immediately if it's a new conversation
+            queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
+          }
+        }
+
+        return response
+      },
+    }),
+    messages: [WELCOME_MESSAGE],
+    onFinish: () => {
+      // Invalidate usage query to refresh the progress bar
+      queryClient.invalidateQueries({ queryKey: getGetChatUsageQueryKey() })
+      // Refresh history to update the last updated time
+      queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
+    },
+  })
+
+  const isLoading = status !== "ready"
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
+  const onFinish = (e?: React.SubmitEvent) => {
+    e?.preventDefault()
+    if (input.trim() && !isLoading) {
+      sendMessage({ text: input }, { body: { conversationId } })
+      setInput("")
     }
+  }
 
-    setMessages((prev) => [...prev, newMessage])
-    setInput("")
+  const handleSelectConversation = async (id: string) => {
+    if (id === conversationId) return
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content:
-          "C'est une excellente question. Je recherche dans le référentiel... En lien avec votre demande, le programme souligne l'importance de manipuler et d'expérimenter pour construire ces premières notions.",
+    try {
+      const response = await getChatConversationsId(id)
+
+      if (response.status === 200) {
+        const conv = response.data
+
+        if (conv && conv.messages) {
+          const uiMessages: ChatUIMessage[] = conv.messages.map((m) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            parts: [
+              { type: "text", text: m.content },
+              ...(m.sources
+                ? [
+                    {
+                      type: "data-sources" as const,
+                      data: m.sources,
+                    },
+                  ]
+                : []),
+            ],
+            createdAt: new Date(m.createdAt),
+          }))
+
+          setMessages(uiMessages)
+          setConversationId(id)
+        }
       }
-      setMessages((prev) => [...prev, aiResponse])
-    }, 1000)
+    } catch (err) {
+      console.error("Failed to load conversation", err)
+    }
+  }
+
+  const handleNewChat = () => {
+    setConversationId(undefined)
+    setMessages([WELCOME_MESSAGE])
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] lg:h-screen">
-      {/* Chat Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-8">
-        <div className="mx-auto max-w-3xl space-y-6 pb-20">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex gap-3 lg:gap-4",
-                message.role === "user" ? "flex-row-reverse" : "flex-row",
-              )}
-            >
-              <Avatar
-                className={cn(
-                  "shrink-0",
-                  message.role === "assistant" ? "bg-transparent" : "bg-primary-soft",
-                )}
-                size={40}
-                icon={message.role === "assistant" ? null : <User size={20} />}
-                src={message.role === "assistant" ? "/albatross.png" : user.avatar}
-              />
-
-              <div
-                className={cn(
-                  "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%]",
-                  message.role === "user" ? "items-end" : "items-start",
-                )}
-              >
-                <Card
-                  variant="borderless"
-                  className={cn(
-                    "shadow-sm",
-                    message.role === "user"
-                      ? "bg-primary text-white rounded-tr-none"
-                      : "bg-background text-foreground rounded-tl-none border border-border",
-                  )}
-                  styles={{ body: { padding: "12px 16px" } }}
-                >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap m-0">
-                    {message.content}
-                  </p>
-                </Card>
-
-                {message.sources && message.sources.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {message.sources.map((source) => (
-                      <Tag
-                        key={source.id}
-                        icon={<FileText size={12} className="mr-1" />}
-                        className="flex items-center bg-primary-soft text-primary-dark border-primary-soft px-2 py-1 rounded-full m-0"
-                      >
-                        <span className="text-[10px] font-bold uppercase mr-1">{source.title}</span>
-                        <span className="text-[10px] opacity-60">p.{source.page}</span>
-                      </Tag>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+    <Flex className="h-full w-full overflow-hidden bg-layout relative">
+      <Flex vertical className="flex-1 relative overflow-hidden h-full">
+        {/* Toggle Sidebar Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            type="text"
+            icon={isSidebarOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="text-text/60 hover:text-text bg-container/50 backdrop-blur-sm shadow-sm"
+          />
         </div>
-      </div>
 
-      {/* Input Area */}
-      <div className="sticky bottom-0 border-t border-border bg-background/80 backdrop-blur-md p-4 lg:p-6">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex gap-2">
-            <Input
-              size="large"
-              placeholder="Posez votre question sur le programme..."
+        {/* Messages Stream */}
+        <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
+          <Space orientation="vertical" size={32} className="w-full max-w-5xl mx-auto flex">
+            {messages.map((m) => {
+              // Logic to find sources in message parts
+              const sourcesPart = m.parts.find(
+                (part) => isDataUIPart(part) && part.type === "data-sources",
+              )
+              const messageSources =
+                sourcesPart && isDataUIPart(sourcesPart)
+                  ? (sourcesPart.data as ChatSource[])
+                  : undefined
+
+              return (
+                <Flex
+                  key={m.id}
+                  gap={16}
+                  className="w-full"
+                  style={{ flexDirection: m.role === "user" ? "row-reverse" : "row" }}
+                >
+                  <div className="shrink-0 pt-1">
+                    <Avatar
+                      size={40}
+                      icon={
+                        m.role === "user" ? (
+                          session?.user.image ? (
+                            <Image
+                              src={session.user.image}
+                              alt={session.user.name ?? "User"}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <User size={18} />
+                          )
+                        ) : (
+                          <Image
+                            src={assistantAvatar}
+                            alt="Félix"
+                            width={40}
+                            height={40}
+                            priority={m.id === "welcome"}
+                          />
+                        )
+                      }
+                      className={cn(
+                        m.role === "user"
+                          ? session?.user.image
+                            ? "bg-transparent border-none"
+                            : "bg-primary"
+                          : "bg-container border border-border overflow-visible!",
+                      )}
+                    />
+                  </div>
+
+                  <Flex
+                    vertical
+                    gap={8}
+                    className="max-w-[80%] min-w-0"
+                    align={m.role === "user" ? "end" : "start"}
+                  >
+                    <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                      {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
+                    </Text>
+
+                    <div
+                      className={cn(
+                        "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+                        m.role === "user"
+                          ? "bg-primary rounded-tr-none"
+                          : "bg-container text-text rounded-tl-none border border-border",
+                      )}
+                    >
+                      <div className="wrap-break-word">
+                        {m.role === "user" ? (
+                          <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+                            <MessageContent role={m.role} parts={m.parts} />
+                          </ConfigProvider>
+                        ) : (
+                          <MessageContent role={m.role} parts={m.parts} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Citations UI Component */}
+                    <Citations sources={messageSources} />
+                  </Flex>
+                </Flex>
+              )
+            })}
+
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <Flex gap={16}>
+                <div className="shrink-0">
+                  <Avatar
+                    size={40}
+                    icon={
+                      <Image
+                        src={assistantAvatar}
+                        alt="Félix"
+                        width={40}
+                        height={40}
+                        className="animate-pulse"
+                      />
+                    }
+                    className="bg-container border border-border overflow-visible!"
+                  />
+                </div>
+                <Flex vertical gap={8}>
+                  <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                    Félix
+                  </Text>
+                  <Flex
+                    align="center"
+                    gap={8}
+                    className="bg-container px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm"
+                  >
+                    <Flex gap={4}>
+                      <span
+                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <span
+                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <span
+                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </Flex>
+            )}
+
+            {error && (
+              <Flex justify="center">
+                <Space className="bg-error-bg text-error px-6 py-3 rounded-xl border border-error-border shadow-sm text-xs">
+                  <AlertCircle size={16} />
+                  <span>Une erreur est survenue : {error.message}</span>
+                </Space>
+              </Flex>
+            )}
+            <div ref={messagesEndRef} />
+          </Space>
+        </div>
+
+        {/* Input Area */}
+        <div className="px-4 pt-4 bg-layout/80 backdrop-blur-sm sticky bottom-0 border-t border-border/20 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
+          <form onSubmit={onFinish} className="relative group max-w-4xl mx-auto">
+            <Input.TextArea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onPressEnter={handleSend}
-              suffix={<Sparkles size={16} className="text-primary opacity-40" />}
-              className="flex-1"
+              placeholder="Posez votre question sur le programme..."
+              autoSize={{ minRows: 1, maxRows: 8 }}
+              className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  onFinish()
+                }
+              }}
             />
             <Button
               type="primary"
-              size="large"
-              icon={<Send size={18} />}
-              onClick={handleSend}
-              className="shrink-0 flex items-center justify-center"
+              htmlType="submit"
+              icon={<Send size={20} />}
+              disabled={!input.trim() || isLoading}
+              className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
+            />
+          </form>
+          <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium pb-4">
+            L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
+          </p>
+        </div>
+      </Flex>
+
+      {/* Sidebar Area */}
+      {isMobile ? (
+        <Drawer
+          title="Historique"
+          placement="right"
+          onClose={() => setIsSidebarOpen(false)}
+          open={isSidebarOpen}
+          size="75%"
+          styles={{ body: { padding: 0 } }}
+        >
+          <HistorySidebar
+            currentConversationId={conversationId}
+            onSelectConversation={(id) => {
+              handleSelectConversation(id)
+              setIsSidebarOpen(false)
+            }}
+            onNewChat={() => {
+              handleNewChat()
+              setIsSidebarOpen(false)
+            }}
+          />
+        </Drawer>
+      ) : (
+        <div
+          className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden h-full border-l border-border bg-container shrink-0",
+            isSidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-none",
+          )}
+        >
+          <div className="w-72 h-full">
+            <HistorySidebar
+              currentConversationId={conversationId}
+              onSelectConversation={handleSelectConversation}
+              onNewChat={handleNewChat}
             />
           </div>
-          <Text type="secondary" className="mt-2 text-[10px] text-center block w-full">
-            Lighthouse peut faire des erreurs. Vérifiez toujours les informations importantes dans
-            le référentiel officiel.
-          </Text>
         </div>
-      </div>
-    </div>
+      )}
+    </Flex>
   )
 }
+
+export default AssistantPage
