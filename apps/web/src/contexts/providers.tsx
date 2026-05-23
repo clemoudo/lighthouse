@@ -40,6 +40,7 @@ const AntdThemeProvider = ({ children }: { children: ReactNode }) => {
     <StyleProvider layer>
       <ConfigProvider
         locale={frBE}
+        getPopupContainer={() => (mounted ? document.body : null) as HTMLElement}
         theme={{
           algorithm:
             mounted && resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,

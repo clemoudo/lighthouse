@@ -34,9 +34,7 @@ const RootLayout = ({
     <html lang="fr" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AntdRegistry>
-          <Providers>
-            <div className="min-h-screen bg-layout text-text">{children}</div>
-          </Providers>
+          <Providers>{children}</Providers>
         </AntdRegistry>
       </body>
     </html>

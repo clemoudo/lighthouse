@@ -1,20 +1,16 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useState, useMemo, Suspense } from "react"
 import { Card, Row, Col, Statistic, DatePicker, Select, Space, Button, Empty, Flex } from "antd"
 import { Activity, Calendar, Zap, Cpu, RefreshCw, TrendingUp, User as UserIcon } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useGetAdminStatsUsage } from "@/api/generated/lighthouse"
 import type { DailyUsage, UsageByModel, UsageByIntent } from "@/api/generated/model"
-import dynamicImport from "next/dynamic"
 import dayjs from "dayjs"
 import { useSearchParams } from "next/navigation"
-
-// Dynamically import charts to avoid SSR issues
-const Line = dynamicImport(() => import("@ant-design/plots").then((mod) => mod.Line), {
-  ssr: false,
-})
-const Pie = dynamicImport(() => import("@ant-design/plots").then((mod) => mod.Pie), { ssr: false })
+import { Line, Pie } from "@ant-design/plots"
 
 const { RangePicker } = DatePicker
 

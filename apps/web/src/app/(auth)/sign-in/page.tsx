@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
@@ -16,7 +16,7 @@ import {
   Row,
   Col,
 } from "antd"
-import { Mail, Lock, Send, UserPlus } from "lucide-react"
+import { Mail, Lock, Send, UserPlus, Loader2 } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { authClient, signIn, sendVerificationEmail } from "@/lib/auth-client"
@@ -31,7 +31,7 @@ const signInSchema = z.object({
   remember: z.boolean(),
 })
 
-const SignInPage = () => {
+const SignInContent = () => {
   const { message } = App.useApp()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -304,5 +304,17 @@ const SignInPage = () => {
     </Card>
   )
 }
+
+const SignInPage = () => (
+  <Suspense
+    fallback={
+      <Card className="flex items-center justify-center py-20 shadow-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </Card>
+    }
+  >
+    <SignInContent />
+  </Suspense>
+)
 
 export default SignInPage

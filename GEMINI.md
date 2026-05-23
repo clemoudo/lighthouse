@@ -29,13 +29,23 @@ L'architecture est basée sur des microservices orchestrés via Docker. Le rever
 ### Notes de développement
 
 - **Local Host:** Always use `lighthouse.local` for local development. Ensure `127.0.0.1 lighthouse.local` is added to the system hosts file.
-- **API Gateway:** Accessible at `http://lighthouse.local:3001`.
-- **Frontend:** Accessible at `http://lighthouse.local:3000`.
+- **API Gateway:** Accessible at `http://lighthouse.local/api`.
+- **Frontend:** Accessible at `http://lighthouse.local`.
 - **Language:** All code comments and technical documentation MUST be written in English.
 - **Ergonomics:** Prioritize accessibility and responsive design (tablets, mobile, PC). Use Ant Design 6 components as the primary UI library for consistency.
 - **Entry Point:** The application redirects by default to the AI Assistant (`/assistant`).
 - **Performance:** Target response times < 2s for semantic search.
 - **GDPR:** Ensure local data hosting and anonymization where required.
+
+### Development Workflow & Best Practices
+
+- **AI Tools:** Use **MCP Servers** and **Skills** to assist in development. They provide context-aware documentation and specialized expert guidance.
+- **Code Validation:**
+    - Use `pnpm lint` to check for code style and potential errors.
+    - Use `pnpm tsc` to verify TypeScript types across the monorepo.
+- **Automation Rules:**
+    - **DO NOT** manually generate OpenAPI specifications or Orval clients. These are automatically generated within Docker containers via `concurrently`.
+    - **Prisma Client:** You **MUST** manually run `pnpm db:generate` in the root or database package to keep your IDE's autocompletion and types accurate (even though the real client is also generated inside the containers).
 
 ---
 

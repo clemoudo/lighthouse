@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useMemo } from "react"
 import { Card, Button } from "antd"
 import { LayoutDashboard, RefreshCw } from "lucide-react"

@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, Suspense, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, Input, Button, Alert, Typography, Form, Divider, Result, Col, Row } from "antd"
-import { User, Mail, Lock, ShieldCheck, LogIn } from "lucide-react"
+import { User, Mail, Lock, ShieldCheck, LogIn, Loader2 } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { authClient, signUp, signIn } from "@/lib/auth-client"
@@ -20,7 +20,7 @@ const signUpSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 })
 
-const SignUpPage = () => {
+const SignUpContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refetch } = useAuth()
@@ -38,7 +38,7 @@ const SignUpPage = () => {
   const [email, setEmail] = useState("")
 
   // Handle countdown for resend button
-  React.useEffect(() => {
+  useEffect(() => {
     let timer: NodeJS.Timeout
     if (resendCountdown > 0) {
       timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
@@ -396,5 +396,17 @@ const SignUpPage = () => {
     </Card>
   )
 }
+
+const SignUpPage = () => (
+  <Suspense
+    fallback={
+      <Card className="flex items-center justify-center py-20 shadow-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </Card>
+    }
+  >
+    <SignUpContent />
+  </Suspense>
+)
 
 export default SignUpPage
