@@ -152,7 +152,7 @@ jobs:
                 ]
               }
             }
-          prompt: "/gemini-review"
+          prompt: "--skip-trust /gemini-review"
 
       - name: "Send failure comment"
         if: |-
