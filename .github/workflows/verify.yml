@@ -48,6 +48,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Generate Prisma Client to provide types for tsc
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
       - name: Format Check
         run: pnpm format:check
 
