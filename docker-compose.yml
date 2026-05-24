@@ -37,6 +37,7 @@ services:
       - gateway
 
   postgres:
+    image: ${POSTGRES_IMAGE:-lighthouse-postgres:latest}
     build: ./infra/postgres
     container_name: postgres
     restart: unless-stopped
