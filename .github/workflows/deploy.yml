@@ -41,6 +41,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Lowercase image names
         run: |
           echo "IMAGE_NAME_WEB=$(echo ${{ env.IMAGE_BASE_NAME }}-web | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -67,6 +70,8 @@ jobs:
           provenance: false
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
             BASE_DOMAIN=${{ env.BASE_DOMAIN }}
@@ -96,6 +101,8 @@ jobs:
           provenance: false
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
           build-args: |
             DATABASE_URL=${{ env.DATABASE_URL }}
 
@@ -122,6 +129,8 @@ jobs:
           provenance: false
           tags: ${{ steps.meta-postgres.outputs.tags }}
           labels: ${{ steps.meta-postgres.outputs.labels }}
+          cache-from: type=gha,scope=postgres
+          cache-to: type=gha,mode=max,scope=postgres
 
   deploy:
     needs: build-and-push
