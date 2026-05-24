@@ -11,6 +11,7 @@ interface SpreadItemProps {
   isTwoPage: boolean
   containerWidth: number
   rotate?: number
+  zoom?: number
 }
 
 /**
@@ -22,6 +23,7 @@ const SpreadItemComponent = ({
   isTwoPage,
   containerWidth,
   rotate = 0,
+  zoom = 1,
 }: SpreadItemProps) => {
   // Exact same math as PdfReader.tsx height estimation
   const availableWidth = containerWidth - PDF_CONTAINER_PADDING
@@ -29,16 +31,22 @@ const SpreadItemComponent = ({
   // CRITICAL FIX: In TwoPage mode, the page width should ALWAYS be half the available width
   // (minus gap), even if there is only one page in the spread (e.g. the cover).
   // This ensures consistent height across all spreads.
-  const pageWidth = isTwoPage
+  const basePageWidth = isTwoPage
     ? availableWidth / 2 - PDF_PAGE_GAP / 2
     : Math.min(availableWidth - 16, 900)
+
+  const pageWidth = basePageWidth * zoom
+
+  // Ensure consistent spread width for alignment when zooming
+  const spreadWidth = isTwoPage ? pageWidth * 2 + PDF_PAGE_GAP : pageWidth
 
   return (
     <Flex
       gap={isTwoPage ? PDF_PAGE_GAP : 0}
       justify="center"
       align="start"
-      className="w-full py-2 relative"
+      style={{ width: spreadWidth }}
+      className="mx-auto py-2 relative"
     >
       {spread.map((pageNumber, index) => (
         <div
@@ -56,7 +64,7 @@ const SpreadItemComponent = ({
             pageNumber={pageNumber}
             width={pageWidth}
             rotate={rotate}
-            renderTextLayer={false}
+            renderTextLayer={true}
             renderAnnotationLayer={false}
             loading={
               <div
