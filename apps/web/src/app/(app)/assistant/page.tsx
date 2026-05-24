@@ -35,6 +35,7 @@ import {
 } from "@/api/generated/lighthouse"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useQueryClient } from "@tanstack/react-query"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 
 const { Text, Title, Paragraph } = Typography
 
@@ -67,6 +68,16 @@ const WELCOME_MESSAGE: ChatUIMessage = {
 }
 
 /**
+ * Helper to extract the text content from message parts.
+ */
+const getMessageText = (parts: UIMessage["parts"]): string => {
+  return parts
+    .filter((part) => part.type === "text")
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+}
+
+/**
  * Component to render the markdown content of a message.
  * It uses Ant Design Typography components for consistent styling.
  */
@@ -77,14 +88,7 @@ const MessageContent = ({
   role: UIMessage["role"]
   parts: UIMessage["parts"]
 }) => {
-  const content = useMemo(
-    () =>
-      parts
-        .filter((part) => part.type === "text")
-        .map((part) => (part.type === "text" ? part.text : ""))
-        .join(""),
-    [parts],
-  )
+  const content = useMemo(() => getMessageText(parts), [parts])
 
   return (
     <ReactMarkdown
@@ -132,8 +136,11 @@ const AssistantPage = () => {
   const queryClient = useQueryClient()
   const { resolvedTheme } = useTheme()
   const { data: session } = useSession()
-  const [input, setInput] = useState("")
+  const [input, setInput] = useLocalStorage("assistant-draft", "")
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
+
+  // Navigation History Logic
+  const [historyIndex, setHistoryIndex] = useState(-1)
 
   const isMobile = useIsMobile()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -183,6 +190,11 @@ const AssistantPage = () => {
     },
   })
 
+  // Get user messages in chronological order (latest last)
+  const userMessages = useMemo(() => {
+    return messages.filter((m) => m.role === "user")
+  }, [messages])
+
   const isLoading = status !== "ready"
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -199,6 +211,53 @@ const AssistantPage = () => {
     if (input.trim() && !isLoading) {
       sendMessage({ text: input }, { body: { conversationId } })
       setInput("")
+      setHistoryIndex(-1) // Reset history navigation
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle Enter to send
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      onFinish()
+      return
+    }
+
+    // Handle History Navigation (Arrow Up/Down)
+    if (userMessages.length === 0) return
+
+    if (e.key === "ArrowUp") {
+      // Only navigate history if cursor is at the beginning
+      const cursorAtStart = e.currentTarget.selectionStart === 0
+      if (cursorAtStart) {
+        const nextIndex = historyIndex + 1
+        if (nextIndex < userMessages.length) {
+          e.preventDefault()
+          const messageToRestore = userMessages[userMessages.length - 1 - nextIndex]
+          const text = getMessageText(messageToRestore.parts)
+          if (text) {
+            setHistoryIndex(nextIndex)
+            setInput(text)
+          }
+        }
+      }
+    } else if (e.key === "ArrowDown") {
+      // Only navigate history if cursor is at the end
+      const cursorAtEnd = e.currentTarget.selectionStart === e.currentTarget.value.length
+      if (cursorAtEnd) {
+        if (historyIndex > 0) {
+          e.preventDefault()
+          const nextIndex = historyIndex - 1
+          const messageToRestore = userMessages[userMessages.length - 1 - nextIndex]
+          const text = getMessageText(messageToRestore.parts)
+          setHistoryIndex(nextIndex)
+          setInput(text || "")
+        } else if (historyIndex === 0) {
+          e.preventDefault()
+          setHistoryIndex(-1)
+          setInput("") // Back to empty
+        }
+      }
     }
   }
 
@@ -232,6 +291,7 @@ const AssistantPage = () => {
 
           setMessages(uiMessages)
           setConversationId(id)
+          setHistoryIndex(-1) // Reset history for new conversation
         }
       }
     } catch (err) {
@@ -242,6 +302,7 @@ const AssistantPage = () => {
   const handleNewChat = () => {
     setConversationId(undefined)
     setMessages([WELCOME_MESSAGE])
+    setHistoryIndex(-1)
   }
 
   return (
@@ -433,12 +494,7 @@ const AssistantPage = () => {
               placeholder="Posez votre question sur le programme..."
               autoSize={{ minRows: 1, maxRows: 8 }}
               className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  onFinish()
-                }
-              }}
+              onKeyDown={handleKeyDown}
             />
             <Button
               type="primary"

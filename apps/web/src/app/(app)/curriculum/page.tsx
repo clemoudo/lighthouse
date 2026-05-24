@@ -1,17 +1,89 @@
 "use client"
 
 import { Card, Tag, Typography, Button, Empty, Row, Col } from "antd"
-import { FileText, Download, BookOpen, Clock } from "lucide-react"
+import {
+  FileText,
+  Download,
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  FileSearch,
+} from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import { CurriculumSkeleton } from "@/components/skeletons"
+import { useSearchParams, useRouter } from "next/navigation"
+import { PdfReader } from "@/components/curriculum/pdf-reader"
+import { env } from "@/env"
+import { Suspense } from "react"
+import { DocumentStatus } from "@/api/generated/model"
 
 const { Text, Title } = Typography
 
-const CurriculumPage = () => {
+/**
+ * Helper to render the status tag based on the document's ingestion state.
+ */
+const StatusTag = ({ status }: { status: DocumentStatus }) => {
+  switch (status) {
+    case DocumentStatus.COMPLETED:
+      return (
+        <Tag color="success" icon={<CheckCircle2 size={12} className="inline mr-1" />}>
+          Indexé
+        </Tag>
+      )
+    case DocumentStatus.PROCESSING:
+      return (
+        <Tag color="processing" icon={<Loader2 size={12} className="inline mr-1 animate-spin" />}>
+          En cours...
+        </Tag>
+      )
+    case DocumentStatus.FAILED:
+      return (
+        <Tag color="error" icon={<AlertCircle size={12} className="inline mr-1" />}>
+          Échec
+        </Tag>
+      )
+    case DocumentStatus.PENDING:
+    default:
+      return (
+        <Tag color="default" icon={<FileSearch size={12} className="inline mr-1" />}>
+          En attente
+        </Tag>
+      )
+  }
+}
+
+const CurriculumContent = () => {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const { data: documentsResponse, isLoading } = useGetDocuments()
 
+  const docId = searchParams.get("docId")
+  const page = searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+
   const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
+  const activeDocument = documents.find((d) => d.id === docId)
+
+  const handleCloseReader = () => {
+    router.push("/curriculum")
+  }
+
+  const handleOpenReader = (id: string) => {
+    router.push(`/curriculum?docId=${id}`)
+  }
+
+  if (docId && activeDocument) {
+    return (
+      <PdfReader
+        fileUrl={`${env.NEXT_PUBLIC_API_URL}/documents/${docId}/file`}
+        initialPage={page}
+        title={activeDocument.title}
+        onClose={handleCloseReader}
+      />
+    )
+  }
 
   return (
     <>
@@ -38,6 +110,7 @@ const CurriculumPage = () => {
                 hoverable
                 className="shadow-sm overflow-hidden h-full flex flex-col"
                 styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+                onClick={() => handleOpenReader(doc.id)}
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="p-3 rounded-lg bg-primary/10 text-primary">
@@ -55,7 +128,7 @@ const CurriculumPage = () => {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Tag color="blue">Officiel</Tag>
-                  <Tag color="green">Indexé</Tag>
+                  <StatusTag status={doc.status} />
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
@@ -68,7 +141,10 @@ const CurriculumPage = () => {
                     size="small"
                     icon={<Download size={14} />}
                     className="flex items-center"
-                    disabled // On implémentera le téléchargement plus tard si besoin
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.open(`${env.NEXT_PUBLIC_API_URL}/documents/${doc.id}/file`, "_blank")
+                    }}
                   >
                     Consulter
                   </Button>
@@ -79,6 +155,14 @@ const CurriculumPage = () => {
         </Row>
       )}
     </>
+  )
+}
+
+const CurriculumPage = () => {
+  return (
+    <Suspense fallback={<CurriculumSkeleton />}>
+      <CurriculumContent />
+    </Suspense>
   )
 }
 
