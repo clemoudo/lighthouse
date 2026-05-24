@@ -1,37 +1,14 @@
-import { prisma, type ChunkSearchResult, type ChunkMetadata, type ChapterMetadata } from "@repo/db"
+import { prisma, type ChunkSearchResult, type ChunkMetadata } from "@repo/db"
 import { logger } from "@repo/logger"
 
 export interface SaveChunksParams {
   content: string | null
   embedding: number[] | null
-  chapterId: string
+  documentId: string
   metadata?: ChunkMetadata
 }
 
-export interface CreateChapterParams {
-  documentId: string
-  title: string
-  order: number
-  parentId?: string
-  metadata?: ChapterMetadata
-}
-
 export class StorageService {
-  /**
-   * Create a chapter for a document.
-   */
-  async createChapter({ documentId, title, order, parentId, metadata }: CreateChapterParams) {
-    return prisma.chapter.create({
-      data: {
-        title,
-        order,
-        documentId,
-        parentId,
-        metadata,
-      },
-    })
-  }
-
   /**
    * Bulk insert chunks with their vectors using the Prisma extension.
    */
@@ -41,19 +18,19 @@ export class StorageService {
   }
 
   /**
-   * Remove all chapters and chunks associated with a document.
+   * Remove all chunks associated with a document.
    * Useful for re-ingestion.
    */
   async deleteDocumentData(documentId: string) {
     logger.info(`[STORAGE] Cleaning existing RAG data for document: ${documentId}`)
-    return prisma.chapter.deleteMany({
+    return prisma.chunk.deleteMany({
       where: { documentId },
     })
   }
 
   /**
    * Delete a document record from the database.
-   * Cascade will handle chapters and chunks.
+   * Cascade will handle chunks.
    */
   async deleteDocument(documentId: string) {
     logger.info(`[STORAGE] Deleting document record: ${documentId}`)

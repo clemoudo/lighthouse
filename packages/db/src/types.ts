@@ -34,7 +34,6 @@ export const ChunkMetadataSchema = z.object({
   pdfPageNumber: z.number(),
   printedPageNumber: z.string().optional(),
   source: z.string(),
-  chapterTitle: z.string(),
 })
 
 export type ChunkMetadata = z.infer<typeof ChunkMetadataSchema>

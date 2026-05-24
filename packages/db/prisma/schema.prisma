@@ -24,10 +24,6 @@ model User {
   banReason     String?
   banExpires    DateTime?
 
-  // Quotas & Usage
-  dailyMessageCount Int       @default(0)
-  lastMessageAt     DateTime? @default(now())
-
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -117,39 +113,22 @@ model Document {
   error         String?         @db.Text
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  chapters      Chapter[]
+  chunks        Chunk[]
 
   @@map("document")
 }
 
-model Chapter {
-  id         String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  title      String
-  order      Int
-  metadata   Json?     // Will store startPage and endPage
-  documentId String    @db.Uuid
-  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  
-  parentId   String?   @db.Uuid
-  parent     Chapter?  @relation("ChapterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  subSections Chapter[] @relation("ChapterHierarchy")
-
-  chunks     Chunk[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  @@map("chapter")
-}
-
 model Chunk {
-  id        String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  content   String?                     @db.Text
-  embedding Unsupported("vector(1024)")?
-  metadata  Json?
-  chapterId String                      @db.Uuid
-  chapter   Chapter                     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  createdAt DateTime                    @default(now())
-  updatedAt DateTime                    @updatedAt
+  id         String                      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  content    String?                     @db.Text
+  embedding  Unsupported("vector(1024)")?
+  metadata   Json?
+  
+  documentId String                      @db.Uuid
+  document   Document                    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime                    @default(now())
+  updatedAt  DateTime                    @updatedAt
 
   @@map("chunk")
 }

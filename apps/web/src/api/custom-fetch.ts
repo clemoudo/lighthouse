@@ -23,7 +23,7 @@ export const customFetch = async <T>(
     data?: unknown
   },
 ): Promise<T> => {
-  const { method, params, data, headers, signal, ...rest } = config
+  const { method, params, data, headers, signal, body: configBody, ...rest } = config
 
   // 1. Construction de l'URL avec les query params
   let queryParams = ""
@@ -43,20 +43,38 @@ export const customFetch = async <T>(
   const baseUrl = env.NEXT_PUBLIC_API_URL
   const fullUrl = `${baseUrl}${url}${queryParams}`
 
-  // 2. Exécution de la requête
+  // 2. Préparation du corps de la requête
+  // Orval peut passer les données soit via 'data' (JSON) soit via 'body' (FormData ou stringified JSON)
+  const requestBody = data ?? configBody
+  const isFormData = requestBody instanceof FormData
+
+  const requestHeaders: Record<string, string> = {
+    ...Object.fromEntries(new Headers(headers).entries()),
+  }
+
+  // On n'ajoute application/json que si ce n'est pas du FormData
+  if (!isFormData && !requestHeaders["Content-Type"] && requestBody) {
+    requestHeaders["Content-Type"] = "application/json"
+  }
+
+  const finalBody =
+    isFormData || typeof requestBody === "string"
+      ? (requestBody as BodyInit)
+      : requestBody
+        ? JSON.stringify(requestBody)
+        : undefined
+
+  // 3. Exécution de la requête
   const response = await fetch(fullUrl, {
     ...rest,
     method: method?.toUpperCase(),
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    ...(data ? { body: JSON.stringify(data) } : {}),
+    headers: requestHeaders,
+    body: finalBody,
     signal,
     credentials: "include",
   })
 
-  // 3. Gestion des erreurs HTTP
+  // 4. Gestion des erreurs HTTP
   if (!response.ok) {
     const errorBody: unknown = await response.json().catch(() => ({}))
     const message =

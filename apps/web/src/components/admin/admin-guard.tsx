@@ -16,7 +16,7 @@ export const AdminGuard = ({ children }: AdminGuardProps) => {
   if (isPending) {
     return (
       <Flex align="center" justify="center" className="h-[80vh] w-full">
-        <Spin size="large" tip="Vérification des accès administrateur..." />
+        <Spin size="large" description="Vérification des accès administrateur..." />
       </Flex>
     )
   }

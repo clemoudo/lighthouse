@@ -41,6 +41,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Lowercase image names
         run: |
           echo "IMAGE_NAME_WEB=$(echo ${{ env.IMAGE_BASE_NAME }}-web | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -54,6 +57,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-,format=short
             type=semver,pattern={{version}}
+            type=raw,value=${{ github.event.release.tag_name }}
             type=raw,value=latest
 
       - name: Build and push Web image
@@ -66,6 +70,8 @@ jobs:
           provenance: false
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
             BASE_DOMAIN=${{ env.BASE_DOMAIN }}
@@ -82,6 +88,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-,format=short
             type=semver,pattern={{version}}
+            type=raw,value=${{ github.event.release.tag_name }}
             type=raw,value=latest
 
       - name: Build and push API image
@@ -94,8 +101,36 @@ jobs:
           provenance: false
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
           build-args: |
             DATABASE_URL=${{ env.DATABASE_URL }}
+
+      - name: Lowercase image name for Postgres
+        run: |
+          echo "IMAGE_NAME_POSTGRES=$(echo ${{ env.IMAGE_BASE_NAME }}-postgres | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract metadata (tags, labels) for Postgres
+        id: meta-postgres
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_POSTGRES }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=semver,pattern={{version}}
+            type=raw,value=${{ github.event.release.tag_name }}
+            type=raw,value=latest
+
+      - name: Build and push Postgres image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./infra/postgres
+          push: true
+          provenance: false
+          tags: ${{ steps.meta-postgres.outputs.tags }}
+          labels: ${{ steps.meta-postgres.outputs.labels }}
+          cache-from: type=gha,scope=postgres
+          cache-to: type=gha,mode=max,scope=postgres
 
   deploy:
     needs: build-and-push
@@ -130,6 +165,7 @@ jobs:
         run: |
           echo "IMAGE_NAME_WEB=$(echo ${{ env.IMAGE_BASE_NAME }}-web | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           echo "IMAGE_NAME_API=$(echo ${{ env.IMAGE_BASE_NAME }}-api | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE_NAME_POSTGRES=$(echo ${{ env.IMAGE_BASE_NAME }}-postgres | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Run Ansible Deploy Playbook
         working-directory: infra/ansible
@@ -145,4 +181,5 @@ jobs:
             -e "ghcr_pat=${{ secrets.GITHUB_TOKEN }}" \
             -e "web_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:${IMAGE_TAG}" \
             -e "api_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${IMAGE_TAG}" \
+            -e "postgres_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_POSTGRES }}:${IMAGE_TAG}" \
             --private-key ~/.ssh/ansible

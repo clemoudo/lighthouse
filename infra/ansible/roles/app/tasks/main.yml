@@ -68,6 +68,11 @@
     state: present
     pull: always
     remove_orphans: yes
+    env_files:
+      - /home/deploy/app/.env
+    project_options:
+      - "--env-file"
+      - "/home/deploy/app/.env"
 
 - name: Appliquer les migrations Prisma (Sécurisé pour la production)
   community.docker.docker_container_exec:

@@ -18,7 +18,7 @@ export class ChatService {
     return chunks
       .map(
         (c, i) =>
-          `[Source ${i + 1}]: ${c.metadata.source} (Chapitre: ${c.metadata.chapterTitle}, Page: ${c.metadata.pdfPageNumber})\n${c.content}`,
+          `[Source ${i + 1}]: ${c.metadata.source} (Page: ${c.metadata.pdfPageNumber})\n${c.content}`,
       )
       .join("\n\n---\n\n")
   }
@@ -82,7 +82,7 @@ Raison en 10 mots maximum.`,
    - Professionnel : Pas de jeux de mots ou de métaphores sur la mer, les oiseaux ou les phares.
    - Pédagogique : Structure tes réponses avec des listes à puces et du gras pour plus de clarté.
 
-  # EXEMPLES D'INTERACTIONS (FEW-SHOT)
+  # EXEMPLES d'INTERACTIONS (FEW-SHOT)
 
   ### EXEMPLE 1 : Succès (Information présente)
   Utilisateur : "Quels sont les attendus pour la structuration de l'espace en 3ème maternelle ?"
@@ -129,7 +129,7 @@ Raison en 10 mots maximum.`,
    */
   formatSourcesForUI(chunks: ChunkSearchResult[]): ChatSource[] {
     return chunks.map((chunk) => ({
-      id: chunk.id,
+      id: chunk.documentId,
       source: chunk.metadata.source,
       page: chunk.metadata.pdfPageNumber,
     }))

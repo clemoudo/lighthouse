@@ -6,10 +6,8 @@ import { BadRequest } from "http-errors"
 import { env } from "./env"
 import {
   ParsedContentSchema,
-  ChapterMetadataSchema,
   ChunkMetadataSchema,
   type ParsedContent,
-  type ChapterMetadata,
   type ChunkMetadata,
 } from "./types"
 import { PAGINATION_LIMITS } from "@repo/api"
@@ -23,7 +21,7 @@ const adapter = new PrismaPg(pool)
 export interface ChunkSearchResult {
   id: string
   content: string
-  chapterId: string
+  documentId: string
   similarity: number
   metadata: ChunkMetadata
 }
@@ -55,15 +53,6 @@ const extendedPrisma = new PrismaClient({
         compute(doc) {
           if (!doc.parsedContent) return null
           return ParsedContentSchema.parse(doc.parsedContent) as ParsedContent
-        },
-      },
-    },
-    chapter: {
-      metadata: {
-        needs: { metadata: true },
-        compute(chapter) {
-          if (!chapter.metadata) return null
-          return ChapterMetadataSchema.parse(chapter.metadata) as ChapterMetadata
         },
       },
     },
@@ -134,7 +123,7 @@ const extendedPrisma = new PrismaClient({
         chunks: {
           content: string | null
           embedding: number[] | null
-          chapterId: string
+          documentId: string
           metadata?: ChunkMetadata
         }[],
       ) {
@@ -146,15 +135,14 @@ const extendedPrisma = new PrismaClient({
           const metadataJson = chunk.metadata ? JSON.stringify(chunk.metadata) : null
 
           if (vectorStr) {
-            return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
+            return Prisma.sql`(uuidv7(), ${chunk.content}, ${vectorStr}::vector, ${chunk.documentId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
           }
 
-          return Prisma.sql`(uuidv7(), ${chunk.content}, NULL, ${chunk.chapterId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
+          return Prisma.sql`(uuidv7(), ${chunk.content}, NULL, ${chunk.documentId}::uuid, ${metadataJson}::jsonb, NOW(), NOW())`
         })
 
-        // On utilise extendedPrisma.$executeRaw avec Prisma.join pour garantir la sécurité
         return extendedPrisma.$executeRaw`
-          INSERT INTO chunk (id, content, embedding, "chapterId", metadata, "createdAt", "updatedAt")
+          INSERT INTO chunk (id, content, embedding, "documentId", metadata, "createdAt", "updatedAt")
           VALUES ${Prisma.join(values)}
         `
       },
@@ -165,7 +153,7 @@ const extendedPrisma = new PrismaClient({
       async search(embedding: number[], limit = 5): Promise<ChunkSearchResult[]> {
         const vectorStr = `[${embedding.join(",")}]`
         return extendedPrisma.$queryRaw<ChunkSearchResult[]>`
-          SELECT id, content, "chapterId", metadata, 1 - (embedding <=> ${vectorStr}::vector) as similarity
+          SELECT id, content, "documentId", metadata, 1 - (embedding <=> ${vectorStr}::vector) as similarity
           FROM chunk
           ORDER BY embedding <=> ${vectorStr}::vector
           LIMIT ${limit}

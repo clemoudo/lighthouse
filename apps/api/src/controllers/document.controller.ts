@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import fs from "node:fs/promises"
+import path from "node:path"
 import { prisma, IngestionStatus } from "@repo/db"
 import { logger } from "@repo/logger"
 import { PaginationQuerySchema } from "@repo/api"
@@ -32,6 +33,37 @@ export const listDocuments = async (req: Request, res: Response) => {
     documents: data,
     meta,
   })
+}
+
+/**
+ * Serves the physical PDF file for a document.
+ */
+export const getDocumentFile = async (req: Request, res: Response) => {
+  const { id } = req.params as { id: string }
+
+  const document = await prisma.document.findUnique({
+    where: { id },
+  })
+
+  if (!document) {
+    throw new ApiError(404, "NOT_FOUND", "Document introuvable")
+  }
+
+  const absolutePath = path.resolve(document.filePath)
+
+  // Verify file exists on disk
+  try {
+    await fs.access(absolutePath)
+  } catch (err) {
+    logger.error(`[ADMIN] File not found on disk: ${absolutePath}`, err)
+    throw new ApiError(404, "NOT_FOUND", "Fichier physique introuvable")
+  }
+
+  // Add cache headers for performance (1 day)
+  res.setHeader("Cache-Control", "private, max-age=86400")
+  res.setHeader("Content-Type", document.mimeType)
+
+  res.sendFile(absolutePath)
 }
 
 export const uploadDocument = async (req: Request, res: Response) => {

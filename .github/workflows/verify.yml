@@ -25,6 +25,13 @@ jobs:
         with:
           fetch-depth: 0 # Needed for SonarCloud
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Fetch Infisical Secrets
         uses: Infisical/secrets-action@v1.0.16
         with:
@@ -64,17 +71,9 @@ jobs:
       - name: Format Check
         run: pnpm format:check
 
-      - name: Linting
-        run: pnpm turbo run lint
-
-      - name: Type Checking
-        run: pnpm turbo run tsc
-
-      - name: Run Tests with Coverage
-        run: pnpm turbo run test:coverage
-
-      - name: Build
-        run: pnpm turbo run build
+      # Running everything through Turbo at once to leverage parallelization and remote cache
+      - name: Verify All (Lint, Typecheck, Test, Build)
+        run: pnpm turbo run lint tsc test:coverage build
         env:
           SKIP_ENV_VALIDATION: 1
           NODE_ENV: "production"
