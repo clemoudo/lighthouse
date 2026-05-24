@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect } from "react"
-import { Button, Result, Flex } from "antd"
+import { Button, Result, Flex, Space } from "antd"
 import { logger } from "@repo/logger"
+import { RefreshCcw } from "lucide-react"
 
-const Error = ({ error }: { error: Error & { digest?: string } }) => {
+const Error = ({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) => {
   useEffect(() => {
     logger.error("Global Frontend Error:", error)
   }, [error])
@@ -14,11 +15,14 @@ const Error = ({ error }: { error: Error & { digest?: string } }) => {
       <Result
         status="error"
         title="Une erreur est survenue"
-        subTitle={"Désolé, quelque chose s'est mal passé."}
+        subTitle="Désolé, quelque chose s'est mal passé."
         extra={
-          <Button type="primary" key="home" onClick={() => (window.location.href = "/")}>
-            Retour à l'accueil
-          </Button>
+          <Space>
+            <Button type="primary" icon={<RefreshCcw size={16} />} onClick={() => reset()}>
+              Réessayer
+            </Button>
+            <Button onClick={() => (window.location.href = "/")}>Retour à l'accueil</Button>
+          </Space>
         }
       />
     </Flex>
