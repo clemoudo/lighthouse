@@ -13,3 +13,5 @@ RUN git clone --branch v0.8.2 https://github.com/pgvector/pgvector.git /tmp/pgve
     && rm -rf /tmp/pgvector
 
 RUN apk del .build-deps
+
+COPY init.sql /docker-entrypoint-initdb.d/

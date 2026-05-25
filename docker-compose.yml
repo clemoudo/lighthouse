@@ -37,8 +37,7 @@ services:
       - gateway
 
   postgres:
-    image: ${POSTGRES_IMAGE:-lighthouse-postgres:latest}
-    build: ./infra/postgres
+    image: ${POSTGRES_IMAGE:-ghcr.io/clemoudo/lighthouse-postgres:latest}
     container_name: postgres
     restart: unless-stopped
     environment:
@@ -47,7 +46,6 @@ services:
       POSTGRES_DB: "${DB_NAME}"
     volumes:
       - postgres_data:/var/lib/postgresql
-      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -59,18 +57,7 @@ services:
 
   web:
     container_name: web
-    image: ${WEB_IMAGE:-lighthouse-web:latest}
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
-      target: ${NODE_ENV}
-      args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-        - BASE_DOMAIN=${BASE_DOMAIN}
-        - API_HOST=${API_HOST}
-        - API_PORT=${API_PORT}
-        - WEB_HOST=${WEB_HOST}
-        - WEB_PORT=${WEB_PORT}
+    image: ${WEB_IMAGE:-ghcr.io/clemoudo/lighthouse-web:latest}
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV}
@@ -106,13 +93,7 @@ services:
 
   api:
     container_name: api
-    image: ${API_IMAGE:-lighthouse-api:latest}
-    build:
-      context: .
-      dockerfile: ./apps/api/Dockerfile
-      target: ${NODE_ENV}
-      args:
-        - DATABASE_URL=${DATABASE_URL}
+    image: ${API_IMAGE:-ghcr.io/clemoudo/lighthouse-api:latest}
     restart: unless-stopped
     environment:
       - NODE_ENV=${NODE_ENV}

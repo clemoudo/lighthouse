@@ -41,6 +41,17 @@ services:
       - admin
 
   web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      target: ${NODE_ENV}
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - BASE_DOMAIN=${BASE_DOMAIN}
+        - API_HOST=${API_HOST}
+        - API_PORT=${API_PORT}
+        - WEB_HOST=${WEB_HOST}
+        - WEB_PORT=${WEB_PORT}
     tty: true
     stdin_open: true
     image: ${WEB_IMAGE:-lighthouse-web:latest-dev}
@@ -60,6 +71,12 @@ services:
       - gateway
 
   api:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+      target: ${NODE_ENV}
+      args:
+        - DATABASE_URL=${DATABASE_URL}
     tty: true
     stdin_open: true
     image: ${API_IMAGE:-lighthouse-api:latest-dev}
@@ -79,6 +96,7 @@ services:
       - backend
 
   postgres:
+    build: ./infra/postgres
     networks:
       - backend
       - admin
