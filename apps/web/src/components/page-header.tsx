@@ -17,7 +17,7 @@ export const PageHeader = ({ title, description, icon: Icon, className }: PageHe
   return (
     <Flex vertical gap={4} className={cn("px-1 mb-6", className)}>
       <Flex align="center" gap={12}>
-        {Icon && <Icon className="h-8 w-8 text-primary shrink-0" />}
+        {Icon && <Icon className="h-8 w-8 text-primary dark:text-info shrink-0" />}
         <Title level={1} className="m-0! text-2xl! font-bold tracking-tight sm:text-3xl!">
           {title}
         </Title>

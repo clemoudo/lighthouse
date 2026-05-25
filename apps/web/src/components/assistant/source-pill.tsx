@@ -17,7 +17,7 @@ export const SourcePill = ({ source }: SourcePillProps) => {
         gap={6}
         className="px-3 py-1 rounded-full bg-fill-quaternary border border-border text-[10px] font-medium text-text-secondary hover:border-primary/30 hover:bg-fill-tertiary transition-colors cursor-pointer group"
       >
-        <BookOpen size={10} className="text-primary/60 group-hover:text-primary" />
+        <BookOpen size={10} className="text-primary/60 dark:text-info group-hover:text-primary" />
         <span>
           {source.source} — p.{source.page}
         </span>

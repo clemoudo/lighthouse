@@ -31,7 +31,9 @@ export const SectionHeader = ({
       className={cn("flex-col sm:flex-row px-1", className)}
     >
       <Flex align="center" gap={8}>
-        {Icon && <Icon className={cn("h-5 w-5 text-primary shrink-0", iconClassName)} />}
+        {Icon && (
+          <Icon className={cn("h-5 w-5 text-primary dark:text-info shrink-0", iconClassName)} />
+        )}
         <Title level={3} className="m-0! text-xl! font-bold! text-foreground!">
           {title}
         </Title>

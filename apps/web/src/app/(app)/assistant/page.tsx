@@ -394,7 +394,7 @@ const AssistantPage = () => {
                             color="processing"
                             variant="filled"
                             icon={<ShieldCheck size={12} className="mr-1" />}
-                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-none shadow-none"
+                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 dark:bg-info/20 text-primary dark:text-info border-none shadow-none"
                           >
                             Vérifié
                           </Tag>

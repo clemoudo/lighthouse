@@ -11,12 +11,17 @@ import type { DailyUsage, UsageByModel, UsageByIntent } from "@/api/generated/mo
 import dayjs from "dayjs"
 import { useSearchParams } from "next/navigation"
 import { Line, Pie } from "@ant-design/plots"
+import { useTheme } from "next-themes"
 
 const { RangePicker } = DatePicker
 
 const UsageDashboardContent = () => {
+  const { resolvedTheme } = useTheme()
   const searchParams = useSearchParams()
   const initialUserId = searchParams.get("userId")
+
+  // Chart theme
+  const chartTheme = resolvedTheme === "dark" ? "dark" : "light"
 
   // States for filters
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
@@ -69,8 +74,9 @@ const UsageDashboardContent = () => {
       stack: true,
       smooth: true,
       legend: { position: "top" as const },
+      theme: chartTheme,
     }
-  }, [data])
+  }, [data, chartTheme])
 
   const modelPieConfig = useMemo(() => {
     if (!data?.byModel) return null
@@ -85,8 +91,9 @@ const UsageDashboardContent = () => {
         position: "outside",
       },
       legend: { position: "bottom" as const },
+      theme: chartTheme,
     }
-  }, [data])
+  }, [data, chartTheme])
 
   const intentPieConfig = useMemo(() => {
     if (!data?.byIntent) return null
@@ -103,8 +110,9 @@ const UsageDashboardContent = () => {
         style: { fontSize: 14, textAlign: "center" },
       },
       legend: { position: "bottom" as const },
+      theme: chartTheme,
     }
-  }, [data])
+  }, [data, chartTheme])
 
   return (
     <div className="space-y-6">

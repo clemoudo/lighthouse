@@ -45,13 +45,23 @@ const AntdThemeProvider = ({ children }: { children: ReactNode }) => {
           algorithm:
             mounted && resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: "#003f71",
-            colorInfo: "#3c91e6",
+            colorPrimary: "#004f8f",
+            colorInfo: "#47acff",
             colorSuccess: "#4fba5a",
             colorWarning: "#ea890b",
             colorError: "#d13523",
             borderRadius: 12,
             fontFamily: "var(--font-inter)",
+            // Custom colors for dark mode to avoid pure black and improve contrast
+            ...(mounted && resolvedTheme === "dark"
+              ? {
+                  colorBgLayout: "#141414",
+                  colorBgContainer: "#1f1f1f",
+                  colorBgElevated: "#2a2a2a",
+                  colorTextSecondary: "rgba(255, 255, 255, 0.65)",
+                  colorTextTertiary: "rgba(255, 255, 255, 0.45)",
+                }
+              : {}),
           },
           cssVar: { key: "ant" },
           hashed: false,

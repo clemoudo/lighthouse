@@ -96,7 +96,9 @@ export const HistorySidebar = ({
                     ellipsis={{ tooltip: true }}
                     className={cn(
                       "text-sm transition-colors",
-                      currentConversationId === conv.id ? "text-primary" : "text-text",
+                      currentConversationId === conv.id
+                        ? "text-primary dark:text-info"
+                        : "text-text",
                     )}
                   >
                     {conv.title || "Nouvelle discussion"}
