@@ -46,6 +46,7 @@ export class ParsingService {
   constructor() {
     this.client = new LlamaCloud({
       apiKey: env.LLAMA_CLOUD_API_KEY,
+      baseURL: "https://api.cloud.eu.llamaindex.ai",
     })
   }
 

@@ -58,7 +58,8 @@ FROM base AS production
 RUN addgroup --system --gid 1001 expressjs && \
     adduser --system --uid 1001 expressjs
 
-RUN chown -R expressjs:expressjs /app
+# Create uploads directory and ensure correct ownership
+RUN mkdir -p /app/uploads && chown -R expressjs:expressjs /app
 USER expressjs
 
 # Copy only the deployed app

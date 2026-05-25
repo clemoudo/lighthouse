@@ -26,6 +26,7 @@
     "release": "turbo run build && changeset publish",
     "provision": "cd infra/ansible && infisical run --env=prod -- ansible-playbook provision.yml",
     "deploy:prod": "cd infra/ansible && infisical run --env=prod -- ansible-playbook deploy.yml",
+    "promote-admin": "bash -c 'cd infra/ansible && infisical run --env=prod -- ansible-playbook promote_admin.yml -e admin_email=$1' --",
     "db:generate": "pnpm --filter @repo/db db:generate",
     "db:push": "pnpm --filter @repo/db db:push",
     "db:reset": "pnpm --filter @repo/db db:reset",
