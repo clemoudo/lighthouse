@@ -31,6 +31,8 @@ import { cn } from "@/lib/utils"
 import { useSession, signOut } from "@/lib/auth-client"
 import { UserRole } from "@/api/generated/model"
 
+import { env } from "@/env"
+
 const { Text, Title } = Typography
 const { Avatar: SkeletonAvatar } = Skeleton
 
@@ -102,7 +104,7 @@ const UserProfile = () => {
 
   if (!mounted || isPending) {
     return (
-      <Flex align="center" gap={12} className="px-4 py-4">
+      <Flex align="center" gap={12} className="p-2">
         <SkeletonAvatar active size="small" shape="circle" />
         <Flex vertical flex={1} gap={4}>
           <div className="h-3 w-20 rounded bg-white/10" />
@@ -114,7 +116,7 @@ const UserProfile = () => {
 
   if (!session) {
     return (
-      <div className="px-4 py-4">
+      <div className="p-2">
         <Link href="/sign-in" className="block w-full">
           <Button
             type="primary"
@@ -147,7 +149,7 @@ const UserProfile = () => {
   ]
 
   return (
-    <div className="px-3 py-4">
+    <div className="p-2">
       <Dropdown menu={{ items }} placement="topRight" trigger={["click"]}>
         <Flex
           align="center"
@@ -259,6 +261,9 @@ const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       {/* Footer / User Profile */}
       <Divider className="bg-white/10 m-0" />
       <UserProfile />
+      <Text className="pb-3 text-[10px] text-white/30 text-center">
+        &copy; Lighthouse - {env.NEXT_PUBLIC_APP_VERSION}
+      </Text>
     </Flex>
   )
 }
