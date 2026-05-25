@@ -8,7 +8,8 @@ import { z } from "zod"
 import { PageHeader } from "@/components/page-header"
 import { SectionHeader } from "@/components/section-header"
 import { FormField } from "@/components/form-field"
-import { useSession, updateUser, changePassword, deleteUser, authClient } from "@/lib/auth-client"
+import { updateUser, changePassword, deleteUser, authClient } from "@/lib/auth-client"
+import { useAuth } from "@/contexts/AuthContext"
 import { AuthGuard } from "@/components/auth/auth-guard"
 
 const { Text } = Typography
@@ -31,13 +32,11 @@ const passwordSchema = z
 
 const SettingsContent = () => {
   const { message, modal } = App.useApp()
-  const { data: session, isPending: isSessionPending, refetch } = useSession()
+  const { user, isLoading: isSessionPending, refetch } = useAuth()
   const [infoPending, setInfoPending] = useState(false)
   const [passwordPending, setPasswordPending] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
-
-  const user = session?.user
 
   // 1. Info Form
   const infoForm = useForm({

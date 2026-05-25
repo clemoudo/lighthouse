@@ -1,8 +1,10 @@
 "use client"
 
 import React, { createContext, useContext, ReactNode, useMemo } from "react"
-import { useSession } from "@/lib/auth-client"
-import { Session, User } from "better-auth/types"
+import { authClient, useSession } from "@/lib/auth-client"
+
+type Session = typeof authClient.$Infer.Session.session
+type User = typeof authClient.$Infer.Session.user
 
 interface AuthContextType {
   user: User | null

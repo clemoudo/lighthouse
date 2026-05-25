@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession } from "@/lib/auth-client"
+import { useAuth } from "@/contexts/AuthContext"
 import { redirect } from "next/navigation"
 import { Spin, Flex } from "antd"
 import { UserRole } from "@/api/generated/model"
@@ -11,9 +11,9 @@ interface AdminGuardProps {
 }
 
 export const AdminGuard = ({ children }: AdminGuardProps) => {
-  const { data: session, isPending } = useSession()
+  const { user, isLoading } = useAuth()
 
-  if (isPending) {
+  if (isLoading) {
     return (
       <Flex align="center" justify="center" className="h-[80vh] w-full">
         <Spin size="large" description="Vérification des accès administrateur..." />
@@ -22,7 +22,7 @@ export const AdminGuard = ({ children }: AdminGuardProps) => {
   }
 
   // Si pas de session ou pas admin, redirection vers l'accueil
-  if (!session || session.user.role !== UserRole.admin) {
+  if (!user || user.role !== UserRole.admin) {
     redirect("/")
   }
 

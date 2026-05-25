@@ -29,7 +29,8 @@ import {
   Activity,
 } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
-import { useSession, authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth-client"
+import { useAuth } from "@/contexts/AuthContext"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { UserRole } from "@/api/generated/model"
 import { useGetAdminStatsUsers } from "@/api/generated/lighthouse"
@@ -41,7 +42,7 @@ const { Text } = Typography
 
 const AdminUsersPage = () => {
   const { message } = App.useApp()
-  const { data: session } = useSession()
+  const { user } = useAuth()
 
   // Pagination & Search States
   const [searchValue, setSearchValue] = useState("")
@@ -186,7 +187,7 @@ const AdminUsersPage = () => {
             <Flex vertical>
               <span className="font-medium">
                 {record.name}
-                {record.id === session?.user.id && (
+                {record.id === user?.id && (
                   <Tag color="blue" className="ml-2">
                     Moi
                   </Tag>
@@ -280,7 +281,7 @@ const AdminUsersPage = () => {
         title: "Actions",
         key: "actions",
         render: (_, record) => {
-          const isMe = record.id === session?.user.id
+          const isMe = record.id === user?.id
 
           return (
             <Space>
@@ -325,7 +326,7 @@ const AdminUsersPage = () => {
         },
       },
     ],
-    [session?.user.id, handleBan, handleUnban, handleRemove, usageMap],
+    [user?.id, handleBan, handleUnban, handleRemove, usageMap],
   )
 
   return (
