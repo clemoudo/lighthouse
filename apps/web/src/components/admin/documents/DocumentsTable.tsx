@@ -21,20 +21,32 @@ export const DocumentsTable = ({ documents, loading }: DocumentsTableProps) => {
         return <Tag color="default">En attente</Tag>
       case "PROCESSING":
         return (
-          <Tag icon={<Loader2 className="animate-spin" size={12} />} color="processing">
+          <Tag
+            icon={<Loader2 className="animate-spin" size={12} />}
+            color="processing"
+            className="inline-flex items-center gap-1"
+          >
             Traitement IA...
           </Tag>
         )
       case "COMPLETED":
         return (
-          <Tag icon={<CheckCircle2 size={12} />} color="success">
+          <Tag
+            icon={<CheckCircle2 size={12} />}
+            color="success"
+            className="inline-flex items-center gap-1"
+          >
             Indexé
           </Tag>
         )
       case "FAILED":
         return (
           <Tooltip title={error || "Erreur inconnue"}>
-            <Tag icon={<AlertCircle size={12} />} color="error">
+            <Tag
+              icon={<AlertCircle size={12} />}
+              color="error"
+              className="inline-flex items-center gap-1"
+            >
               Échec
             </Tag>
           </Tooltip>

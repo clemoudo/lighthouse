@@ -208,6 +208,7 @@ const AdminUsersPage = () => {
           <Tag
             color={role === UserRole.admin ? "gold" : "default"}
             icon={role === UserRole.admin ? <Shield size={12} /> : null}
+            className={role === UserRole.admin ? "inline-flex items-center gap-1" : undefined}
           >
             {role?.toUpperCase()}
           </Tag>
@@ -219,11 +220,19 @@ const AdminUsersPage = () => {
         key: "emailVerified",
         render: (verified) =>
           verified ? (
-            <Tag color="success" icon={<CheckCircle2 size={12} />}>
+            <Tag
+              color="success"
+              icon={<CheckCircle2 size={12} />}
+              className="inline-flex items-center gap-1"
+            >
               Oui
             </Tag>
           ) : (
-            <Tag color="warning" icon={<XCircle size={12} />}>
+            <Tag
+              color="warning"
+              icon={<XCircle size={12} />}
+              className="inline-flex items-center gap-1"
+            >
               Non
             </Tag>
           ),
@@ -265,7 +274,11 @@ const AdminUsersPage = () => {
           if (record.banned) {
             return (
               <Tooltip title={`Motif: ${record.banReason || "Non spécifié"}`}>
-                <Tag color="error" icon={<Ban size={12} />}>
+                <Tag
+                  color="error"
+                  icon={<Ban size={12} />}
+                  className="inline-flex items-center gap-1"
+                >
                   Banni{" "}
                   {record.banExpires
                     ? `jusqu'au ${new Date(record.banExpires).toLocaleDateString()}`
