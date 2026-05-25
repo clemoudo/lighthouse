@@ -8,10 +8,7 @@
     mode: '0755'
   loop:
     - infra/traefik
-    - infra/postgres
     - infra/traefik/letsencrypt
-    - apps/web
-    - apps/api
 
 - name: Copier le fichier docker-compose.yml
   copy:
@@ -21,17 +18,6 @@
     group: deploy
     mode: '0644'
 
-- name: Copier les Dockerfiles (Requis pour que Docker Compose puisse parser le fichier)
-  copy:
-    src: "{{ playbook_dir }}/../../{{ item }}"
-    dest: "/home/deploy/app/{{ item }}"
-    owner: deploy
-    group: deploy
-    mode: '0644'
-  loop:
-    - apps/web/Dockerfile
-    - apps/api/Dockerfile
-
 - name: Copier la configuration Traefik
   copy:
     src: "{{ playbook_dir }}/../traefik/traefik.yml"
@@ -40,13 +26,10 @@
     group: deploy
     mode: '0644'
 
-- name: Copier les fichiers de base de données PostgreSQL
-  copy:
-    src: "{{ playbook_dir }}/../postgres/"
-    dest: /home/deploy/app/infra/postgres/
-    owner: deploy
-    group: deploy
-    mode: '0644'
+- name: Nettoyer les fichiers d'override (Sécurité prod)
+  file:
+    path: /home/deploy/app/docker-compose.override.yml
+    state: absent
 
 - name: Générer le fichier .env de production
   template:
@@ -65,6 +48,8 @@
 - name: Déployer l'application avec Docker Compose
   community.docker.docker_compose_v2:
     project_src: /home/deploy/app
+    files:
+      - docker-compose.yml
     state: present
     pull: always
     remove_orphans: yes

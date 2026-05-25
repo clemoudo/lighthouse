@@ -55,8 +55,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}
           tags: |
-            type=sha,prefix=sha-,format=short
-            type=semver,pattern={{version}}
             type=raw,value=${{ github.event.release.tag_name }}
             type=raw,value=latest
 
@@ -87,8 +85,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
           tags: |
-            type=sha,prefix=sha-,format=short
-            type=semver,pattern={{version}}
             type=raw,value=${{ github.event.release.tag_name }}
             type=raw,value=latest
 
@@ -117,8 +113,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_POSTGRES }}
           tags: |
-            type=sha,prefix=sha-,format=short
-            type=semver,pattern={{version}}
             type=raw,value=${{ github.event.release.tag_name }}
             type=raw,value=latest
 
@@ -171,11 +165,8 @@ jobs:
       - name: Run Ansible Deploy Playbook
         working-directory: infra/ansible
         run: |
-          # Use the tag from the release or SHA as fallback
+          # Prioritize the release tag name
           IMAGE_TAG="${{ github.event.release.tag_name }}"
-          if [ -z "$IMAGE_TAG" ]; then
-            IMAGE_TAG="sha-$(echo ${{ github.sha }} | cut -c1-7)"
-          fi
 
           ansible-playbook deploy.yml \
             -e "ghcr_username=${{ github.actor }}" \
