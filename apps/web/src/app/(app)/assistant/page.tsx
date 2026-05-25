@@ -24,7 +24,7 @@ import dynamic from "next/dynamic"
 import Image from "next/image"
 import remarkGfm from "remark-gfm"
 import { useTheme } from "next-themes"
-import { useSession } from "@/lib/auth-client"
+import { useAuth } from "@/contexts/AuthContext"
 import { Citations } from "@/components/assistant/citations"
 import { MessageRole, type ChatSource } from "@repo/api"
 import { HistorySidebar } from "@/components/assistant/history-sidebar"
@@ -135,7 +135,7 @@ const MessageContent = ({
 const AssistantPage = () => {
   const queryClient = useQueryClient()
   const { resolvedTheme } = useTheme()
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [input, setInput] = useLocalStorage("assistant-draft", "")
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
 
@@ -343,10 +343,10 @@ const AssistantPage = () => {
                       size={40}
                       icon={
                         m.role === "user" ? (
-                          session?.user.image ? (
+                          user?.image ? (
                             <Image
-                              src={session.user.image}
-                              alt={session.user.name ?? "User"}
+                              src={user.image}
+                              alt={user.name ?? "User"}
                               width={40}
                               height={40}
                               className="rounded-full"
@@ -366,7 +366,7 @@ const AssistantPage = () => {
                       }
                       className={cn(
                         m.role === "user"
-                          ? session?.user.image
+                          ? user?.image
                             ? "bg-transparent border-none"
                             : "bg-primary"
                           : "bg-container border border-border overflow-visible!",
@@ -385,7 +385,7 @@ const AssistantPage = () => {
                         strong
                         className="text-[11px] uppercase tracking-widest opacity-40 px-1"
                       >
-                        {m.role === "user" ? (session?.user.name ?? "Vous") : "Félix"}
+                        {m.role === "user" ? (user?.name ?? "Vous") : "Félix"}
                       </Text>
 
                       {m.role === "assistant" && m.id !== "welcome" && messageSources && (
@@ -394,7 +394,7 @@ const AssistantPage = () => {
                             color="processing"
                             variant="filled"
                             icon={<ShieldCheck size={12} className="mr-1" />}
-                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-none shadow-none"
+                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 dark:bg-info/20 text-primary dark:text-info border-none shadow-none"
                           >
                             Vérifié
                           </Tag>

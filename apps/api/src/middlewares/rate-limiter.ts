@@ -1,81 +1,89 @@
-import { rateLimit } from "express-rate-limit"
-import type { Request } from "express"
+import { rateLimit, ipKeyGenerator } from "express-rate-limit"
+import type { NextFunction, Request, Response } from "express"
+import type { Options } from "express-rate-limit"
 import { logger } from "@repo/logger"
 
-/**
- * Whitelist for localhost and private networks (Docker gateway)
- * to allow healthchecks and local development.
- */
-const isLocalhost = (req: Request) => {
-  const ip = req.ip || "0.0.0.0"
-
-  return (
-    ip === "127.0.0.1" ||
-    ip === "::ffff:127.0.0.1" ||
-    ip === "::1" ||
-    // Private ranges common in Docker / Local networks
-    ip.startsWith("172.") ||
-    ip.startsWith("::ffff:172.") ||
-    ip.startsWith("192.168.") ||
-    ip.startsWith("::ffff:192.168.") ||
-    ip.startsWith("10.") ||
-    ip.startsWith("::ffff:10.")
-  )
+const getRealIp = (req: Request): string => {
+  const ip =
+    (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ??
+    req.ip ??
+    "0.0.0.0"
+  return ipKeyGenerator(ip)
 }
 
 /**
- * Default rate limiter for the API.
- * 100 requests per 15 minutes.
+ * Internal IP whitelist (Docker healthchecks, local dev).
+ * Docker healthchecks connect directly (no Traefik), seeing the container's gateway IP (172.*).
  */
-export const apiRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: isLocalhost,
-  handler: (req, res, _next, options) => {
-    logger.warn(`[RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
+const isLocalOrPrivate = (ip: string): boolean =>
+  ip === "127.0.0.1" ||
+  ip === "::ffff:127.0.0.1" ||
+  ip === "::1" ||
+  ip.startsWith("10.") ||
+  ip.startsWith("::ffff:10.") ||
+  ip.startsWith("172.") ||
+  ip.startsWith("::ffff:172.") ||
+  ip.startsWith("192.168.") ||
+  ip.startsWith("::ffff:192.168.")
+
+// ---------------------------------------------------------------------------
+// Shared handler factory
+// ---------------------------------------------------------------------------
+
+const makeHandler =
+  (label: string, message: string) =>
+  (req: Request, res: Response, _next: NextFunction, options: Options) => {
+    const ip = getRealIp(req)
+    logger.warn(`[${label}] IP: ${ip} | path: ${req.path} | UA: ${req.headers["user-agent"]}`)
     res.status(options.statusCode).json({
       error: "Too Many Requests",
-      message: options.message,
+      message,
     })
-  },
+  }
+
+// ---------------------------------------------------------------------------
+// Rate limiters
+// ---------------------------------------------------------------------------
+
+/**
+ * Default API limiter: 200 req / 15 min.
+ */
+export const apiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getRealIp,
+  skip: (req) => isLocalOrPrivate(getRealIp(req)),
+  handler: makeHandler("RATE LIMIT EXCEEDED", "Too many requests. Please try again in 15 minutes."),
 })
 
 /**
- * More restrictive rate limiter for authentication/sensitive routes.
- * 5 attempts per 15 minutes.
+ * Auth limiter: 50 req / 15 min.
+ * Protects against brute-force while allowing session checks.
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 5,
+  limit: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
-  handler: (req, res, _next, options) => {
-    logger.warn(`[AUTH RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
-    res.status(options.statusCode).json({
-      error: "Too Many Requests",
-      message: "Trop de tentatives. Veuillez réessayer plus tard.",
-    })
-  },
+  keyGenerator: getRealIp,
+  skip: (req) => isLocalOrPrivate(getRealIp(req)),
+  handler: makeHandler("AUTH RATE LIMIT EXCEEDED", "Too many attempts. Please try again later."),
 })
 
 /**
- * Rate limiter for expensive operations (LLM calls, ingestion).
- * 20 requests per 15 minutes.
+ * Expensive operations limiter (LLM, ingestion): 20 req / 15 min.
  */
 export const expensiveRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
-  handler: (req, res, _next, options) => {
-    logger.warn(`[EXPENSIVE RATE LIMIT EXCEEDED] IP: ${req.ip} tried to access ${req.path}`)
-    res.status(options.statusCode).json({
-      error: "Too Many Requests",
-      message: "Limite de requêtes atteinte pour cette opération coûteuse. Veuillez patienter.",
-    })
-  },
+  keyGenerator: getRealIp,
+  skip: (req) => isLocalOrPrivate(getRealIp(req)),
+  handler: makeHandler(
+    "EXPENSIVE RATE LIMIT EXCEEDED",
+    "Limit reached for this operation. Please wait 15 minutes.",
+  ),
 })

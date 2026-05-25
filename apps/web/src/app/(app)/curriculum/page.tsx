@@ -29,26 +29,42 @@ const StatusTag = ({ status }: { status: DocumentStatus }) => {
   switch (status) {
     case DocumentStatus.COMPLETED:
       return (
-        <Tag color="success" icon={<CheckCircle2 size={12} className="inline mr-1" />}>
+        <Tag
+          color="success"
+          icon={<CheckCircle2 size={12} />}
+          className="inline-flex items-center gap-1"
+        >
           Indexé
         </Tag>
       )
     case DocumentStatus.PROCESSING:
       return (
-        <Tag color="processing" icon={<Loader2 size={12} className="inline mr-1 animate-spin" />}>
+        <Tag
+          color="processing"
+          icon={<Loader2 size={12} className="animate-spin" />}
+          className="inline-flex items-center gap-1"
+        >
           En cours...
         </Tag>
       )
     case DocumentStatus.FAILED:
       return (
-        <Tag color="error" icon={<AlertCircle size={12} className="inline mr-1" />}>
+        <Tag
+          color="error"
+          icon={<AlertCircle size={12} />}
+          className="inline-flex items-center gap-1"
+        >
           Échec
         </Tag>
       )
     case DocumentStatus.PENDING:
     default:
       return (
-        <Tag color="default" icon={<FileSearch size={12} className="inline mr-1" />}>
+        <Tag
+          color="default"
+          icon={<FileSearch size={12} />}
+          className="inline-flex items-center gap-1"
+        >
           En attente
         </Tag>
       )
@@ -113,7 +129,7 @@ const CurriculumContent = () => {
                 onClick={() => handleOpenReader(doc.id)}
               >
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                  <div className="p-3 rounded-lg bg-primary/10 dark:bg-info/20 text-primary dark:text-info">
                     <FileText size={24} />
                   </div>
                   <div className="min-w-0">

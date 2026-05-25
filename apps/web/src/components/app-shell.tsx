@@ -28,8 +28,11 @@ import {
   Flex,
 } from "antd"
 import { cn } from "@/lib/utils"
-import { useSession, signOut } from "@/lib/auth-client"
+import { signOut } from "@/lib/auth-client"
+import { useAuth } from "@/contexts/AuthContext"
 import { UserRole } from "@/api/generated/model"
+
+import { env } from "@/env"
 
 const { Text, Title } = Typography
 const { Avatar: SkeletonAvatar } = Skeleton
@@ -93,16 +96,16 @@ const adminItems = [
 ]
 
 const UserProfile = () => {
-  const { data: session, isPending } = useSession()
+  const { user, isLoading } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted || isPending) {
+  if (!mounted || isLoading) {
     return (
-      <Flex align="center" gap={12} className="px-4 py-4">
+      <Flex align="center" gap={12} className="p-2">
         <SkeletonAvatar active size="small" shape="circle" />
         <Flex vertical flex={1} gap={4}>
           <div className="h-3 w-20 rounded bg-white/10" />
@@ -112,9 +115,9 @@ const UserProfile = () => {
     )
   }
 
-  if (!session) {
+  if (!user) {
     return (
-      <div className="px-4 py-4">
+      <div className="p-2">
         <Link href="/sign-in" className="block w-full">
           <Button
             type="primary"
@@ -155,13 +158,13 @@ const UserProfile = () => {
           className="cursor-pointer rounded-lg px-3 py-2 transition-colors hover:bg-white/10"
         >
           <Avatar
-            src={session.user.image}
-            icon={!session.user.image && <UserIcon size={18} />}
+            src={user.image ?? undefined}
+            icon={!user.image && <UserIcon size={18} />}
             className="bg-white/20 shrink-0 border-none"
           />
           <Flex vertical flex={1} className="min-w-0">
-            <Text className="truncate text-sm font-medium text-white">{session.user.name}</Text>
-            <Text className="truncate text-[10px] text-white/50">{session.user.email}</Text>
+            <Text className="truncate text-sm font-medium text-white">{user.name}</Text>
+            <Text className="truncate text-[10px] text-white/50">{user.email}</Text>
           </Flex>
         </Flex>
       </Dropdown>
@@ -171,14 +174,14 @@ const UserProfile = () => {
 
 const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const isAdmin = mounted && session?.user.role === UserRole.admin
+  const isAdmin = mounted && user?.role === UserRole.admin
 
   const renderLink = (item: NavItem) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
@@ -259,6 +262,9 @@ const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       {/* Footer / User Profile */}
       <Divider className="bg-white/10 m-0" />
       <UserProfile />
+      <Text className="pb-3 text-[10px] text-white/30 text-center">
+        &copy; Lighthouse - {env.NEXT_PUBLIC_APP_VERSION}
+      </Text>
     </Flex>
   )
 }

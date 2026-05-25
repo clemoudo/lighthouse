@@ -10,6 +10,7 @@ const envSchema = z.object({
 
   // Variables Client (doivent commencer par NEXT_PUBLIC_)
   NEXT_PUBLIC_API_URL: z.url().default("http://lighthouse.local/api"),
+  NEXT_PUBLIC_APP_VERSION: z.string().default("dev"),
 
   // Variables Serveur (optionnelles ici pour la compatibilité navigateur)
   DATABASE_URL: z.string().optional(),
@@ -38,6 +39,7 @@ const processEnv = {
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   WEB_PORT: process.env.WEB_PORT,
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
 }
 
 // Validation : Schéma strict sur le serveur (sauf au build), schéma souple sur le client

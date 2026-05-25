@@ -83,6 +83,9 @@ services:
       - backend
       - admin
 
+  uptime-kuma:
+    scale: 0
+
 networks:
   proxy-only:
     name: proxy-only
