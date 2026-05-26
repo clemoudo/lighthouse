@@ -90,7 +90,7 @@ services:
     labels:
       - "traefik.http.routers.api.entrypoints=web"
       - "traefik.http.routers.api.tls=false"
-      - "traefik.http.routers.api.middlewares=api-strip"
+      - "traefik.http.routers.api.middlewares=sec-headers"
       - "traefik.docker.network=gateway"
     networks:
       - gateway
