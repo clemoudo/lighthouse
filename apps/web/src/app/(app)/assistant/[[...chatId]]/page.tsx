@@ -9,16 +9,15 @@ import {
   Space,
   Flex,
   Avatar,
-  ConfigProvider,
-  theme,
   Drawer,
   Skeleton,
   Tooltip,
   Tag,
+  Spin,
 } from "antd"
 import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen, ShieldCheck } from "lucide-react"
 import { env } from "@/env"
-import { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from "react"
 import { cn } from "@/lib/utils"
 import dynamic from "next/dynamic"
 import Image from "next/image"
@@ -37,8 +36,12 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useQueryClient } from "@tanstack/react-query"
 import { useLocalStorage } from "@/hooks/use-local-storage"
+import { User as TUser } from "better-auth"
 
-const { Text, Title, Paragraph } = Typography
+const { Text } = Typography
+
+// Memoize components to prevent re-renders on every token
+const MemoizedHistorySidebar = memo(HistorySidebar)
 
 // Dynamic import of heavy markdown components
 const ReactMarkdown = dynamic(() => import("react-markdown"), {
@@ -48,7 +51,75 @@ const ReactMarkdown = dynamic(() => import("react-markdown"), {
 
 const SkeletonMarkdown = () => <Skeleton active title={false} paragraph={{ rows: 2 }} />
 
-// Define the data types for type safety in message parts
+/**
+ * Helper to extract the text content from message parts.
+ */
+const getMessageText = (parts: UIMessage["parts"]): string => {
+  return parts
+    .filter((part) => part.type === "text")
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+}
+
+/**
+ * Optimized Markdown components using plain HTML for speed.
+ */
+const getMarkdownComponents = (role: UIMessage["role"]) => ({
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p className="m-0 last:mb-0 mb-4">{children}</p>
+  ),
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <h1 className="text-lg font-bold mt-2 mb-4">{children}</h1>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <h2 className="text-base font-bold mt-2 mb-3">{children}</h2>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <h3 className="text-sm font-bold mt-2 mb-2">{children}</h3>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => <li className="mb-1">{children}</li>,
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong className="font-bold">{children}</strong>
+  ),
+  em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
+  code: ({ children }: { children?: React.ReactNode }) => (
+    <code
+      className={cn(
+        "px-1.5 py-0.5 rounded text-xs font-mono",
+        role === MessageRole.user ? "bg-white/20" : "bg-fill-secondary text-text",
+      )}
+    >
+      {children}
+    </code>
+  ),
+})
+
+/**
+ * Component to render the markdown content of a message.
+ */
+const MessageContent = memo(
+  ({ role, parts }: { role: UIMessage["role"]; parts: UIMessage["parts"] }) => {
+    const content = useMemo(() => getMessageText(parts), [parts])
+    const components = useMemo(() => getMarkdownComponents(role), [role])
+
+    return (
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {content}
+      </ReactMarkdown>
+    )
+  },
+)
+MessageContent.displayName = "MessageContent"
+
+/**
+ * Define the data types for type safety in message parts
+ */
 interface ChatDataTypes {
   sources: ChatSource[]
   [key: string]: unknown
@@ -56,6 +127,123 @@ interface ChatDataTypes {
 
 // Custom UIMessage type with our data parts
 type ChatUIMessage = UIMessage<never, ChatDataTypes>
+
+/**
+ * Memoized Message Item with simplified structure and no nested providers.
+ */
+const MessageItem = memo(
+  ({
+    m,
+    user,
+    assistantAvatar,
+  }: {
+    m: ChatUIMessage
+    user: TUser | null
+    assistantAvatar: string
+  }) => {
+    const sourcesPart = m.parts.find((part) => isDataUIPart(part) && part.type === "data-sources")
+    const messageSources =
+      sourcesPart && isDataUIPart(sourcesPart) ? (sourcesPart.data as ChatSource[]) : undefined
+
+    const isUser = m.role === "user"
+
+    return (
+      <Flex gap={16} className="w-full" style={{ flexDirection: isUser ? "row-reverse" : "row" }}>
+        <div className="shrink-0 pt-1">
+          <Avatar
+            size={40}
+            icon={
+              isUser ? (
+                user?.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name ?? "User"}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <User size={18} />
+                )
+              ) : (
+                <Image src={assistantAvatar} alt="Félix" width={40} height={40} />
+              )
+            }
+            className={cn(
+              isUser
+                ? user?.image
+                  ? "bg-transparent border-none"
+                  : "bg-primary"
+                : "bg-container border border-border overflow-visible!",
+            )}
+          />
+        </div>
+
+        <Flex vertical gap={8} className="max-w-[80%] min-w-0" align={isUser ? "end" : "start"}>
+          <Flex align="center" gap={8}>
+            <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+              {isUser ? (user?.name ?? "Vous") : "Félix"}
+            </Text>
+
+            {!isUser && m.id !== "welcome" && messageSources && (
+              <Tooltip title="Cette réponse s'appuie directement sur le référentiel officiel.">
+                <Tag
+                  color="processing"
+                  variant="filled"
+                  icon={<ShieldCheck size={12} className="mr-1" />}
+                  className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 dark:bg-info/20 text-primary dark:text-info border-none shadow-none"
+                >
+                  Vérifié
+                </Tag>
+              </Tooltip>
+            )}
+          </Flex>
+
+          <div
+            className={cn(
+              "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+              isUser
+                ? "bg-primary rounded-tr-none text-white"
+                : "bg-container text-text rounded-tl-none border border-border",
+            )}
+          >
+            <div className="wrap-break-word">
+              <MessageContent role={m.role} parts={m.parts} />
+            </div>
+          </div>
+
+          {/* Citations UI Component */}
+          {!isUser && <Citations sources={messageSources} />}
+        </Flex>
+      </Flex>
+    )
+  },
+)
+MessageItem.displayName = "MessageItem"
+
+/**
+ * Memoized list of messages.
+ */
+const MessageList = memo(
+  ({
+    messages,
+    user,
+    assistantAvatar,
+  }: {
+    messages: ChatUIMessage[]
+    user: TUser | null
+    assistantAvatar: string
+  }) => {
+    return (
+      <>
+        {messages.map((m) => (
+          <MessageItem key={m.id} m={m} user={user} assistantAvatar={assistantAvatar} />
+        ))}
+      </>
+    )
+  },
+)
+MessageList.displayName = "MessageList"
 
 const WELCOME_DATA = {
   id: "welcome",
@@ -69,99 +257,40 @@ const WELCOME_DATA = {
 }
 
 /**
- * Helper to extract the text content from message parts.
+ * Isolated component to handle the chat streaming logic and UI.
+ * This prevents the sidebar and page layout from re-rendering on every token.
  */
-const getMessageText = (parts: UIMessage["parts"]): string => {
-  return parts
-    .filter((part) => part.type === "text")
-    .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
-}
-
-/**
- * Component to render the markdown content of a message.
- * It uses Ant Design Typography components for consistent styling.
- */
-const MessageContent = ({
-  role,
-  parts,
+const ChatInterface = ({
+  initialConversationId,
+  user,
+  assistantAvatar,
 }: {
-  role: UIMessage["role"]
-  parts: UIMessage["parts"]
+  initialConversationId?: string
+  user: TUser | null
+  assistantAvatar: string
 }) => {
-  const content = useMemo(() => getMessageText(parts), [parts])
-
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        p: ({ children }) => <Paragraph className="m-0 last:mb-0 mb-4">{children}</Paragraph>,
-        h1: ({ children }) => (
-          <Title level={4} className="mt-2 mb-4">
-            {children}
-          </Title>
-        ),
-        h2: ({ children }) => (
-          <Title level={5} className="mt-2 mb-3">
-            {children}
-          </Title>
-        ),
-        h3: ({ children }) => (
-          <Text strong className="block mt-2 mb-2">
-            {children}
-          </Text>
-        ),
-        ul: ({ children }) => <ul className="pl-6 mb-4 space-y-1 list-disc">{children}</ul>,
-        ol: ({ children }) => <ol className="pl-6 mb-4 space-y-1 list-decimal">{children}</ol>,
-        li: ({ children }) => <li className="mb-1">{children}</li>,
-        strong: ({ children }) => <Text strong>{children}</Text>,
-        em: ({ children }) => <Text italic>{children}</Text>,
-        code: ({ children }) => (
-          <code
-            className={cn(
-              "px-1.5 py-0.5 rounded text-xs font-mono",
-              role === MessageRole.user ? "bg-white/20" : "bg-fill-secondary text-text",
-            )}
-          >
-            {children}
-          </code>
-        ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
-  )
-}
-
-const AssistantPage = () => {
-  const router = useRouter()
   const queryClient = useQueryClient()
-  const { resolvedTheme } = useTheme()
-  const { user } = useAuth()
-  const params = useParams<{ chatId?: string[] }>()
-  const urlChatId = params.chatId?.[0]
-
+  const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
+  const [isInitialLoading, setIsInitialLoading] = useState(false)
   const [input, setInput] = useLocalStorage("assistant-draft", "")
-  const [conversationId, setConversationId] = useState<string | undefined>(urlChatId)
-
-  // Navigation History Logic
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const prevUrlChatIdRef = useRef<string | undefined>(undefined)
+  const prevUrlChatIdRef = useRef<string | undefined>(undefined) // Important: initialize to undefined to trigger load
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const isMobile = useIsMobile()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  /**
+   * Scroll logic: Only on demand (initial load or send message)
+   */
+  const scrollToBottom = useCallback((force = false) => {
+    const container = scrollContainerRef.current
+    if (!container || !force) return
 
-  useEffect(() => {
-    if (isMobile) {
-      setIsSidebarOpen(false)
-    } else {
-      setIsSidebarOpen(true)
-    }
-  }, [isMobile])
-
-  const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
+    window.requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight
+    })
+  }, [])
 
   const { messages, sendMessage, status, error, setMessages } = useChat<ChatUIMessage>({
+    experimental_throttle: 250, // Heavily throttle for maximum Firefox stability
     transport: new DefaultChatTransport({
       api: env.NEXT_PUBLIC_API_URL + "/chat",
       body: {
@@ -177,35 +306,27 @@ const AssistantPage = () => {
         if (id && id !== conversationId) {
           window.history.replaceState(null, "", `/assistant/${id}`)
           setConversationId(id)
-          prevUrlChatIdRef.current = id // Update ref to match the new URL
-
-          // Refresh history immediately if it's a new conversation
+          prevUrlChatIdRef.current = id
           queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
         }
 
         return response
       },
     }),
-    messages: [], // Start empty, welcome is handled separately
+    messages: [],
     onFinish: () => {
-      // Invalidate usage query to refresh the progress bar
       queryClient.invalidateQueries({ queryKey: getGetChatUsageQueryKey() })
-      // Refresh history to update the last updated time
       queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
     },
   })
 
-  /**
-   * Loads a conversation from the backend and updates the UI.
-   */
   const loadConversation = useCallback(
     async (id: string) => {
+      setIsInitialLoading(true)
       try {
         const response = await getChatConversationsId(id)
-
         if (response.status === 200) {
           const conv = response.data
-
           if (conv && conv.messages) {
             const uiMessages: ChatUIMessage[] = conv.messages.map((m) => ({
               id: m.id,
@@ -213,89 +334,72 @@ const AssistantPage = () => {
               content: m.content,
               parts: [
                 { type: "text", text: m.content },
-                ...(m.sources
-                  ? [
-                      {
-                        type: "data-sources" as const,
-                        data: m.sources,
-                      },
-                    ]
-                  : []),
+                ...(m.sources ? [{ type: "data-sources" as const, data: m.sources }] : []),
               ],
               createdAt: new Date(m.createdAt),
             }))
-
             setMessages(uiMessages)
             setConversationId(id)
             setHistoryIndex(-1)
+
+            // Auto-scroll to bottom on initial load
+            setTimeout(() => scrollToBottom(true), 100)
           }
         }
       } catch (err) {
         console.error("Failed to load conversation", err)
+      } finally {
+        setIsInitialLoading(false)
       }
     },
-    [setMessages],
+    [setMessages, scrollToBottom],
   )
 
-  /**
-   * Resets the chat to a new state.
-   */
   const resetToNewChat = useCallback(() => {
     setConversationId(undefined)
     setMessages([])
     setHistoryIndex(-1)
+    // Clear scroll position
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
   }, [setMessages])
 
-  // React to URL changes (back/forward navigation or sidebar clicks)
   useEffect(() => {
-    if (urlChatId !== prevUrlChatIdRef.current) {
-      if (urlChatId) {
-        loadConversation(urlChatId)
+    if (initialConversationId !== prevUrlChatIdRef.current) {
+      if (initialConversationId) {
+        loadConversation(initialConversationId)
       } else {
         resetToNewChat()
       }
-      prevUrlChatIdRef.current = urlChatId
+      prevUrlChatIdRef.current = initialConversationId
     }
-  }, [urlChatId, loadConversation, resetToNewChat])
+  }, [initialConversationId, loadConversation, resetToNewChat])
 
-  // Get user messages in chronological order (latest last)
   const userMessages = useMemo(() => {
     return messages.filter((m) => m.role === "user")
   }, [messages])
 
   const isLoading = status !== "ready"
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
 
   const onFinish = (e?: React.SubmitEvent) => {
     e?.preventDefault()
     if (input.trim() && !isLoading) {
       sendMessage({ text: input }, { body: { conversationId } })
       setInput("")
-      setHistoryIndex(-1) // Reset history navigation
+      setHistoryIndex(-1)
+
+      // Scroll to bottom when user sends a message
+      setTimeout(() => scrollToBottom(true), 50)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Handle Enter to send
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       onFinish()
       return
     }
-
-    // Handle History Navigation (Arrow Up/Down)
     if (userMessages.length === 0) return
-
     if (e.key === "ArrowUp") {
-      // Only navigate history if cursor is at the beginning
       const cursorAtStart = e.currentTarget.selectionStart === 0
       if (cursorAtStart) {
         const nextIndex = historyIndex + 1
@@ -310,7 +414,6 @@ const AssistantPage = () => {
         }
       }
     } else if (e.key === "ArrowDown") {
-      // Only navigate history if cursor is at the end
       const cursorAtEnd = e.currentTarget.selectionStart === e.currentTarget.value.length
       if (cursorAtEnd) {
         if (historyIndex > 0) {
@@ -323,29 +426,21 @@ const AssistantPage = () => {
         } else if (historyIndex === 0) {
           e.preventDefault()
           setHistoryIndex(-1)
-          setInput("") // Back to empty
+          setInput("")
         }
       }
     }
   }
 
   return (
-    <Flex className="h-full w-full overflow-hidden bg-layout relative">
-      <Flex vertical className="flex-1 relative overflow-hidden h-full">
-        {/* Toggle Sidebar Button */}
-        <div className="absolute top-4 right-4 z-10">
-          <Button
-            type="text"
-            icon={isSidebarOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-text/60 hover:text-text bg-container/50 backdrop-blur-sm shadow-sm"
-          />
-        </div>
-
-        {/* Messages Stream */}
-        <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
+    <Flex vertical className="flex-1 relative overflow-hidden h-full">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
+        {isInitialLoading ? (
+          <Flex align="center" justify="center" className="h-full w-full">
+            <Spin size="large" />
+          </Flex>
+        ) : (
           <Space orientation="vertical" size={32} className="w-full max-w-5xl mx-auto flex">
-            {/* Static Welcome Message */}
             <Flex gap={16} className="w-full">
               <div className="shrink-0 pt-1">
                 <Avatar
@@ -354,14 +449,12 @@ const AssistantPage = () => {
                   className="bg-container border border-border overflow-visible!"
                 />
               </div>
-
               <Flex vertical gap={8} className="max-w-[80%] min-w-0">
                 <Flex align="center" gap={8}>
                   <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
                     Félix
                   </Text>
                 </Flex>
-
                 <div className="px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm bg-container text-text rounded-tl-none border border-border">
                   <div className="wrap-break-word">
                     <MessageContent role="assistant" parts={WELCOME_DATA.parts} />
@@ -370,112 +463,7 @@ const AssistantPage = () => {
               </Flex>
             </Flex>
 
-            {messages.map((m) => {
-              // Logic to find sources in message parts
-              const sourcesPart = m.parts.find(
-                (part) => isDataUIPart(part) && part.type === "data-sources",
-              )
-              const messageSources =
-                sourcesPart && isDataUIPart(sourcesPart)
-                  ? (sourcesPart.data as ChatSource[])
-                  : undefined
-
-              return (
-                <Flex
-                  key={m.id}
-                  gap={16}
-                  className="w-full"
-                  style={{ flexDirection: m.role === "user" ? "row-reverse" : "row" }}
-                >
-                  <div className="shrink-0 pt-1">
-                    <Avatar
-                      size={40}
-                      icon={
-                        m.role === "user" ? (
-                          user?.image ? (
-                            <Image
-                              src={user.image}
-                              alt={user.name ?? "User"}
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <User size={18} />
-                          )
-                        ) : (
-                          <Image
-                            src={assistantAvatar}
-                            alt="Félix"
-                            width={40}
-                            height={40}
-                            priority={m.id === "welcome"}
-                          />
-                        )
-                      }
-                      className={cn(
-                        m.role === "user"
-                          ? user?.image
-                            ? "bg-transparent border-none"
-                            : "bg-primary"
-                          : "bg-container border border-border overflow-visible!",
-                      )}
-                    />
-                  </div>
-
-                  <Flex
-                    vertical
-                    gap={8}
-                    className="max-w-[80%] min-w-0"
-                    align={m.role === "user" ? "end" : "start"}
-                  >
-                    <Flex align="center" gap={8}>
-                      <Text
-                        strong
-                        className="text-[11px] uppercase tracking-widest opacity-40 px-1"
-                      >
-                        {m.role === "user" ? (user?.name ?? "Vous") : "Félix"}
-                      </Text>
-
-                      {m.role === "assistant" && m.id !== "welcome" && messageSources && (
-                        <Tooltip title="Cette réponse s'appuie directement sur le référentiel officiel.">
-                          <Tag
-                            color="processing"
-                            variant="filled"
-                            icon={<ShieldCheck size={12} className="mr-1" />}
-                            className="m-0 py-0 px-2 flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/10 dark:bg-info/20 text-primary dark:text-info border-none shadow-none"
-                          >
-                            Vérifié
-                          </Tag>
-                        </Tooltip>
-                      )}
-                    </Flex>
-
-                    <div
-                      className={cn(
-                        "px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm",
-                        m.role === "user"
-                          ? "bg-primary rounded-tr-none"
-                          : "bg-container text-text rounded-tl-none border border-border",
-                      )}
-                    >
-                      <div className="wrap-break-word">
-                        {m.role === "user" ? (
-                          <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
-                            <MessageContent role={m.role} parts={m.parts} />
-                          </ConfigProvider>
-                        ) : (
-                          <MessageContent role={m.role} parts={m.parts} />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Citations UI Component */}
-                    <Citations sources={messageSources} />
-                  </Flex>
-                </Flex>
-              )
-            })}
+            <MessageList messages={messages} user={user} assistantAvatar={assistantAvatar} />
 
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <Flex gap={16}>
@@ -495,20 +483,11 @@ const AssistantPage = () => {
                     gap={8}
                     className="bg-container px-5 py-4 rounded-2xl rounded-tl-none border border-border shadow-sm"
                   >
-                    <Flex gap={4}>
-                      <span
-                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <span
-                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </Flex>
+                    <div className="flex gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" />
+                      <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:300ms]" />
+                    </div>
                   </Flex>
                 </Flex>
               </Flex>
@@ -522,33 +501,75 @@ const AssistantPage = () => {
                 </Space>
               </Flex>
             )}
-            <div ref={messagesEndRef} />
           </Space>
+        )}
+      </div>
+
+      <div className="px-4 pt-4 bg-layout sticky bottom-0 border-t border-border/20 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.05)]">
+        <form onSubmit={onFinish} className="relative group max-w-4xl mx-auto">
+          <Input.TextArea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Posez votre question sur le programme..."
+            autoSize={{ minRows: 1, maxRows: 8 }}
+            className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
+            onKeyDown={handleKeyDown}
+          />
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<Send size={20} />}
+            disabled={!input.trim() || isLoading}
+            className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
+          />
+        </form>
+        <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium pb-4">
+          L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
+        </p>
+      </div>
+    </Flex>
+  )
+}
+
+const AssistantPage = () => {
+  const router = useRouter()
+  const { resolvedTheme } = useTheme()
+  const { user } = useAuth()
+  const params = useParams<{ chatId?: string[] }>()
+  const urlChatId = params.chatId?.[0]
+
+  const isMobile = useIsMobile()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false)
+    } else {
+      setIsSidebarOpen(true)
+    }
+  }, [isMobile])
+
+  const assistantAvatar = resolvedTheme === "dark" ? "/albatross-dark-64.png" : "/albatross-64.png"
+
+  return (
+    <Flex className="h-full w-full overflow-hidden bg-layout relative">
+      <Flex vertical className="flex-1 relative overflow-hidden h-full">
+        {/* Toggle Sidebar Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            type="text"
+            icon={isSidebarOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="text-text/60 hover:text-text bg-container shadow-sm border border-border/20"
+          />
         </div>
 
-        {/* Input Area */}
-        <div className="px-4 pt-4 bg-layout/80 backdrop-blur-sm sticky bottom-0 border-t border-border/20 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
-          <form onSubmit={onFinish} className="relative group max-w-4xl mx-auto">
-            <Input.TextArea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez votre question sur le programme..."
-              autoSize={{ minRows: 1, maxRows: 8 }}
-              className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
-              onKeyDown={handleKeyDown}
-            />
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={<Send size={20} />}
-              disabled={!input.trim() || isLoading}
-              className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
-            />
-          </form>
-          <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium pb-4">
-            L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
-          </p>
-        </div>
+        {/* Chat Interface - State is localized here */}
+        <ChatInterface
+          initialConversationId={urlChatId}
+          user={user as TUser | null}
+          assistantAvatar={assistantAvatar}
+        />
       </Flex>
 
       {/* Sidebar Area */}
@@ -561,8 +582,8 @@ const AssistantPage = () => {
           size="75%"
           styles={{ body: { padding: 0 } }}
         >
-          <HistorySidebar
-            currentConversationId={conversationId}
+          <MemoizedHistorySidebar
+            currentConversationId={urlChatId}
             onSelectConversation={(id) => {
               router.push(`/assistant/${id}`)
               setIsSidebarOpen(false)
@@ -581,8 +602,8 @@ const AssistantPage = () => {
           )}
         >
           <div className="w-72 h-full">
-            <HistorySidebar
-              currentConversationId={conversationId}
+            <MemoizedHistorySidebar
+              currentConversationId={urlChatId}
               onSelectConversation={(id) => router.push(`/assistant/${id}`)}
               onNewChat={() => router.push("/assistant")}
             />
