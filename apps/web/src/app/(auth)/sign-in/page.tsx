@@ -26,7 +26,7 @@ import { FormField } from "@/components/form-field"
 const { Title, Text } = Typography
 
 const signInSchema = z.object({
-  email: z.email("Veuillez saisir un email valide").min(1, "L'email est requis"),
+  email: z.email("Veuillez saisir un email valide"),
   password: z.string().min(1, "Le mot de passe est requis"),
   remember: z.boolean(),
 })
@@ -180,7 +180,20 @@ const SignInContent = () => {
           )}
         </FormField>
 
-        <FormField form={form} name="password" label="Mot de passe" required>
+        <FormField
+          form={form}
+          name="password"
+          label="Mot de passe"
+          extra={
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Mot de passe oublié ?
+            </Link>
+          }
+          required
+        >
           {(field) => (
             <Input.Password
               value={field.state.value}

@@ -46,6 +46,7 @@ interface FormFieldProps<
   >
   name: TName
   label?: ReactNode
+  extra?: ReactNode
   required?: boolean
   help?: ReactNode
   valuePropName?: FormItemProps["valuePropName"]
@@ -100,6 +101,7 @@ export const FormField = <
   form,
   name,
   label,
+  extra,
   required,
   help,
   valuePropName,
@@ -137,6 +139,7 @@ export const FormField = <
         return (
           <Form.Item
             label={label}
+            extra={extra}
             required={required}
             validateStatus={hasError ? "error" : ""}
             help={hasError ? errorMessages.join(", ") : help}

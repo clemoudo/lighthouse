@@ -36,6 +36,7 @@ export const {
   changePassword,
   deleteUser,
   sendVerificationEmail,
+  emailOtp,
 } = authClient
 
 export { authClient }
