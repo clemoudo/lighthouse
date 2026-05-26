@@ -4,14 +4,20 @@ import { BookOpen } from "lucide-react"
 import { type ChatSource } from "@repo/api"
 import { Flex } from "antd"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 interface SourcePillProps {
   source: ChatSource
 }
 
 export const SourcePill = ({ source }: SourcePillProps) => {
+  const pathname = usePathname()
+
   return (
-    <Link href={`/curriculum?docId=${source.id}&page=${source.page}`} className="no-underline">
+    <Link
+      href={`/curriculum?docId=${source.id}&page=${source.page}&returnUrl=${pathname}`}
+      className="no-underline"
+    >
       <Flex
         align="center"
         gap={6}
