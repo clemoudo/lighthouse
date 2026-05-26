@@ -24,6 +24,7 @@ import dynamic from "next/dynamic"
 import Image from "next/image"
 import remarkGfm from "remark-gfm"
 import { useTheme } from "next-themes"
+import { useParams, useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Citations } from "@/components/assistant/citations"
 import { MessageRole, type ChatSource } from "@repo/api"
@@ -133,11 +134,15 @@ const MessageContent = ({
 }
 
 const AssistantPage = () => {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { resolvedTheme } = useTheme()
   const { user } = useAuth()
+  const params = useParams<{ chatId?: string[] }>()
+  const urlChatId = params.chatId?.[0]
+
   const [input, setInput] = useLocalStorage("assistant-draft", "")
-  const [conversationId, setConversationId] = useState<string | undefined>(undefined)
+  const [conversationId, setConversationId] = useState<string | undefined>(urlChatId)
 
   // Navigation History Logic
   const [historyIndex, setHistoryIndex] = useState(-1)
@@ -168,14 +173,12 @@ const AssistantPage = () => {
         })
 
         const id = response.headers.get("x-conversation-id")
-        if (id) {
-          const isNew = !conversationId
-          setConversationId((prev) => (id !== prev ? id : prev))
+        if (id && id !== conversationId) {
+          router.replace(`/assistant/${id}`, { scroll: false })
+          setConversationId(id)
 
-          if (isNew) {
-            // Refresh history immediately if it's a new conversation
-            queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
-          }
+          // Refresh history immediately if it's a new conversation
+          queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
         }
 
         return response
@@ -189,6 +192,69 @@ const AssistantPage = () => {
       queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
     },
   })
+
+  /**
+   * Loads a conversation from the backend and updates the UI.
+   */
+  const loadConversation = useCallback(
+    async (id: string) => {
+      // Avoid reloading if already active AND we have messages (other than welcome)
+      if (id === conversationId && messages.length > 1) return
+
+      try {
+        const response = await getChatConversationsId(id)
+
+        if (response.status === 200) {
+          const conv = response.data
+
+          if (conv && conv.messages) {
+            const uiMessages: ChatUIMessage[] = conv.messages.map((m) => ({
+              id: m.id,
+              role: m.role,
+              content: m.content,
+              parts: [
+                { type: "text", text: m.content },
+                ...(m.sources
+                  ? [
+                      {
+                        type: "data-sources" as const,
+                        data: m.sources,
+                      },
+                    ]
+                  : []),
+              ],
+              createdAt: new Date(m.createdAt),
+            }))
+
+            setMessages(uiMessages)
+            setConversationId(id)
+            setHistoryIndex(-1)
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load conversation", err)
+      }
+    },
+    [conversationId, messages.length, setMessages],
+  )
+
+  /**
+   * Resets the chat to a new state.
+   */
+  const resetToNewChat = useCallback(() => {
+    setConversationId(undefined)
+    setMessages([WELCOME_MESSAGE])
+    setHistoryIndex(-1)
+  }, [setMessages])
+
+  // React to URL changes (back/forward navigation or sidebar clicks)
+  useEffect(() => {
+    if (urlChatId) {
+      loadConversation(urlChatId)
+    } else if (conversationId !== undefined) {
+      resetToNewChat()
+    }
+  }, [urlChatId, loadConversation, resetToNewChat])
 
   // Get user messages in chronological order (latest last)
   const userMessages = useMemo(() => {
@@ -259,50 +325,6 @@ const AssistantPage = () => {
         }
       }
     }
-  }
-
-  const handleSelectConversation = async (id: string) => {
-    if (id === conversationId) return
-
-    try {
-      const response = await getChatConversationsId(id)
-
-      if (response.status === 200) {
-        const conv = response.data
-
-        if (conv && conv.messages) {
-          const uiMessages: ChatUIMessage[] = conv.messages.map((m) => ({
-            id: m.id,
-            role: m.role,
-            content: m.content,
-            parts: [
-              { type: "text", text: m.content },
-              ...(m.sources
-                ? [
-                    {
-                      type: "data-sources" as const,
-                      data: m.sources,
-                    },
-                  ]
-                : []),
-            ],
-            createdAt: new Date(m.createdAt),
-          }))
-
-          setMessages(uiMessages)
-          setConversationId(id)
-          setHistoryIndex(-1) // Reset history for new conversation
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load conversation", err)
-    }
-  }
-
-  const handleNewChat = () => {
-    setConversationId(undefined)
-    setMessages([WELCOME_MESSAGE])
-    setHistoryIndex(-1)
   }
 
   return (
@@ -523,11 +545,11 @@ const AssistantPage = () => {
           <HistorySidebar
             currentConversationId={conversationId}
             onSelectConversation={(id) => {
-              handleSelectConversation(id)
+              router.push(`/assistant/${id}`)
               setIsSidebarOpen(false)
             }}
             onNewChat={() => {
-              handleNewChat()
+              router.push("/assistant")
               setIsSidebarOpen(false)
             }}
           />
@@ -542,8 +564,8 @@ const AssistantPage = () => {
           <div className="w-72 h-full">
             <HistorySidebar
               currentConversationId={conversationId}
-              onSelectConversation={handleSelectConversation}
-              onNewChat={handleNewChat}
+              onSelectConversation={(id) => router.push(`/assistant/${id}`)}
+              onNewChat={() => router.push("/assistant")}
             />
           </div>
         </div>

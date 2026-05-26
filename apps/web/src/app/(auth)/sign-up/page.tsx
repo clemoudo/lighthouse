@@ -16,7 +16,7 @@ const { OTP } = Input
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.email("Veuillez saisir un email valide").min(1, "L'email est requis"),
+  email: z.email("Veuillez saisir un email valide"),
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 })
 
