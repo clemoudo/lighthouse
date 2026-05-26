@@ -57,12 +57,12 @@ interface ChatDataTypes {
 // Custom UIMessage type with our data parts
 type ChatUIMessage = UIMessage<never, ChatDataTypes>
 
-const WELCOME_MESSAGE: ChatUIMessage = {
+const WELCOME_DATA = {
   id: "welcome",
-  role: "assistant",
+  role: "assistant" as const,
   parts: [
     {
-      type: "text",
+      type: "text" as const,
       text: "Bonjour ! Je suis **Félix**, votre assistant **Lighthouse**. 🕊️\n\nEn tant qu'expert du programme scolaire belge (*Pacte pour un Enseignement d'excellence*), je suis là pour prendre de la hauteur et vous éclairer dans la planification de vos activités en maternelle.\n\nPosez-moi vos questions, je chercherai les réponses directement dans le référentiel officiel pour vous aider à garder le cap !",
     },
   ],
@@ -146,6 +146,7 @@ const AssistantPage = () => {
 
   // Navigation History Logic
   const [historyIndex, setHistoryIndex] = useState(-1)
+  const prevUrlChatIdRef = useRef<string | undefined>(undefined)
 
   const isMobile = useIsMobile()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -174,8 +175,9 @@ const AssistantPage = () => {
 
         const id = response.headers.get("x-conversation-id")
         if (id && id !== conversationId) {
-          router.replace(`/assistant/${id}`, { scroll: false })
+          window.history.replaceState(null, "", `/assistant/${id}`)
           setConversationId(id)
+          prevUrlChatIdRef.current = id // Update ref to match the new URL
 
           // Refresh history immediately if it's a new conversation
           queryClient.invalidateQueries({ queryKey: getGetChatConversationsQueryKey() })
@@ -184,7 +186,7 @@ const AssistantPage = () => {
         return response
       },
     }),
-    messages: [WELCOME_MESSAGE],
+    messages: [], // Start empty, welcome is handled separately
     onFinish: () => {
       // Invalidate usage query to refresh the progress bar
       queryClient.invalidateQueries({ queryKey: getGetChatUsageQueryKey() })
@@ -198,9 +200,6 @@ const AssistantPage = () => {
    */
   const loadConversation = useCallback(
     async (id: string) => {
-      // Avoid reloading if already active AND we have messages (other than welcome)
-      if (id === conversationId && messages.length > 1) return
-
       try {
         const response = await getChatConversationsId(id)
 
@@ -235,7 +234,7 @@ const AssistantPage = () => {
         console.error("Failed to load conversation", err)
       }
     },
-    [conversationId, messages.length, setMessages],
+    [setMessages],
   )
 
   /**
@@ -243,16 +242,19 @@ const AssistantPage = () => {
    */
   const resetToNewChat = useCallback(() => {
     setConversationId(undefined)
-    setMessages([WELCOME_MESSAGE])
+    setMessages([])
     setHistoryIndex(-1)
   }, [setMessages])
 
   // React to URL changes (back/forward navigation or sidebar clicks)
   useEffect(() => {
-    if (urlChatId) {
-      loadConversation(urlChatId)
-    } else if (conversationId !== undefined) {
-      resetToNewChat()
+    if (urlChatId !== prevUrlChatIdRef.current) {
+      if (urlChatId) {
+        loadConversation(urlChatId)
+      } else {
+        resetToNewChat()
+      }
+      prevUrlChatIdRef.current = urlChatId
     }
   }, [urlChatId, loadConversation, resetToNewChat])
 
@@ -343,6 +345,31 @@ const AssistantPage = () => {
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto px-4 py-8 scrollbar-hide">
           <Space orientation="vertical" size={32} className="w-full max-w-5xl mx-auto flex">
+            {/* Static Welcome Message */}
+            <Flex gap={16} className="w-full">
+              <div className="shrink-0 pt-1">
+                <Avatar
+                  size={40}
+                  icon={<Image src={assistantAvatar} alt="Félix" width={40} height={40} priority />}
+                  className="bg-container border border-border overflow-visible!"
+                />
+              </div>
+
+              <Flex vertical gap={8} className="max-w-[80%] min-w-0">
+                <Flex align="center" gap={8}>
+                  <Text strong className="text-[11px] uppercase tracking-widest opacity-40 px-1">
+                    Félix
+                  </Text>
+                </Flex>
+
+                <div className="px-5 py-4 rounded-2xl text-sm leading-relaxed shadow-sm bg-container text-text rounded-tl-none border border-border">
+                  <div className="wrap-break-word">
+                    <MessageContent role="assistant" parts={WELCOME_DATA.parts} />
+                  </div>
+                </div>
+              </Flex>
+            </Flex>
+
             {messages.map((m) => {
               // Logic to find sources in message parts
               const sourcesPart = m.parts.find(
