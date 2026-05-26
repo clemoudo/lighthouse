@@ -17,6 +17,7 @@ services:
       - gateway
 
   pgadmin:
+    image: lighthouse-pgadmin:latest-dev
     build: ./infra/pgadmin
     container_name: pgadmin
     ports:
@@ -41,6 +42,7 @@ services:
       - admin
 
   web:
+    image: lighthouse-web:latest-dev
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
@@ -54,7 +56,6 @@ services:
         - WEB_PORT=${WEB_PORT}
     tty: true
     stdin_open: true
-    image: ${WEB_IMAGE:-lighthouse-web:latest-dev}
     volumes:
       - .:/app
       - /app/node_modules
@@ -71,6 +72,7 @@ services:
       - gateway
 
   api:
+    image: lighthouse-api:latest-dev
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
@@ -79,7 +81,6 @@ services:
         - DATABASE_URL=${DATABASE_URL}
     tty: true
     stdin_open: true
-    image: ${API_IMAGE:-lighthouse-api:latest-dev}
     volumes:
       - .:/app
       - /app/node_modules
@@ -96,6 +97,7 @@ services:
       - backend
 
   postgres:
+    image: lighthouse-postgres:latest-dev
     build: ./infra/postgres
     networks:
       - backend
@@ -103,6 +105,7 @@ services:
 
   uptime-kuma:
     scale: 0
+    pull_policy: never
 
 networks:
   proxy-only:
