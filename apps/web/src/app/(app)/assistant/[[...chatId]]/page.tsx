@@ -278,15 +278,26 @@ const ChatInterface = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   /**
-   * Scroll logic: Only on demand (initial load or send message)
+   * Scroll logic:
+   * - "smooth" for new message additions (user or initial assistant)
+   * - "auto" for following the stream (if already at bottom)
    */
-  const scrollToBottom = useCallback((force = false) => {
+  const scrollToBottom = useCallback((force = false, behavior: ScrollBehavior = "auto") => {
     const container = scrollContainerRef.current
-    if (!container || !force) return
+    if (!container) return
 
-    window.requestAnimationFrame(() => {
-      container.scrollTop = container.scrollHeight
-    })
+    const threshold = 150
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+
+    if (force || isNearBottom) {
+      window.requestAnimationFrame(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior,
+        })
+      })
+    }
   }, [])
 
   const { messages, sendMessage, status, error, setMessages } = useChat<ChatUIMessage>({
@@ -320,6 +331,23 @@ const ChatInterface = ({
     },
   })
 
+  // Smart Auto-scroll Effect
+  const lastMessagesLength = useRef(messages.length)
+  useEffect(() => {
+    const isNewMessage = messages.length > lastMessagesLength.current
+    const isStreaming = status === "streaming"
+
+    if (isNewMessage) {
+      // A new message block was added: smooth scroll to it
+      scrollToBottom(true, "smooth")
+    } else if (isStreaming) {
+      // We are streaming tokens: follow only if already at bottom (pin to bottom)
+      scrollToBottom(false, "auto")
+    }
+
+    lastMessagesLength.current = messages.length
+  }, [messages, status, scrollToBottom])
+
   const loadConversation = useCallback(
     async (id: string) => {
       setIsInitialLoading(true)
@@ -342,8 +370,8 @@ const ChatInterface = ({
             setConversationId(id)
             setHistoryIndex(-1)
 
-            // Auto-scroll to bottom on initial load
-            setTimeout(() => scrollToBottom(true), 100)
+            // Immediate scroll to bottom after historical messages render
+            setTimeout(() => scrollToBottom(true, "auto"), 50)
           }
         }
       } catch (err) {
