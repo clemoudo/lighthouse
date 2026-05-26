@@ -13,6 +13,7 @@ import {
   LogOut,
   User as UserIcon,
   ShieldCheck,
+  Activity,
   LucideIcon,
 } from "lucide-react"
 import {
@@ -262,9 +263,21 @@ const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       {/* Footer / User Profile */}
       <Divider className="bg-white/10 m-0" />
       <UserProfile />
-      <Text className="pb-3 text-[10px] text-white/30 text-center">
-        &copy; Lighthouse - {env.NEXT_PUBLIC_APP_VERSION}
-      </Text>
+      <Flex align="center" justify="center" gap={8} className="pb-3 px-3">
+        <Text className="text-[10px] text-white/30">
+          &copy; Lighthouse - {env.NEXT_PUBLIC_APP_VERSION}
+        </Text>
+        <span className="text-white/10 text-[10px]">•</span>
+        <a
+          href="https://status.lighthouse.clementvier.be/status/lighthouse"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-white/40 hover:text-white/80 transition-colors flex items-center gap-1"
+        >
+          <Activity size={10} />
+          État des services
+        </a>
+      </Flex>
     </Flex>
   )
 }
