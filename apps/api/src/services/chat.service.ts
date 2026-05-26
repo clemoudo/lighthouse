@@ -4,6 +4,7 @@ import { generateText, Output, type ModelMessage } from "ai"
 import { mistral } from "@ai-sdk/mistral"
 import { z } from "zod"
 import { logger } from "@repo/logger"
+import { formatRAGContext, formatSourcesForUI } from "../lib/utils/chat-utils"
 
 /**
  * Service to handle chat-related logic like prompt assembly and RAG formatting.
@@ -13,14 +14,7 @@ export class ChatService {
    * Formats the context chunks into a single string with source markers.
    */
   formatRAGContext(chunks: ChunkSearchResult[]): string {
-    if (chunks.length === 0) return ""
-
-    return chunks
-      .map(
-        (c, i) =>
-          `[Source ${i + 1}]: ${c.metadata.source} (Page: ${c.metadata.pdfPageNumber})\n${c.content}`,
-      )
-      .join("\n\n---\n\n")
+    return formatRAGContext(chunks)
   }
 
   /**
@@ -128,11 +122,7 @@ Raison en 10 mots maximum.`,
    * Formats sources for the frontend.
    */
   formatSourcesForUI(chunks: ChunkSearchResult[]): ChatSource[] {
-    return chunks.map((chunk) => ({
-      id: chunk.documentId,
-      source: chunk.metadata.source,
-      page: chunk.metadata.pdfPageNumber,
-    }))
+    return formatSourcesForUI(chunks)
   }
 
   /**

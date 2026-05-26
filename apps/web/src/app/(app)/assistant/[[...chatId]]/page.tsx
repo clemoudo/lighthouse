@@ -455,15 +455,7 @@ const AssistantPage = () => {
                 <div className="shrink-0">
                   <Avatar
                     size={40}
-                    icon={
-                      <Image
-                        src={assistantAvatar}
-                        alt="Félix"
-                        width={40}
-                        height={40}
-                        className="animate-pulse"
-                      />
-                    }
+                    icon={<Image src={assistantAvatar} alt="Félix" width={40} height={40} />}
                     className="bg-container border border-border overflow-visible!"
                   />
                 </div>
