@@ -15,7 +15,15 @@ import { PAGINATION_LIMITS } from "@repo/api"
 export * from "@prisma/client"
 export * from "./types"
 
-const pool = new Pool({ connectionString: env.DATABASE_URL })
+const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  max: env.NODE_ENV === "production" ? 20 : 10,
+})
+
+pool.on("error", (err) => {
+  console.error("Unexpected error on idle database client", err)
+})
+
 const adapter = new PrismaPg(pool)
 
 export interface ChunkSearchResult {

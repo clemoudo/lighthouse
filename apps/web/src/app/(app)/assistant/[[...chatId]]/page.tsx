@@ -224,11 +224,11 @@ const MessageList = memo(
     assistantAvatar: string
   }) => {
     return (
-      <>
+      <Flex vertical gap={32} className="w-full">
         {messages.map((m) => (
           <MessageItem key={m.id} m={m} user={user} assistantAvatar={assistantAvatar} />
         ))}
-      </>
+      </Flex>
     )
   },
 )
