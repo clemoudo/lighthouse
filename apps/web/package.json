@@ -14,9 +14,9 @@
     "format": "prettier --write . --ignore-path ../../.prettierignore --list-different",
     "generate-api": "orval",
     "generate-api:watch": "orval --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "NODE_ENV=test vitest run",
+    "test:watch": "NODE_ENV=test vitest",
+    "test:coverage": "NODE_ENV=test vitest run --coverage"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.193",
