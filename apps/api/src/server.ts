@@ -1,4 +1,10 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express"
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+  Router,
+} from "express"
 import cors from "cors"
 import helmet from "helmet"
 import { toNodeHandler } from "better-auth/node"
@@ -18,6 +24,7 @@ import adminRoutes from "./routes/admin.routes"
 
 export const createServer = (): Express => {
   const app = express()
+  const apiRouter = Router()
 
   // Standard Logging
   app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -28,7 +35,7 @@ export const createServer = (): Express => {
   // Trust proxy for rate limiting (behind Traefik)
   app.set("trust proxy", 1)
 
-  // Security & Middleware
+  // Security & Global Middleware
   app.use(helmet())
 
   const formattedOrigins = env.ALLOWED_ORIGINS.flatMap((origin) => [
@@ -46,6 +53,7 @@ export const createServer = (): Express => {
           callback(new Error("Not allowed by CORS"))
         }
       },
+      methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     }),
   )
@@ -53,25 +61,27 @@ export const createServer = (): Express => {
   // Global Rate Limiter
   app.use(apiRateLimiter)
 
+  // --- BETTER AUTH ---
   // Better Auth Handler with Auth Rate Limiter
-  app.use("/auth", authRateLimiter)
-  app.all("/auth/*splat", toNodeHandler(auth))
+  app.use("/api/auth", authRateLimiter)
+  app.all("/api/auth/*splat", toNodeHandler(auth))
 
-  app.use(express.json({ limit: "50mb" }))
-  app.use(express.urlencoded({ limit: "50mb", extended: true }))
+  // --- API ROUTER ---
+
+  apiRouter.use(express.json({ limit: "50mb" }))
+  apiRouter.use(express.urlencoded({ limit: "50mb", extended: true }))
 
   // Authentication Middleware
-  app.use(authMiddleware)
+  apiRouter.use(authMiddleware)
 
   // API Routes
-  app.use("/documents", documentRoutes)
-  app.use("/chat", chatRoutes)
-  app.use("/admin", adminRoutes)
+  apiRouter.use("/documents", documentRoutes)
+  apiRouter.use("/chat", chatRoutes)
+  apiRouter.use("/admin", adminRoutes)
 
   // Health / Status Route
-  app.get("/status", async (_req: Request, res: Response) => {
+  apiRouter.get("/status", async (_req: Request, res: Response) => {
     try {
-      // Check DB connection
       await prisma.$queryRaw`SELECT 1`
       res.json({
         status: "ok",
@@ -88,9 +98,11 @@ export const createServer = (): Express => {
     }
   })
 
-  // Error Handling
+  // Montage du router global sur /api
+  app.use("/api", apiRouter)
+
+  // Error Handling (Global)
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    // Determine status code
     let statusCode = 500
     let message = "Internal Server Error"
     let stack: string | undefined
@@ -100,7 +112,8 @@ export const createServer = (): Express => {
       statusCode = err.statusCode
       message = err.message
       stack = err.stack
-    } else if (err instanceof Error) {
+    } else if (err instanceof ApiError) {
+      statusCode = err.statusCode || 500
       message = err.message
       stack = err.stack
     }
@@ -110,7 +123,6 @@ export const createServer = (): Express => {
       details = err.details
     }
 
-    // Map standard HTTP errors to our codes if not already an ApiError
     let code: ErrorCode = isApiError ? err.code : "INTERNAL_SERVER_ERROR"
 
     if (!isApiError && createError.isHttpError(err)) {
@@ -127,7 +139,6 @@ export const createServer = (): Express => {
       timestamp: new Date().toISOString(),
     }
 
-    // Sanitize production errors
     if (statusCode >= 500) {
       logger.error(`[SERVER ERROR] ${message}`, { stack, details })
       if (env.NODE_ENV === "production") {

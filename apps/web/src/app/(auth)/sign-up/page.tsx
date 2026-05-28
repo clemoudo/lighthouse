@@ -3,8 +3,8 @@
 import React, { useState, Suspense, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Card, Input, Button, Alert, Typography, Form, Divider, Result, Col, Row } from "antd"
-import { User, Mail, Lock, ShieldCheck, LogIn, Loader2 } from "lucide-react"
+import { Card, Input, Button, Alert, Typography, Form, Divider, Result, Col, Row, Spin } from "antd"
+import { User, Mail, Lock, ShieldCheck, LogIn, Loader2, CheckCircle2 } from "lucide-react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 import { authClient, signUp, signIn } from "@/lib/auth-client"
@@ -16,7 +16,7 @@ const { OTP } = Input
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.email("Veuillez saisir un email valide").min(1, "L'email est requis"),
+  email: z.email("Veuillez saisir un email valide"),
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 })
 
@@ -194,18 +194,26 @@ const SignUpContent = () => {
 
         <Form layout="vertical" size="large">
           <Form.Item label="Code de vérification">
-            <OTP
-              value={otpValue}
-              onChange={(val) => {
-                setOtpValue(val)
-                if (val.length === 6) {
-                  handleVerifyOtp(val)
-                }
-              }}
-              length={6}
-              className="flex justify-center"
-              autoFocus
-            />
+            <div className="relative">
+              <OTP
+                value={otpValue}
+                onChange={(val) => {
+                  setOtpValue(val)
+                  if (val.length === 6) {
+                    handleVerifyOtp(val)
+                  }
+                }}
+                length={6}
+                className="flex justify-center"
+                disabled={isVerifying}
+                autoFocus
+              />
+              {isVerifying && (
+                <div className="absolute -right-10 top-1/2 -translate-y-1/2">
+                  <Spin size="small" />
+                </div>
+              )}
+            </div>
           </Form.Item>
 
           <Button
@@ -214,6 +222,7 @@ const SignUpContent = () => {
             onClick={() => handleVerifyOtp()}
             loading={isVerifying}
             disabled={otpValue.length < 6}
+            icon={!isVerifying && <CheckCircle2 size={18} />}
           >
             Vérifier le code
           </Button>
@@ -234,7 +243,13 @@ const SignUpContent = () => {
             </Button>
           </div>
 
-          <Button type="link" block onClick={() => setShowOtp(false)} className="mt-2">
+          <Button
+            type="link"
+            block
+            onClick={() => setShowOtp(false)}
+            className="mt-2"
+            disabled={isVerifying}
+          >
             Retour
           </Button>
         </Form>

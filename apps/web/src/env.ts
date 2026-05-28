@@ -5,7 +5,7 @@ import { z } from "zod"
  * comme optionnelles pour ne pas faire planter le navigateur.
  */
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "production"]).default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   WEB_PORT: z.string().default("3000"),
 
   // Variables Client (doivent commencer par NEXT_PUBLIC_)

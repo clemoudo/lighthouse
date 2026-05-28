@@ -1,5 +1,3 @@
-import createError from "http-errors"
-
 export type ErrorCode =
   | "INTERNAL_SERVER_ERROR"
   | "UNAUTHORIZED"
@@ -19,10 +17,10 @@ export interface ApiErrorResponse {
 }
 
 /**
- * Custom error class extending http-errors.
- * Allows passing a custom machine-readable code for the frontend.
+ * Custom error class for API errors.
+ * Compatible with Express error handling.
  */
-export class ApiError extends createError.HttpError {
+export class ApiError extends Error {
   public code: ErrorCode
   public details?: unknown
   public statusCode: number
@@ -33,6 +31,13 @@ export class ApiError extends createError.HttpError {
     this.code = code
     this.details = details
     this.name = "ApiError"
+
+    // Set the prototype explicitly to ensure instanceof works correctly
     Object.setPrototypeOf(this, ApiError.prototype)
+
+    // Capturer la stack trace (propre à V8/Node.js)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError)
+    }
   }
 }

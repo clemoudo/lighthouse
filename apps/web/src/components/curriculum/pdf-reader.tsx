@@ -5,7 +5,17 @@ import { Document, pdfjs } from "react-pdf"
 import "react-pdf/dist/Page/TextLayer.css"
 import "react-pdf/dist/Page/AnnotationLayer.css"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Button, Flex, Space, Typography, InputNumber, Skeleton, Select, Tooltip } from "antd"
+import {
+  Button,
+  Flex,
+  Space,
+  Typography,
+  InputNumber,
+  Skeleton,
+  Select,
+  Tooltip,
+  FloatButton,
+} from "antd"
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,11 +27,13 @@ import {
   ZoomOut,
   Maximize,
   ExternalLink,
+  MessageCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buildSpreads, spreadIndexForPage } from "@/lib/pdf-utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { SpreadItem } from "./spread-item"
+import { useRouter } from "next/navigation"
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -40,9 +52,17 @@ interface PdfReaderProps {
   initialPage?: number
   onClose: () => void
   title?: string
+  returnUrl?: string
 }
 
-export const PdfReader = ({ fileUrl, initialPage = 1, onClose, title }: PdfReaderProps) => {
+export const PdfReader = ({
+  fileUrl,
+  initialPage = 1,
+  onClose,
+  title,
+  returnUrl,
+}: PdfReaderProps) => {
+  const router = useRouter()
   const [numPages, setNumPages] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
@@ -427,6 +447,17 @@ export const PdfReader = ({ fileUrl, initialPage = 1, onClose, title }: PdfReade
             ))}
           </div>
         </Document>
+
+        {/* Floating Back to Chat Button */}
+        {returnUrl && (
+          <FloatButton
+            icon={<MessageCircle size={28} style={{ transform: "scaleX(-1)" }} />}
+            tooltip="Retour à la conversation"
+            type="primary"
+            onClick={() => router.push(returnUrl)}
+            className="w-14 h-14"
+          />
+        )}
       </div>
     </div>
   )

@@ -106,7 +106,7 @@ services:
     volumes:
       - document_storage:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://api:${API_PORT}/status"]
+      test: ["CMD", "curl", "-f", "http://api:${API_PORT}/api/status"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -117,8 +117,7 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls=true"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.middlewares.api-strip.stripprefix.prefixes=/api"
-      - "traefik.http.routers.api.middlewares=api-strip,sec-headers"
+      - "traefik.http.routers.api.middlewares=sec-headers"
       - "traefik.http.services.api.loadbalancer.server.port=${API_PORT}"
       - "traefik.docker.network=gateway"
     depends_on:

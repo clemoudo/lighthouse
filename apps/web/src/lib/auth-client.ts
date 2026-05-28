@@ -1,9 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 import { adminClient, emailOTPClient } from "better-auth/client/plugins"
-import { env } from "@/env"
 
 const authClient = createAuthClient({
-  baseURL: `${env.NEXT_PUBLIC_API_URL}/auth`,
   fetchOptions: {
     credentials: "include",
   },
@@ -38,6 +36,7 @@ export const {
   changePassword,
   deleteUser,
   sendVerificationEmail,
+  emailOtp,
 } = authClient
 
 export { authClient }

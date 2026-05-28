@@ -78,6 +78,7 @@ const CurriculumContent = () => {
 
   const docId = searchParams.get("docId")
   const page = searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
+  const returnUrl = searchParams.get("returnUrl")
 
   const documents = documentsResponse?.status === 200 ? documentsResponse.data.documents : []
   const activeDocument = documents.find((d) => d.id === docId)
@@ -97,6 +98,7 @@ const CurriculumContent = () => {
         initialPage={page}
         title={activeDocument.title}
         onClose={handleCloseReader}
+        returnUrl={returnUrl || undefined}
       />
     )
   }

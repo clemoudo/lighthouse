@@ -12,7 +12,10 @@
     "start": "node dist/index.js",
     "tsc": "tsc --noEmit",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore",
-    "format": "prettier --write . --ignore-path ../../.prettierignore --list-different"
+    "format": "prettier --write . --ignore-path ../../.prettierignore --list-different",
+    "test": "NODE_ENV=test jest --verbose --colors",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage"
   },
   "dependencies": {
     "@ai-sdk/mistral": "^3.0.37",
@@ -21,17 +24,17 @@
     "@repo/api": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/logger": "workspace:*",
-    "ai": "^6.0.184",
+    "ai": "^6.0.191",
     "better-auth": "^1.6.11",
     "cors": "^2.8.6",
-    "dayjs": "^1.11.20",
+    "dayjs": "^1.11.21",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "helmet": "^8.0.0",
+    "helmet": "^8.2.0",
     "http-errors": "^2.0.1",
     "multer": "^2.1.1",
     "prisma": "7.8.0",
-    "resend": "^6.12.3",
+    "resend": "^6.12.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -42,6 +45,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/http-errors": "^2.0.5",
+    "@types/jest": "^30.0.0",
     "@types/multer": "^2.1.0",
     "@types/node": "^25.8.0",
     "@types/supertest": "^7.2.0",
@@ -51,6 +55,7 @@
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "typescript": "5.9.3"
   }
 }

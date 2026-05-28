@@ -2,9 +2,15 @@ import { prisma, IngestionStatus, type ParsedPage, UserRole } from "@repo/db"
 import { logger } from "@repo/logger"
 import { parsingService } from "./parsing.service"
 import { vectorService } from "./vector.service"
-import { storageService, type SaveChunksParams } from "./storage.service"
+import { storageService } from "./storage.service"
 import { sendEmail } from "./email.service"
 import { env } from "@/env"
+import {
+  generateIngestionEmailHtml,
+  mapPagesToChunks,
+  filterPagesForEmbedding,
+  type SaveChunksParams,
+} from "../lib/utils/ingestion-utils"
 
 // --- DEVELOPMENT CONFIG ---
 const USE_CACHED_PARSING = true // Set to false to force a new LlamaParse call
@@ -26,26 +32,11 @@ async function notifyAdmins(documentTitle: string, status: "SUCCESS" | "FAILURE"
     }
 
     const adminEmails = admins.map((a) => a.email)
-    const isSuccess = status === "SUCCESS"
 
     await sendEmail({
       to: adminEmails,
-      subject: `[Lighthouse] ${isSuccess ? "Succès" : "Échec"} de l'ingestion : ${documentTitle}`,
-      html: `
-        <div style="font-family: sans-serif; line-height: 1.5; color: #333;">
-          <h2 style="color: ${isSuccess ? "#10b981" : "#ef4444"};">
-            Ingestion ${isSuccess ? "terminée avec succès" : "échouée"}
-          </h2>
-          <p>Le traitement du document <strong>${documentTitle}</strong> vient de se terminer.</p>
-          <ul>
-            <li><strong>Statut :</strong> ${isSuccess ? "COMPLETED" : "FAILED"}</li>
-            ${error ? `<li style="color: #ef4444;"><strong>Erreur :</strong> ${error}</li>` : ""}
-          </ul>
-          <p>Vous pouvez consulter le document dans l'interface d'administration.</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #666;">Ceci est un message automatique du système Lighthouse.</p>
-        </div>
-      `,
+      subject: `[Lighthouse] ${status === "SUCCESS" ? "Succès" : "Échec"} de l'ingestion : ${documentTitle}`,
+      html: generateIngestionEmailHtml(documentTitle, status, error),
     })
   } catch (err) {
     logger.error("[INGESTION_NOTIF] Erreur lors de la notification des admins:", err)
@@ -82,7 +73,7 @@ export const ingestDocument = async (documentId: string) => {
 
     if (env.NODE_ENV === "development" && USE_CACHED_PARSING && document.parsedContent) {
       logger.info("[INGESTION] Using cached LlamaParse results from database.")
-      pages = document.parsedContent
+      pages = document.parsedContent as ParsedPage[]
     } else {
       logger.info("[INGESTION] Calling LlamaParse API...")
       pages = await parsingService.parseDocument(document.filePath)
@@ -96,7 +87,7 @@ export const ingestDocument = async (documentId: string) => {
     }
 
     // 4. Batch Vector Phase (Skipping empty pages)
-    const nonEmptyPages = pages.filter((p) => p.markdown.trim().length > 0)
+    const nonEmptyPages = filterPagesForEmbedding(pages)
     logger.info(
       `[INGESTION] Generating embeddings for ${nonEmptyPages.length} non-empty pages (skipped ${pages.length - nonEmptyPages.length}).`,
     )
@@ -107,25 +98,12 @@ export const ingestDocument = async (documentId: string) => {
     }
 
     // 5. Mapping & Storage Phase
-    let embeddingIndex = 0
-    const saveChunksParams: SaveChunksParams[] = pages
-      .map((page) => {
-        const isEmpty = page.markdown.trim().length === 0
-
-        const chunk: SaveChunksParams = {
-          content: isEmpty ? null : page.markdown,
-          embedding: isEmpty ? null : embeddings[embeddingIndex++],
-          documentId: document.id,
-          metadata: {
-            pdfPageNumber: page.pageNumber,
-            printedPageNumber: page.printedPageNumber,
-            source: document.title,
-          },
-        }
-
-        return chunk
-      })
-      .filter((p) => p !== null)
+    const saveChunksParams = mapPagesToChunks(
+      pages,
+      embeddings,
+      document.id,
+      document.title,
+    ) as SaveChunksParams[]
 
     // Bulk insert chunks
     await storageService.saveChunksWithVectors(saveChunksParams)

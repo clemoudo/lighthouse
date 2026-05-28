@@ -11,7 +11,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  basePath: "/auth",
+  baseURL: env.BETTER_AUTH_URL,
+  trustedOrigins: env.ALLOWED_ORIGINS.flatMap((origin) => [
+    `http://${origin}`,
+    `https://${origin}`,
+  ]),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -26,12 +30,14 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID || "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET || "",
+      clientId: env.GOOGLE_CLIENT_ID as string,
+      clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+      accessType: "offline",
+      prompt: "select_account",
     },
     microsoft: {
-      clientId: env.MICROSOFT_CLIENT_ID || "",
-      clientSecret: env.MICROSOFT_CLIENT_SECRET || "",
+      clientId: env.MICROSOFT_CLIENT_ID as string,
+      clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
       mapProfileToUser: (profile) => ({
         email: profile.email ?? `${profile.oid}@entra.placeholder.local`,
       }),
