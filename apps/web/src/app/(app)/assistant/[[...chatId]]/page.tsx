@@ -2,28 +2,8 @@
 
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport, isDataUIPart } from "ai"
-import {
-  Input,
-  Button,
-  Typography,
-  Space,
-  Flex,
-  Avatar,
-  Drawer,
-  Skeleton,
-  Tooltip,
-  Tag,
-  Spin,
-} from "antd"
-import {
-  Send,
-  User,
-  AlertCircle,
-  PanelRightClose,
-  PanelRightOpen,
-  ShieldCheck,
-  Square,
-} from "lucide-react"
+import { Button, Typography, Space, Flex, Avatar, Drawer, Skeleton, Tooltip, Tag, Spin } from "antd"
+import { User, AlertCircle, PanelRightClose, PanelRightOpen, ShieldCheck } from "lucide-react"
 import { env } from "@/env"
 import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from "react"
 import { cn } from "@/lib/utils"
@@ -34,6 +14,7 @@ import { useTheme } from "next-themes"
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Citations } from "@/components/assistant/citations"
+import { ChatInput } from "@/components/assistant/chat-input"
 import { MessageRole, type ChatSource } from "@repo/api"
 import { HistorySidebar } from "@/components/assistant/history-sidebar"
 import {
@@ -548,50 +529,14 @@ const ChatInterface = ({
         )}
       </div>
 
-      <div className="px-4 pt-4 bg-layout sticky bottom-0 border-t border-border/20 shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.05)]">
-        <form onSubmit={onFinish} className="relative group max-w-4xl mx-auto">
-          <Input.TextArea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Posez votre question sur le programme..."
-            autoSize={{ minRows: 1, maxRows: 8 }}
-            className="pr-14 pl-5 py-4 rounded-2xl border-border hover:border-primary/50 focus:border-primary transition-all resize-none shadow-lg bg-container text-base"
-            onKeyDown={handleKeyDown}
-          />
-          <Button
-            type="primary"
-            htmlType="submit"
-            icon={
-              <div className="relative w-5 h-5 flex items-center justify-center">
-                <Send
-                  size={20}
-                  className={cn(
-                    "absolute transition-all duration-300 transform",
-                    isStreaming ? "scale-0 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100",
-                  )}
-                />
-                <Square
-                  size={16}
-                  fill="currentColor"
-                  className={cn(
-                    "absolute transition-all duration-300 transform",
-                    isStreaming ? "scale-100 rotate-0 opacity-100" : "scale-0 -rotate-90 opacity-0",
-                  )}
-                />
-              </div>
-            }
-            onClick={onFinish}
-            disabled={!isStreaming && (!input.trim() || isLoading)}
-            className={cn(
-              "absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-all active:scale-95",
-              isStreaming ? "bg-error hover:bg-error/80 border-none" : "",
-            )}
-          />
-        </form>
-        <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium pb-4">
-          L'IA peut faire des erreurs. Vérifiez les informations dans le référentiel officiel.
-        </p>
-      </div>
+      <ChatInput
+        value={input}
+        onChange={setInput}
+        onSend={onFinish}
+        isStreaming={isStreaming}
+        isLoading={isLoading}
+        onKeyDown={handleKeyDown}
+      />
     </Flex>
   )
 }
@@ -625,7 +570,7 @@ const AssistantPage = () => {
             type="text"
             icon={isSidebarOpen ? <PanelRightClose size={20} /> : <PanelRightOpen size={20} />}
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-text/60 hover:text-text bg-container shadow-sm border border-border/20"
+            className="text-text/60 hover:text-text bg-container/50 backdrop-blur-sm shadow-sm"
           />
         </div>
 
