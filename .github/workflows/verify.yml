@@ -67,7 +67,6 @@ jobs:
         run: pnpm turbo run lint tsc test:coverage build
         env:
           SKIP_ENV_VALIDATION: 1
-          NODE_ENV: "production"
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v7
