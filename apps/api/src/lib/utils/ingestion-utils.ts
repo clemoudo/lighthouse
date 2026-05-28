@@ -35,6 +35,14 @@ export function generateIngestionEmailHtml(
 }
 
 /**
+ * Filters out pages that have no content (only whitespace).
+ * Pure function.
+ */
+export function filterPagesForEmbedding(pages: ParsedPage[]): ParsedPage[] {
+  return pages.filter((p) => p.markdown.trim().length > 0)
+}
+
+/**
  * Maps parsed pages and embeddings to chunk parameters for storage.
  * Pure function.
  */

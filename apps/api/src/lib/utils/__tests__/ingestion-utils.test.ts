@@ -1,4 +1,8 @@
-import { generateIngestionEmailHtml, mapPagesToChunks } from "../ingestion-utils"
+import {
+  generateIngestionEmailHtml,
+  mapPagesToChunks,
+  filterPagesForEmbedding,
+} from "../ingestion-utils"
 import { type ParsedPage } from "@repo/db"
 
 describe("ingestion-utils", () => {
@@ -15,6 +19,21 @@ describe("ingestion-utils", () => {
       expect(html).toContain("échouée")
       expect(html).toContain("Something went wrong")
       expect(html).toContain("FAILED")
+    })
+  })
+
+  describe("filterPagesForEmbedding", () => {
+    it("should filter out empty or whitespace-only pages", () => {
+      const pages: ParsedPage[] = [
+        { pageNumber: 1, printedPageNumber: undefined, markdown: "Content" },
+        { pageNumber: 2, printedPageNumber: undefined, markdown: "  " },
+        { pageNumber: 3, printedPageNumber: undefined, markdown: "" },
+        { pageNumber: 4, printedPageNumber: undefined, markdown: "More Content" },
+      ]
+      const filtered = filterPagesForEmbedding(pages)
+      expect(filtered).toHaveLength(2)
+      expect(filtered[0].pageNumber).toBe(1)
+      expect(filtered[1].pageNumber).toBe(4)
     })
   })
 

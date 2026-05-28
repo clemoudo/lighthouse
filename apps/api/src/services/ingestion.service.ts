@@ -8,6 +8,7 @@ import { env } from "@/env"
 import {
   generateIngestionEmailHtml,
   mapPagesToChunks,
+  filterPagesForEmbedding,
   type SaveChunksParams,
 } from "../lib/utils/ingestion-utils"
 
@@ -86,7 +87,7 @@ export const ingestDocument = async (documentId: string) => {
     }
 
     // 4. Batch Vector Phase (Skipping empty pages)
-    const nonEmptyPages = pages.filter((p) => p.markdown.trim().length > 0)
+    const nonEmptyPages = filterPagesForEmbedding(pages)
     logger.info(
       `[INGESTION] Generating embeddings for ${nonEmptyPages.length} non-empty pages (skipped ${pages.length - nonEmptyPages.length}).`,
     )
