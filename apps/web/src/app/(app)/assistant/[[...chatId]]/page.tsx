@@ -15,7 +15,15 @@ import {
   Tag,
   Spin,
 } from "antd"
-import { Send, User, AlertCircle, PanelRightClose, PanelRightOpen, ShieldCheck } from "lucide-react"
+import {
+  Send,
+  User,
+  AlertCircle,
+  PanelRightClose,
+  PanelRightOpen,
+  ShieldCheck,
+  Square,
+} from "lucide-react"
 import { env } from "@/env"
 import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from "react"
 import { cn } from "@/lib/utils"
@@ -300,7 +308,7 @@ const ChatInterface = ({
     }
   }, [])
 
-  const { messages, sendMessage, status, error, setMessages } = useChat<ChatUIMessage>({
+  const { messages, sendMessage, status, error, setMessages, stop } = useChat<ChatUIMessage>({
     experimental_throttle: 250, // Heavily throttle for maximum Firefox stability
     transport: new DefaultChatTransport({
       api: env.NEXT_PUBLIC_API_URL + "/chat",
@@ -407,9 +415,16 @@ const ChatInterface = ({
   }, [messages])
 
   const isLoading = status !== "ready"
+  const isStreaming = status === "streaming"
 
-  const onFinish = (e?: React.SubmitEvent) => {
+  const onFinish = (e?: React.SubmitEvent | React.MouseEvent) => {
     e?.preventDefault()
+
+    if (isStreaming) {
+      stop()
+      return
+    }
+
     if (input.trim() && !isLoading) {
       sendMessage({ text: input }, { body: { conversationId } })
       setInput("")
@@ -546,9 +561,31 @@ const ChatInterface = ({
           <Button
             type="primary"
             htmlType="submit"
-            icon={<Send size={20} />}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-transform active:scale-95"
+            icon={
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <Send
+                  size={20}
+                  className={cn(
+                    "absolute transition-all duration-300 transform",
+                    isStreaming ? "scale-0 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100",
+                  )}
+                />
+                <Square
+                  size={16}
+                  fill="currentColor"
+                  className={cn(
+                    "absolute transition-all duration-300 transform",
+                    isStreaming ? "scale-100 rotate-0 opacity-100" : "scale-0 -rotate-90 opacity-0",
+                  )}
+                />
+              </div>
+            }
+            onClick={onFinish}
+            disabled={!isStreaming && (!input.trim() || isLoading)}
+            className={cn(
+              "absolute right-2.5 bottom-2.5 h-10 w-10 flex items-center justify-center rounded-xl shadow-md transition-all active:scale-95",
+              isStreaming ? "bg-error hover:bg-error/80 border-none" : "",
+            )}
           />
         </form>
         <p className="text-[10px] text-center mt-4 text-text-description opacity-50 font-medium pb-4">

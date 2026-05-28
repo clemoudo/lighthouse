@@ -5,6 +5,8 @@ import {
   createUIMessageStream,
   pipeUIMessageStreamToResponse,
   type ModelMessage,
+  consumeStream,
+  LanguageModelUsage,
 } from "ai"
 import { mistral } from "@ai-sdk/mistral"
 import { prisma, MessageRole, MessageIntent, type ChunkSearchResult } from "@repo/db"
@@ -115,6 +117,13 @@ export const handleChat = async (req: Request, res: Response) => {
 
   if (!userId) throw new ApiError(401, "UNAUTHORIZED", "Utilisateur non authentifié")
 
+  // Create an AbortController to handle client disconnection manually
+  // This is more reliable than relying on Express 5's req.signal which may have compatibility issues
+  const abortController = new AbortController()
+  res.on("close", () => {
+    abortController.abort()
+  })
+
   // 1. Manage Conversation & Ownership
   let conversationId = existingConversationId
   if (conversationId) {
@@ -178,6 +187,13 @@ export const handleChat = async (req: Request, res: Response) => {
 
   logger.info(`[CHAT] Request for conversation ${conversationId} from user ${userId}`)
 
+  // Capture variables for use in onFinish
+  let currentNeedsRAG = false
+  let currentModel = CHAT_MODEL_DIRECT
+  let currentRelevantChunks: ChunkSearchResult[] = []
+  let classificationUsage: LanguageModelUsage | null = null
+  let generationUsage: LanguageModelUsage | null = null
+
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
       // 3.5 Quota Check Phase
@@ -207,70 +223,98 @@ export const handleChat = async (req: Request, res: Response) => {
           model: mistral(CHAT_MODEL_DIRECT),
           system: chatService.getDirectSystemPrompt(),
           messages: modelMessages,
+          abortSignal: abortController.signal,
         })
         return writer.merge(result.toUIMessageStream())
       }
 
       // 4. Intent Classification Phase
-      const { intent, usage: classificationUsage } = await chatService.classifyIntent(query)
-      const { needsRAG, reasoning } = intent
-      logger.info(`[CHAT] Intent: ${needsRAG ? "RAG" : "DIRECT"} (Reason: ${reasoning})`)
+      const { intent, usage } = await chatService.classifyIntent(query)
+      currentNeedsRAG = intent.needsRAG
+      classificationUsage = usage
+      logger.info(
+        `[CHAT] Intent: ${currentNeedsRAG ? "RAG" : "DIRECT"} (Reason: ${intent.reasoning})`,
+      )
 
-      let relevantChunks: ChunkSearchResult[] = []
       let context = ""
-
-      if (needsRAG) {
+      if (currentNeedsRAG) {
         // 4a. RAG Path (Mistral Large + Retrieval)
         const embedding = await vectorService.generateEmbedding(query)
-        relevantChunks = await storageService.searchSimilarChunks(embedding, 5)
+        currentRelevantChunks = await storageService.searchSimilarChunks(embedding, 5)
 
         writer.write({
           type: "data-sources",
-          data: chatService.formatSourcesForUI(relevantChunks),
+          data: chatService.formatSourcesForUI(currentRelevantChunks),
         })
 
-        context = chatService.formatRAGContext(relevantChunks)
+        context = chatService.formatRAGContext(currentRelevantChunks)
       }
 
-      const model = needsRAG ? CHAT_MODEL_RAG : CHAT_MODEL_DIRECT
-      const systemPrompt = needsRAG
+      currentModel = currentNeedsRAG ? CHAT_MODEL_RAG : CHAT_MODEL_DIRECT
+      const systemPrompt = currentNeedsRAG
         ? chatService.getSystemPrompt(context)
         : chatService.getDirectSystemPrompt()
 
-      // 5. Generation & Persistence on Finish
+      // 5. Generation
       const result = await streamText({
-        model: mistral(model),
+        model: mistral(currentModel),
         system: systemPrompt,
         messages: modelMessages,
-        onFinish: async ({ text, usage }) => {
-          try {
-            const promptTokens = (usage.inputTokens ?? 0) + (classificationUsage.inputTokens ?? 0)
-            const completionTokens =
-              (usage.outputTokens ?? 0) + (classificationUsage.outputTokens ?? 0)
-            const totalTokens = (usage.totalTokens ?? 0) + (classificationUsage.totalTokens ?? 0)
-
-            await chatService.saveMessage({
-              userId,
-              conversationId,
-              role: MessageRole.assistant,
-              content: text,
-              model,
-              intent: needsRAG ? MessageIntent.RAG : MessageIntent.DIRECT,
-              promptTokens,
-              completionTokens,
-              totalTokens,
-              sources: needsRAG ? chatService.formatSourcesForUI(relevantChunks) : undefined,
-            })
-          } catch (dbError) {
-            logger.error("[CHAT_DB_ERROR] Failed to persist assistant message", dbError)
-          }
+        abortSignal: abortController.signal,
+        onFinish: ({ usage }) => {
+          generationUsage = usage
         },
       })
 
       writer.merge(result.toUIMessageStream())
     },
+    onFinish: async ({ responseMessage, isAborted }) => {
+      if (isAborted) {
+        logger.info(
+          `[CHAT] Stream aborted for conversation ${conversationId}. Saving partial text.`,
+        )
+      }
+
+      try {
+        const text = responseMessage.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("")
+
+        if (text) {
+          const promptTokens =
+            (generationUsage?.inputTokens ?? 0) + (classificationUsage?.inputTokens ?? 0)
+          const completionTokens =
+            (generationUsage?.outputTokens ?? 0) + (classificationUsage?.outputTokens ?? 0)
+          const totalTokens =
+            (generationUsage?.totalTokens ?? 0) + (classificationUsage?.totalTokens ?? 0)
+
+          await chatService.saveMessage({
+            userId,
+            conversationId,
+            role: MessageRole.assistant,
+            content: text,
+            model: currentModel,
+            intent: currentNeedsRAG ? MessageIntent.RAG : MessageIntent.DIRECT,
+            promptTokens,
+            completionTokens,
+            totalTokens,
+            sources: currentNeedsRAG
+              ? chatService.formatSourcesForUI(currentRelevantChunks)
+              : undefined,
+          })
+        }
+      } catch (dbError) {
+        logger.error("[CHAT_DB_ERROR] Failed to persist assistant message in onFinish", dbError)
+      }
+    },
   })
 
   res.setHeader("x-conversation-id", conversationId)
-  pipeUIMessageStreamToResponse({ response: res, stream })
+
+  pipeUIMessageStreamToResponse({
+    response: res,
+    stream,
+    consumeSseStream: consumeStream,
+  })
 }
