@@ -97,8 +97,6 @@ services:
       - backend
 
   postgres:
-    image: lighthouse-postgres:latest-dev
-    build: ./infra/postgres
     networks:
       - backend
       - admin
