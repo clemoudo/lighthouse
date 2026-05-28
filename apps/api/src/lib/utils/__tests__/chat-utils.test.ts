@@ -1,4 +1,9 @@
-import { formatRAGContext, formatSourcesForUI } from "../chat-utils"
+import {
+  formatRAGContext,
+  formatSourcesForUI,
+  getSystemPrompt,
+  getDirectSystemPrompt,
+} from "../chat-utils"
 import { type ChunkSearchResult } from "@repo/db"
 
 describe("chat-utils", () => {
@@ -52,6 +57,24 @@ describe("chat-utils", () => {
           page: 5,
         },
       ])
+    })
+  })
+
+  describe("getSystemPrompt", () => {
+    it("should include the provided context", () => {
+      const context = "CECI EST UN TEST DE CONTEXTE"
+      const prompt = getSystemPrompt(context)
+      expect(prompt).toContain(context)
+      expect(prompt).toContain("Félix")
+      expect(prompt).toContain("Lighthouse")
+    })
+  })
+
+  describe("getDirectSystemPrompt", () => {
+    it("should return the direct system prompt", () => {
+      const prompt = getDirectSystemPrompt()
+      expect(prompt).toContain("Félix")
+      expect(prompt).toContain("sans nécessairement consulter le programme")
     })
   })
 })

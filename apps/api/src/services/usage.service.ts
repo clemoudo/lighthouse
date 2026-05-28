@@ -1,10 +1,6 @@
-import { prisma, UserRole, MessageRole } from "@repo/db"
+import { prisma, MessageRole } from "@repo/db"
 import dayjs from "dayjs"
-
-const LIMITS = {
-  [UserRole.admin]: 100,
-  [UserRole.user]: 30,
-}
+import { calculateQuotaStatus } from "../lib/utils/usage-utils"
 
 /**
  * Service to manage user usage quotas and limits.
@@ -26,8 +22,6 @@ export class UsageService {
       throw new Error("User not found")
     }
 
-    const role = user.role || UserRole.user
-    const limit = LIMITS[role]
     const startOfDay = dayjs().startOf("day").toDate()
 
     // Count assistant messages sent to this user today
@@ -41,12 +35,7 @@ export class UsageService {
       },
     })
 
-    const remaining = limit - dailyCount
-    return {
-      allowed: dailyCount < limit,
-      remaining: Math.max(0, remaining),
-      limit,
-    }
+    return calculateQuotaStatus(user.role, dailyCount)
   }
 }
 
