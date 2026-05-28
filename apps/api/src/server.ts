@@ -112,7 +112,8 @@ export const createServer = (): Express => {
       statusCode = err.statusCode
       message = err.message
       stack = err.stack
-    } else if (err instanceof Error) {
+    } else if (err instanceof ApiError) {
+      statusCode = err.statusCode || 500
       message = err.message
       stack = err.stack
     }
