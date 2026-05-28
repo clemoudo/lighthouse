@@ -2,38 +2,44 @@
 
 ## 1. État Actuel
 
-### Backend (`apps/api`) - **TERMINÉ (Logique Pure)**
-- **Refactoring** : La logique métier critique a été extraite des services (`UsageService`, `ChatService`, `IngestionService`) vers des fonctions pures dans `src/lib/utils/`.
-- **Tests** : 17 tests unitaires passent (`pnpm test` dans `apps/api`).
-  - `usage-utils.ts` : Calcul des quotas par rôle.
-  - `chat-utils.ts` : Formatage RAG et génération de prompts (Félix).
-  - `ingestion-utils.ts` : Mapping des chunks et filtrage des pages vides.
+### Backend (`apps/api`) - **TERMINÉ (Logique & Intégration de base)**
+- **Refactoring** : Logique métier extraite vers des fonctions pures.
+- **Tests Unitaires** : 100% de couverture sur `chat-utils.ts`, `ingestion-utils.ts`, `usage-utils.ts`.
+- **Tests d'Intégration** : 
+  - `status.test.ts` : Health check et DB.
+  - `chat.test.ts` : Gestion des conversations.
+  - `document.test.ts` : Liste et suppression de documents.
+  - `admin.test.ts` : Statistiques d'utilisation et utilisateurs (91% couverture controller).
+- **Infrastructure** : `ApiError` corrigé pour une meilleure compatibilité Express/Jest.
 
-### Frontend (`apps/web`) - **EN COURS (Infrastructure en place)**
-- **Infrastructure** : Vitest, React Testing Library et JSDOM sont installés et configurés.
-- **Setup** : Fichier `src/test/setup.ts` créé pour mocker les APIs manquantes dans JSDOM (`matchMedia`, `ResizeObserver`) nécessaires pour Ant Design 6.
-- **Premiers Tests** :
-  - `ComingSoon.test.tsx` : Vérifie le rendu de base d'un composant Ant Design.
-  - `pdf-utils.test.ts` : Teste la logique de navigation des pages (spreads).
+### Frontend (`apps/web`) - **TERMINÉ (Composants Core Assistant)**
+- **Infrastructure** : Vitest + RTL + JSDOM + `@vitest/coverage-v8`.
+- **Tests Composants** :
+  - `SourcePill.test.tsx` : Rendu et liens.
+  - `Citations.test.tsx` : Liste des sources.
+  - `ChatInput.test.tsx` : Interactions utilisateur (typing, send, disabled states).
+- **Refactoring** : Extraction de `ChatInput` en composant autonome pour la testabilité.
+
+### API Contracts (`packages/api`) - **TERMINÉ (Validation de Schémas)**
+- **Infrastructure** : Jest configuré pour le package.
+- **Tests** : 100% de couverture sur tous les schémas Zod (`admin`, `auth`, `chat`, `document`).
+- **Robustesse** : Validation des payloads valides et détection d'erreurs sur payloads invalides.
 
 ## 2. Décisions Architecturales
-- **Priorité aux Fonctions Pures** : On isole systématiquement la logique de transformation de données des effets de bord (DB, API).
-- **Mocks Ant Design** : Le setup global (`setup.ts`) est crucial pour éviter que les tests n'échouent à cause de composants AntD complexes.
+- **Isolation des Mocks** : Utilisation systématique de `jest.mock` pour `@repo/db` et `better-auth` afin d'éviter les effets de bord.
+- **Type Safety** : Tests écrits sans `any`, utilisant les types générés par Prisma et les interfaces partagées.
+- **Global Coverage** : La commande `pnpm test:coverage` à la racine agrège maintenant correctement tous les packages.
 
-## 3. Prochaines Étapes Immédiates
+## 3. Prochaines Étapes Suggérées
 
-### Priorité 1 : Composants Assistant (`apps/web`)
-- Créer `src/components/assistant/__tests__/source-pill.test.tsx` (J'avais commencé à l'analyser).
-- Tester `Citations` et la gestion de l'affichage des sources.
-- Tester `ChatInput` (interactions utilisateur).
+### Optionnel : Tests E2E (`apps/web`)
+- Configurer Playwright pour des tests de bout en bout (flux complet de login -> chat -> citations).
 
-### Priorité 2 : Controllers API (`apps/api`)
-- Ajouter des tests d'intégration avec `supertest` pour les routes complexes (`/api/chat`).
-- Mock l'authentification (Better Auth) dans les tests.
-
-### Priorité 3 : Validation de Schémas (`packages/api`)
-- Tester les Zod schemas avec des payloads invalides pour garantir la robustesse des contrats API.
+### Intégration LLM
+- Ajouter des tests utilisant des mocks de `ai` SDK pour tester le streaming complet dans `handleChat`.
 
 ## 4. Commandes Utiles
-- `pnpm test` (dans chaque app) pour lancer la suite.
-- `vitest config` est dans `apps/web/vitest.config.ts`.
+- `pnpm test` (racine) : Lance tous les tests du monorepo.
+- `pnpm test:coverage` (racine) : Rapport de couverture global.
+- `pnpm tsc` (racine) : Vérification des types sur tout le projet.
+
