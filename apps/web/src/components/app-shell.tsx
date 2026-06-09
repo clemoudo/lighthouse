@@ -97,7 +97,7 @@ const adminItems = [
 ]
 
 const UserProfile = () => {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isAnonymous } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const UserProfile = () => {
     )
   }
 
-  if (!user) {
+  if (!user || isAnonymous) {
     return (
       <div className="p-2">
         <Link href="/sign-in" className="block w-full">

@@ -26,7 +26,7 @@ jest.mock("../middlewares/auth", () => ({
       createdAt: new Date(),
       updatedAt: new Date(),
       banned: false,
-    }
+    } as User
     next()
   },
   requireAuth: (req: Request, res: Response, next: NextFunction) => next(),
@@ -53,7 +53,7 @@ jest.mock("@repo/db", () => ({
 }))
 
 import { createServer } from "../server"
-import { prisma, IngestionStatus } from "@repo/db"
+import { prisma, IngestionStatus, User } from "@repo/db"
 
 describe("Document Controller", () => {
   const app = createServer()

@@ -23,6 +23,7 @@ model User {
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
+  isAnonymous   Boolean?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

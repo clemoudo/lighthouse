@@ -15,7 +15,7 @@ export class UsageService {
   async checkQuota(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true },
+      select: { role: true, isAnonymous: true },
     })
 
     if (!user) {
@@ -35,7 +35,7 @@ export class UsageService {
       },
     })
 
-    return calculateQuotaStatus(user.role, dailyCount)
+    return calculateQuotaStatus({ user, dailyCount })
   }
 }
 
