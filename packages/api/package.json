@@ -28,13 +28,13 @@
     "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.2",
     "eslint": "^9.39.4",
     "jest": "^30.4.2",
-    "openapi3-ts": "^4.5.0",
-    "prettier": "^3.5.2",
+    "openapi3-ts": "^4.6.0",
+    "prettier": "^3.8.4",
     "ts-jest": "^29.4.11",
-    "tsx": "^4.22.0",
+    "tsx": "^4.22.4",
     "typescript": "5.9.3"
   }
 }
