@@ -15,10 +15,15 @@ import { PageHeader } from "@/components/page-header"
 import { useGetDocuments } from "@/api/generated/lighthouse"
 import { CurriculumSkeleton } from "@/components/skeletons"
 import { useSearchParams, useRouter } from "next/navigation"
-import { PdfReader } from "@/components/curriculum/pdf-reader"
 import { env } from "@/env"
 import { Suspense } from "react"
 import { DocumentStatus } from "@/api/generated/model"
+import dynamic from "next/dynamic"
+
+const PdfReader = dynamic(
+  () => import("@/components/curriculum/pdf-reader").then((m) => m.PdfReader),
+  { ssr: false, loading: () => <CurriculumSkeleton /> },
+)
 
 const { Text, Title } = Typography
 

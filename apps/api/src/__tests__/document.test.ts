@@ -4,7 +4,11 @@ import { NextFunction, Request, Response } from "express"
 
 // Mock better-auth
 jest.mock("better-auth", () => ({ betterAuth: jest.fn() }))
-jest.mock("better-auth/plugins", () => ({ admin: jest.fn(), emailOTP: jest.fn() }))
+jest.mock("better-auth/plugins", () => ({
+  admin: jest.fn(),
+  emailOTP: jest.fn(),
+  anonymous: jest.fn(),
+}))
 jest.mock("better-auth/api", () => ({
   createAuthEndpoint: jest.fn(),
   sessionMiddleware: jest.fn(),
@@ -26,7 +30,7 @@ jest.mock("../middlewares/auth", () => ({
       createdAt: new Date(),
       updatedAt: new Date(),
       banned: false,
-    }
+    } as User
     next()
   },
   requireAuth: (req: Request, res: Response, next: NextFunction) => next(),
@@ -53,7 +57,7 @@ jest.mock("@repo/db", () => ({
 }))
 
 import { createServer } from "../server"
-import { prisma, IngestionStatus } from "@repo/db"
+import { prisma, IngestionStatus, User } from "@repo/db"
 
 describe("Document Controller", () => {
   const app = createServer()

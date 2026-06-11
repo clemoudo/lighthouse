@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth"
-import { admin, emailOTP } from "better-auth/plugins"
+import { admin, emailOTP, anonymous } from "better-auth/plugins"
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@repo/db"
@@ -75,6 +75,22 @@ export const auth = betterAuth({
               <p style="font-size: 12px; color: #999; text-align: center;">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail en toute sécurité.</p>
             </div>
           `,
+        })
+      },
+    }),
+    anonymous({
+      generateName: () => "Visiteur",
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        // Transfer conversations from anonymous user to the new user
+        await prisma.conversation.updateMany({
+          where: { userId: anonymousUser.user.id },
+          data: { userId: newUser.user.id },
+        })
+
+        // Transfer usage records from anonymous user to the new user
+        await prisma.usageRecord.updateMany({
+          where: { userId: anonymousUser.user.id },
+          data: { userId: newUser.user.id },
         })
       },
     }),

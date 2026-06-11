@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react"
-import { adminClient, emailOTPClient } from "better-auth/client/plugins"
+import { adminClient, emailOTPClient, anonymousClient } from "better-auth/client/plugins"
 
 const authClient = createAuthClient({
   fetchOptions: {
@@ -8,6 +8,7 @@ const authClient = createAuthClient({
   plugins: [
     adminClient(),
     emailOTPClient(),
+    anonymousClient(),
     {
       id: "user-helper",
       getActions: ($fetch) => ({

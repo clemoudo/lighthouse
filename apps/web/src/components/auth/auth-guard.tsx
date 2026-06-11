@@ -10,7 +10,7 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const { session, isLoading } = useAuth()
+  const { session, isLoading, isAnonymous } = useAuth()
 
   if (isLoading) {
     return (
@@ -20,7 +20,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     )
   }
 
-  if (!session) {
+  if (!session || isAnonymous) {
     redirect("/sign-in")
   }
 

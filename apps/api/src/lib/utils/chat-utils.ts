@@ -9,10 +9,7 @@ export function formatRAGContext(chunks: ChunkSearchResult[]): string {
   if (chunks.length === 0) return ""
 
   return chunks
-    .map(
-      (c, i) =>
-        `[Source ${i + 1}]: ${c.metadata.source} (Page: ${c.metadata.pdfPageNumber})\n${c.content}`,
-    )
+    .map((c) => `[Source ${c.metadata.source}] (Page ${c.metadata.pdfPageNumber})\n${c.content}`)
     .join("\n\n---\n\n")
 }
 
@@ -42,6 +39,7 @@ export function getSystemPrompt(context: string): string {
   - Tu dois t'appuyer EXCLUSIVEMENT sur le contexte documentaire fourni ci-dessous.
   - Si la réponse ne se trouve pas dans le contexte, ne l'invente jamais.
   - Chaque segment commence par une référence (ex: [Source 1]). Utilise ces informations pour garantir la véracité de tes propos.
+  - Pour citer tes sources, utilise le nom du document suivi du numéro de page comme ceci "Source titre, p. 15"
 
   # RÈGLES DE COMPORTEMENT
   1. VÉRACITÉ : Ne génère aucune information non présente dans les sources. Si l'info manque, dis-le poliment.

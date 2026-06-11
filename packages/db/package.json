@@ -33,10 +33,10 @@
     "@repo/typescript-config": "workspace:*",
     "@types/http-errors": "^2.0.5",
     "@types/lodash": "^4.17.24",
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.2",
     "@types/pg": "^8.20.0",
     "eslint": "^9.39.4",
-    "prettier": "^3.5.2",
+    "prettier": "^3.8.4",
     "typescript": "5.9.3"
   }
 }
