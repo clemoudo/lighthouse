@@ -131,6 +131,7 @@ model Chunk {
   createdAt  DateTime                    @default(now())
   updatedAt  DateTime                    @updatedAt
 
+  @@index([embedding], map: "chunk_embedding_hnsw_idx")
   @@map("chunk")
 }
 
