@@ -4,7 +4,11 @@ import { NextFunction, Request, Response } from "express"
 
 // Mock better-auth and its variations before importing server
 jest.mock("better-auth", () => ({ betterAuth: jest.fn() }))
-jest.mock("better-auth/plugins", () => ({ admin: jest.fn(), emailOTP: jest.fn() }))
+jest.mock("better-auth/plugins", () => ({
+  admin: jest.fn(),
+  emailOTP: jest.fn(),
+  anonymous: jest.fn(),
+}))
 jest.mock("better-auth/api", () => ({
   createAuthEndpoint: jest.fn(),
   sessionMiddleware: jest.fn(),

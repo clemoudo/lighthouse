@@ -30,9 +30,9 @@ describe("chat-utils", () => {
         },
       ]
       const result = formatRAGContext(chunks)
-      expect(result).toContain("[Source 1]: Doc 1 (Page: 10)")
+      expect(result).toContain("[Source Doc 1] (Page 10)")
       expect(result).toContain("Content 1")
-      expect(result).toContain("[Source 2]: Doc 2 (Page: 20)")
+      expect(result).toContain("[Source Doc 2] (Page 20)")
       expect(result).toContain("Content 2")
       expect(result).toContain("---")
     })
